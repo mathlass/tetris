@@ -198,7 +198,7 @@ document.addEventListener('contextmenu', e => e.preventDefault());
   function reset(){
     hideOverlay();
     board = emptyBoard();
-    score=0; lines=0; level=1; dropInterval = FALL_BASE_MS; lastTime=0; dropTimer=0;
+    score=0; lines=0; level=1; dropInterval = FALL_BASE_MS; dropTimer=0; lastTime = performance.now();
     bag=[]; queue = [pullNext(), pullNext(), pullNext()];
     cur = pullNext();
     hold=null; canHold=true; running=true; setPaused(false);
@@ -296,8 +296,12 @@ document.addEventListener('contextmenu', e => e.preventDefault());
   function updateSide(){
     const scoreEl = document.getElementById('score');
     if(scoreEl) scoreEl.textContent = score;
+    const scoreTop = document.getElementById('topScore');
+    if(scoreTop) scoreTop.textContent = `Score: ${score}`;
     const bestEl = document.getElementById('best');
     if(bestEl) bestEl.textContent = best;
+    const bestTop = document.getElementById('topBest');
+    if(bestTop) bestTop.textContent = `Best: ${best}`;
     if(nctx) drawMini(nctx, queue[0]);
     if(hctx) drawMini(hctx, hold);
     const comboEl = document.getElementById('comboTag');
@@ -431,7 +435,7 @@ document.addEventListener('contextmenu', e => e.preventDefault());
   }
 
   // ==== Loop
-  function update(time=0){
+  function update(time=performance.now()){
     if(!running) return;
     const delta = time - lastTime; lastTime = time;
     if(!paused){
