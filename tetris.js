@@ -15,6 +15,13 @@ if (btnTheme) {
 
 const PLAYER_KEY = 'tetris_player';
 let playerName = localStorage.getItem(PLAYER_KEY) || 'Player';
+if (localStorage.getItem(PLAYER_KEY) === null) {
+  const name = prompt('Bitte Spielername eingeben:');
+  if (name !== null) {
+    playerName = name.trim() || 'Player';
+    localStorage.setItem(PLAYER_KEY, playerName);
+  }
+}
 const btnPlayer = document.getElementById('btnPlayer');
 if (btnPlayer) {
   btnPlayer.addEventListener('click', () => {
