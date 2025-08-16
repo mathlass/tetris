@@ -226,8 +226,11 @@ document.addEventListener('contextmenu', e => e.preventDefault());
 
   function refillBag(){
     const types=['I','J','L','O','S','T','Z'];
-    const shuffled = [...types].sort(()=>Math.random()-0.5);
-    bag.push(...shuffled);
+    for(let i=types.length-1;i>0;i--){
+      const j=Math.floor(Math.random()*(i+1));
+      [types[i],types[j]]=[types[j],types[i]];
+    }
+    bag.push(...types);
   }
 
   function pullNext(){
