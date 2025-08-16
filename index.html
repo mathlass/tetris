@@ -148,6 +148,7 @@
             <li><kbd>←</kbd>/<kbd>→</kbd>: bewegen</li>
             <li><kbd>↓</kbd>: schneller fallen (Soft Drop)</li>
             <li><kbd>↑</kbd> oder <kbd>W</kbd>: rotieren (im Uhrzeigersinn)</li>
+            <li><kbd>Q</kbd> oder <kbd>Z</kbd>: rotieren (gegen Uhrzeigersinn)</li>
             <li><kbd>Leertaste</kbd>: Hard Drop</li>
             <li><kbd>Shift</kbd>: Hold tauschen</li>
             <li><kbd>P</kbd>: Pause</li>
@@ -542,6 +543,17 @@ if (btnTheme) {
     return p;
   }
 
+  function rotateCCW(p){
+    const len = p.shape.length;
+    const test = {...p, rot:(p.rot-1+len)%len};
+    if(!collides(test)) return test;
+    for(const dx of [-1,1,-2,2]){
+      const kicked = {...test, x:test.x+dx};
+      if(!collides(kicked)) return kicked;
+    }
+    return p;
+  }
+
   function merge(){
     const m = cur.shape[cur.rot];
     for(let y=0;y<m.length;y++){
@@ -669,7 +681,7 @@ if (btnTheme) {
     if(!running) return;
     if(e.code==='KeyP'){ setPaused(!paused); return; }
     if(paused) return;
-    if(['ArrowLeft','ArrowRight','ArrowDown','ArrowUp','Space','KeyW','ShiftLeft','ShiftRight'].includes(e.code)) e.preventDefault();
+    if(['ArrowLeft','ArrowRight','ArrowDown','ArrowUp','Space','KeyW','KeyQ','KeyZ','ShiftLeft','ShiftRight'].includes(e.code)) e.preventDefault();
     switch(e.code){
       case 'ArrowLeft':{
         const p = {...cur, x:cur.x-1};
@@ -684,6 +696,8 @@ if (btnTheme) {
       case 'ArrowDown': softDrop(); break;
       case 'ArrowUp':
       case 'KeyW': cur = rotate(cur); sfx.rotate(); break;
+      case 'KeyQ':
+      case 'KeyZ': cur = rotateCCW(cur); sfx.rotate(); break;
       case 'Space': hardDrop(); break;
       case 'ShiftLeft':
       case 'ShiftRight': {
