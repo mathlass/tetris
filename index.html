@@ -352,6 +352,9 @@
     const sel = document.getElementById('modeSelect');
     mode = sel ? sel.value : MODE_CLASSIC;
     timeLeft = (mode===MODE_ULTRA) ? ULTRA_SECONDS : null;
+    lastTime = performance.now();
+    const tEl = document.getElementById('timer');
+    if(tEl){ tEl.textContent = (mode===MODE_ULTRA) ? '⏱️ 2:00' : ''; }
     updateSide(); drawBoard();
   }
 
@@ -580,7 +583,7 @@
     // Overlay hat Vorrang: Enter = Neustart, Escape = Schließen
     const ov = document.getElementById('overlay');
     if(ov && ov.classList.contains('show')){
-      if(['Enter','NumpadEnter'].includes(e.code)) { e.preventDefault(); reset(); update(); return; }
+      if(['Enter','NumpadEnter'].includes(e.code)) { e.preventDefault(); reset(); update(lastTime); return; }
       if(e.code==='Escape') { e.preventDefault(); hideOverlay(); return; }
       e.preventDefault(); return;
     }
@@ -618,14 +621,14 @@
   }, {passive:false});
 
   // ==== UI Buttons
-  document.getElementById('btnStart').addEventListener('click', ()=>{ reset(); update(); });
+  document.getElementById('btnStart').addEventListener('click', ()=>{ reset(); update(lastTime); });
   const modeSelect = document.getElementById('modeSelect');
-  if(modeSelect){ modeSelect.addEventListener('change', ()=>{ reset(); update(); }); }
+  if(modeSelect){ modeSelect.addEventListener('change', ()=>{ reset(); update(lastTime); }); }
   document.getElementById('btnPause').addEventListener('click', ()=>{ if(running){ paused=!paused; document.getElementById('pauseOverlay').classList.toggle('show', paused); }});
   document.getElementById('btnHard').addEventListener('click', ()=>{ if(running&&!paused) hardDrop(); });
   // Overlay Buttons
   const btnRestart = document.getElementById('btnRestart');
-  if(btnRestart){ btnRestart.addEventListener('click', ()=>{ reset(); update(); }); }
+  if(btnRestart){ btnRestart.addEventListener('click', ()=>{ reset(); update(lastTime); }); }
   const btnClose = document.getElementById('btnClose');
   if(btnClose){ btnClose.addEventListener('click', ()=> hideOverlay()); }
 
@@ -638,7 +641,7 @@
     mHard:()=>hardDrop(),
     mHold:()=>{ if(!canHold) return; const tmp = hold ? newPiece(hold.type) : null; hold = newPiece(cur.type); if(tmp){ cur = tmp; cur.x=Math.floor(COLS/2)-2; cur.y=-2; } else { cur=queue.shift(); queue.push(pullNext()); } canHold=false; updateSide(); },
     mPause:()=>{ if(running){ paused=!paused; document.getElementById('pauseOverlay').classList.toggle('show', paused);} },
-    mStart:()=>{ reset(); update(); }
+    mStart:()=>{ reset(); update(lastTime); }
   };
   Object.keys(touchMap).forEach(id=>{ const el=document.getElementById(id); if(el){ el.addEventListener('click', touchMap[id]); }});
 
@@ -670,7 +673,7 @@
   // Autostart
   reset();
   renderHS();
-  update();
+  update(lastTime);
 })();
 
 // Register external Service Worker (works on Netlify & GitHub Pages)
