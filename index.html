@@ -320,6 +320,15 @@
   let timeLeft = null; // in Sekunden für Ultra
   let dropTimer=0, dropInterval=FALL_BASE_MS, lastTime=0, paused=false, running=false;
 
+  function setPaused(val){
+    paused = val;
+    const el = document.getElementById('pauseOverlay');
+    if(el){
+      el.classList.toggle('show', paused);
+      el.setAttribute('aria-hidden', String(!paused));
+    }
+  }
+
   function emptyBoard(){
     return Array.from({length:ROWS}, ()=>Array(COLS).fill(0));
   }
@@ -347,7 +356,7 @@
     score=0; lines=0; level=1; dropInterval = FALL_BASE_MS; lastTime=0; dropTimer=0;
     bag=[]; queue = [pullNext(), pullNext(), pullNext()];
     cur = pullNext();
-    hold=null; canHold=true; paused=false; running=true;
+    hold=null; canHold=true; running=true; setPaused(false);
     // Mode & Timer
     const sel = document.getElementById('modeSelect');
     mode = sel ? sel.value : MODE_CLASSIC;
@@ -541,7 +550,7 @@
 
   function gameOver(){
     running=false;
-    paused=false;
+    setPaused(false);
     best = Math.max(best, score);
     localStorage.setItem('tetris_best', best);
     const nameEl = document.getElementById('playerName');
@@ -586,7 +595,7 @@
     }
 
     if(!running) return;
-    if(e.code==='KeyP'){ paused=!paused; document.getElementById('pauseOverlay').classList.toggle('show', paused); return; }
+    if(e.code==='KeyP'){ setPaused(!paused); return; }
     if(paused) return;
     if(['ArrowLeft','ArrowRight','ArrowDown','ArrowUp','Space','KeyW','ShiftLeft','ShiftRight'].includes(e.code)) e.preventDefault();
     switch(e.code){
@@ -621,7 +630,7 @@
   document.getElementById('btnStart').addEventListener('click', ()=>{ reset(); update(); });
   const modeSelect = document.getElementById('modeSelect');
   if(modeSelect){ modeSelect.addEventListener('change', ()=>{ reset(); update(); }); }
-  document.getElementById('btnPause').addEventListener('click', ()=>{ if(running){ paused=!paused; document.getElementById('pauseOverlay').classList.toggle('show', paused); }});
+  document.getElementById('btnPause').addEventListener('click', ()=>{ if(running){ setPaused(!paused); }});
   document.getElementById('btnHard').addEventListener('click', ()=>{ if(running&&!paused) hardDrop(); });
   // Overlay Buttons
   const btnRestart = document.getElementById('btnRestart');
@@ -637,7 +646,7 @@
     mSoft:()=>softDrop(),
     mHard:()=>hardDrop(),
     mHold:()=>{ if(!canHold) return; const tmp = hold ? newPiece(hold.type) : null; hold = newPiece(cur.type); if(tmp){ cur = tmp; cur.x=Math.floor(COLS/2)-2; cur.y=-2; } else { cur=queue.shift(); queue.push(pullNext()); } canHold=false; updateSide(); },
-    mPause:()=>{ if(running){ paused=!paused; document.getElementById('pauseOverlay').classList.toggle('show', paused);} },
+    mPause:()=>{ if(running){ setPaused(!paused); } },
     mStart:()=>{ reset(); update(); }
   };
   Object.keys(touchMap).forEach(id=>{ const el=document.getElementById(id); if(el){ el.addEventListener('click', touchMap[id]); }});
