@@ -12,6 +12,7 @@
   <link rel="apple-touch-icon" href="icons/icon-180.png" />
   <style>
     :root { --bg:#0f1115; --fg:#e8eaed; --muted:#a7b0be; --accent:#6ee7ff; }
+    .theme-light { --bg:#ffffff; --fg:#202124; --muted:#5f6368; --accent:#0066cc; }
     html,body{height:100%;margin:0;background:var(--bg);color:var(--fg);font:500 16px/1.4 system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;overflow:hidden}
     .wrap{max-width:980px;margin:24px auto;padding:0 16px;display:grid;grid-template-columns:1fr auto;gap:24px}
     h1{font-size:28px;margin:0 0 8px}
@@ -67,6 +68,7 @@
       <h1>🧱 Tetris</h1>
       <p class="tag">Vanilla JavaScript • Canvas • Level/Score/Lines • Soft/Hard Drop • Pause • Hold • 7‑Bag RNG</p>
       <button id="btnMenu" style="margin-bottom:8px">Menü</button>
+      <button id="themeToggle" style="margin-bottom:8px">Theme</button>
       <div class="grid">
         <div class="panel">
           <div class="stats" style="margin-bottom:8px">
@@ -192,6 +194,20 @@
   </div>
 
 <script>
+const THEME_KEY = 'tetris_theme';
+if (localStorage.getItem(THEME_KEY) === 'light') {
+  document.body.classList.add('theme-light');
+}
+const btnTheme = document.getElementById('themeToggle');
+if (btnTheme) {
+  btnTheme.addEventListener('click', () => {
+    document.body.classList.toggle('theme-light');
+    localStorage.setItem(
+      THEME_KEY,
+      document.body.classList.contains('theme-light') ? 'light' : 'dark'
+    );
+  });
+}
 (() => {
   // ==== Konfiguration
   const COLS=10, ROWS=20, SIZE=30;
