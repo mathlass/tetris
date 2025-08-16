@@ -241,7 +241,8 @@ if (btnTheme) {
 }
 (() => {
   // ==== Konfiguration
-  const COLS=10, ROWS=20, SIZE=30;
+  const COLS=10, ROWS=20;
+  let SIZE = Math.floor(Math.min(window.innerWidth,320)/COLS);
   const FALL_BASE_MS = 800; // Basisintervall (Level 1)
   const LINES_PER_LEVEL = 10;
   const SCORE_LINE = [0,100,300,500,800];
@@ -379,7 +380,16 @@ if (btnTheme) {
   const holdCanvas = document.getElementById('hold');
   const hctx = holdCanvas.getContext('2d');
 
+  function resizeBoard(){
+    SIZE = Math.floor(Math.min(window.innerWidth,320)/COLS);
+    canvas.width = COLS*SIZE;
+    canvas.height = ROWS*SIZE;
+    if(board) drawBoard();
+  }
+  window.addEventListener('resize', resizeBoard);
+
   let board, cur, bag=[], queue=[], hold=null, canHold=true;
+  resizeBoard();
   let score=0, lines=0, level=1, best=Number(localStorage.getItem('tetris_best')||0);
   let combo=-1, backToBack=false;
   let mode = MODE_CLASSIC;
