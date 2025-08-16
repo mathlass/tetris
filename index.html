@@ -580,7 +580,7 @@
     // Overlay hat Vorrang: Enter = Neustart, Escape = Schließen
     const ov = document.getElementById('overlay');
     if(ov && ov.classList.contains('show')){
-      if(['Enter','NumpadEnter'].includes(e.code)) { e.preventDefault(); reset(); update(); return; }
+      if(['Enter','NumpadEnter'].includes(e.code)) { e.preventDefault(); startGame(); return; }
       if(e.code==='Escape') { e.preventDefault(); hideOverlay(); return; }
       e.preventDefault(); return;
     }
@@ -617,15 +617,42 @@
     }
   }, {passive:false});
 
+  // ==== Start new game with prompts
+  function startGame(){
+    const storedName = localStorage.getItem('tetris_name') || '';
+    const name = (prompt('Name:', storedName) || storedName || 'Player').trim() || 'Player';
+    localStorage.setItem('tetris_name', name);
+    const nameEl = document.getElementById('playerName');
+    if(nameEl) nameEl.value = name;
+
+    const modeSelectEl = document.getElementById('modeSelect');
+    const storedMode = localStorage.getItem('tetris_mode') || (modeSelectEl ? modeSelectEl.value : MODE_CLASSIC);
+    const modeVal = (prompt('Modus (classic/ultra):', storedMode) || storedMode);
+    if(modeSelectEl) modeSelectEl.value = modeVal;
+    localStorage.setItem('tetris_mode', modeVal);
+
+    reset();
+    update();
+  }
+
   // ==== UI Buttons
-  document.getElementById('btnStart').addEventListener('click', ()=>{ reset(); update(); });
+  document.getElementById('btnStart').addEventListener('click', startGame);
+  const nameInput = document.getElementById('playerName');
+  if(nameInput){
+    const storedName = localStorage.getItem('tetris_name');
+    if(storedName) nameInput.value = storedName;
+  }
   const modeSelect = document.getElementById('modeSelect');
-  if(modeSelect){ modeSelect.addEventListener('change', ()=>{ reset(); update(); }); }
+  if(modeSelect){
+    const storedMode = localStorage.getItem('tetris_mode');
+    if(storedMode) modeSelect.value = storedMode;
+    modeSelect.addEventListener('change', startGame);
+  }
   document.getElementById('btnPause').addEventListener('click', ()=>{ if(running){ paused=!paused; document.getElementById('pauseOverlay').classList.toggle('show', paused); }});
   document.getElementById('btnHard').addEventListener('click', ()=>{ if(running&&!paused) hardDrop(); });
   // Overlay Buttons
   const btnRestart = document.getElementById('btnRestart');
-  if(btnRestart){ btnRestart.addEventListener('click', ()=>{ reset(); update(); }); }
+  if(btnRestart){ btnRestart.addEventListener('click', startGame); }
   const btnClose = document.getElementById('btnClose');
   if(btnClose){ btnClose.addEventListener('click', ()=> hideOverlay()); }
 
@@ -638,7 +665,7 @@
     mHard:()=>hardDrop(),
     mHold:()=>{ if(!canHold) return; const tmp = hold ? newPiece(hold.type) : null; hold = newPiece(cur.type); if(tmp){ cur = tmp; cur.x=Math.floor(COLS/2)-2; cur.y=-2; } else { cur=queue.shift(); queue.push(pullNext()); } canHold=false; updateSide(); },
     mPause:()=>{ if(running){ paused=!paused; document.getElementById('pauseOverlay').classList.toggle('show', paused);} },
-    mStart:()=>{ reset(); update(); }
+    mStart:()=>{ startGame(); }
   };
   Object.keys(touchMap).forEach(id=>{ const el=document.getElementById(id); if(el){ el.addEventListener('click', touchMap[id]); }});
 
@@ -667,10 +694,8 @@
   if(chkGhost){ chkGhost.checked = !!settings.ghost; chkGhost.addEventListener('change', ()=>{ settings.ghost = chkGhost.checked; saveSettings(settings); drawBoard(); }); }
   if(chkSoft){ chkSoft.checked = !!settings.softDropPoints; chkSoft.addEventListener('change', ()=>{ settings.softDropPoints = chkSoft.checked; saveSettings(settings); }); }
 
-  // Autostart
-  reset();
+  // Initial setup
   renderHS();
-  update();
 })();
 
 // Register external Service Worker (works on Netlify & GitHub Pages)
