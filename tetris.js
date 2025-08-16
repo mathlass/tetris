@@ -154,11 +154,10 @@ document.addEventListener('contextmenu', e => e.preventDefault());
 
   // ==== Overlay helpers
   const overlay = () => document.getElementById('overlay');
-  function showOverlay(vals){
-    document.getElementById('ovScore').textContent = vals.score;
-    document.getElementById('ovLines').textContent = vals.lines;
-    document.getElementById('ovLevel').textContent = vals.level;
-    document.getElementById('ovBest').textContent = vals.best;
+  function showOverlay({score, lines, best}){
+    document.getElementById('ovScore').textContent = score;
+    document.getElementById('ovLines').textContent = lines;
+    document.getElementById('ovBest').textContent = best;
     overlay().classList.add('show');
   }
   function hideOverlay(){ overlay().classList.remove('show'); }
@@ -445,7 +444,7 @@ document.addEventListener('contextmenu', e => e.preventDefault());
     addHS({ name, score, lines, date: new Date().toISOString().slice(0,10) }, mode);
     renderHS(mode);
     updateSide();
-    showOverlay({score, lines, level, best});
+    showOverlay({score, lines, best});
     sfx.gameover();
   }
 
