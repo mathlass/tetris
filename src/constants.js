@@ -10,6 +10,7 @@ export const SCORE_LINE = [0,100,300,500,800];
 export const SETTINGS_KEY = 'tetris_settings_v1';
 export const MODE_CLASSIC = 'classic';
 export const MODE_ULTRA = 'ultra';
+export const MODE_CLASSIC_ONCE = 'classic_once';
 export const ULTRA_SECONDS = 120;
 
 export const COLOR_SETS = {
