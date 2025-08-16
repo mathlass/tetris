@@ -168,7 +168,7 @@
       <div class="controls">
         <label><input type="checkbox" id="optSound" checked> Sound</label>
         <label><input type="checkbox" id="optGhost" checked> Ghost Piece</label>
-        <label><input type="checkbox" id="optGrid" checked> Raster</label>
+        <label><input type="checkbox" id="optGrid"> Raster</label>
         <label><input type="checkbox" id="optSoftDropPoints" checked> Soft‑Drop Punkte</label>
       </div>
     </div>
@@ -278,7 +278,7 @@
   }
 
   // ==== Settings (persist)
-  const defaultSettings = { sound:true, ghost:true, softDropPoints:true, grid:true };
+  const defaultSettings = { sound:true, ghost:true, softDropPoints:true, grid:false };
   function loadSettings(){
     try{ return Object.assign({}, defaultSettings, JSON.parse(localStorage.getItem(SETTINGS_KEY)||'{}')); }catch{ return {...defaultSettings}; }
   }
