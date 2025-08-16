@@ -632,6 +632,16 @@
   if(modeSelect){ modeSelect.addEventListener('change', ()=>{ reset(); update(); }); }
   document.getElementById('btnPause').addEventListener('click', ()=>{ if(running){ setPaused(!paused); }});
   document.getElementById('btnHard').addEventListener('click', ()=>{ if(running&&!paused) hardDrop(); });
+  const btnResetHS = document.getElementById('btnResetHS');
+  if(btnResetHS){
+    btnResetHS.addEventListener('click', ()=>{
+      saveHS([]);
+      best = 0;
+      localStorage.removeItem('tetris_best');
+      updateSide();
+      renderHS();
+    });
+  }
   // Overlay Buttons
   const btnRestart = document.getElementById('btnRestart');
   if(btnRestart){ btnRestart.addEventListener('click', ()=>{ reset(); update(); }); }
