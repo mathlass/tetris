@@ -218,6 +218,13 @@ document.addEventListener('contextmenu', e => e.preventDefault());
 
   function clearCanvas(c){ c.clearRect(0,0,c.canvas.width,c.canvas.height); }
 
+  function hexToRgba(hex, alpha){
+    const r = parseInt(hex.slice(1,3),16);
+    const g = parseInt(hex.slice(3,5),16);
+    const b = parseInt(hex.slice(5,7),16);
+    return `rgba(${r},${g},${b},${alpha})`;
+  }
+
   function drawBoard(){
     clearCanvas(ctx);
     // ghost piece (optional)
@@ -238,13 +245,17 @@ document.addEventListener('contextmenu', e => e.preventDefault());
 
   function drawPiece(p, overrideY=null, ghost=false){
     const m = p.shape[p.rot];
+    const ghostColor = hexToRgba(
+      COLORS[p.type],
+      document.body.classList.contains('theme-light') ? 0.2 : 0.12
+    );
     for(let y=0;y<m.length;y++){
       for(let x=0;x<m[y].length;x++){
         if(m[y][x]){
           const cx = p.x + x;
           const cy = (overrideY??p.y) + y;
           if(cy<0) continue; // skip above board
-          const color = ghost ? 'rgba(255,255,255,0.12)' : COLORS[p.type];
+          const color = ghost ? ghostColor : COLORS[p.type];
           drawCell(cx, cy, color);
         }
       }
