@@ -169,6 +169,12 @@
         <label><input type="checkbox" id="optSound" checked> Sound</label>
         <label><input type="checkbox" id="optGhost" checked> Ghost Piece</label>
         <label><input type="checkbox" id="optSoftDropPoints" checked> Soft‑Drop Punkte</label>
+        <label>Farben:
+          <select id="optPalette">
+            <option value="standard">Standard</option>
+            <option value="accessible">Barrierefrei</option>
+          </select>
+        </label>
       </div>
     </div>
   </div>
@@ -203,11 +209,19 @@
   const MODE_ULTRA = 'ultra';
   const ULTRA_SECONDS = 120;
 
-  const COLORS = {
-    0: '#000000', // leer (wird nicht gemalt)
-    I: '#4fd1ff', J: '#4c6ef5', L: '#f59f00', O: '#fcc419',
-    S: '#51cf66', T: '#be4bdb', Z: '#ff6b6b'
+  const COLOR_SETS = {
+    standard: {
+      0: '#000000', // leer (wird nicht gemalt)
+      I: '#4fd1ff', J: '#4c6ef5', L: '#f59f00', O: '#fcc419',
+      S: '#51cf66', T: '#be4bdb', Z: '#ff6b6b'
+    },
+    accessible: {
+      0: '#000000',
+      I: '#0072b2', J: '#56b4e9', L: '#e69f00', O: '#f0e442',
+      S: '#009e73', T: '#cc79a7', Z: '#d55e00'
+    }
   };
+  let COLORS = COLOR_SETS.standard;
 
   // Tetromino-Matrizen (4×4 Frames) – im Uhrzeigersinn rotierend
   const SHAPES = {
@@ -277,12 +291,13 @@
   }
 
   // ==== Settings (persist)
-  const defaultSettings = { sound:true, ghost:true, softDropPoints:true };
+  const defaultSettings = { sound:true, ghost:true, softDropPoints:true, palette:'standard' };
   function loadSettings(){
     try{ return Object.assign({}, defaultSettings, JSON.parse(localStorage.getItem(SETTINGS_KEY)||'{}')); }catch{ return {...defaultSettings}; }
   }
   function saveSettings(s){ localStorage.setItem(SETTINGS_KEY, JSON.stringify(s)); }
   let settings = loadSettings();
+  COLORS = COLOR_SETS[settings.palette] || COLOR_SETS.standard;
 
   // ==== Audio (WebAudio beeps)
   let actx = null;
@@ -723,9 +738,20 @@
   const chkSound = document.getElementById('optSound');
   const chkGhost = document.getElementById('optGhost');
   const chkSoft = document.getElementById('optSoftDropPoints');
+  const selPalette = document.getElementById('optPalette');
   if(chkSound){ chkSound.checked = !!settings.sound; chkSound.addEventListener('change', ()=>{ settings.sound = chkSound.checked; saveSettings(settings); }); }
   if(chkGhost){ chkGhost.checked = !!settings.ghost; chkGhost.addEventListener('change', ()=>{ settings.ghost = chkGhost.checked; saveSettings(settings); drawBoard(); }); }
   if(chkSoft){ chkSoft.checked = !!settings.softDropPoints; chkSoft.addEventListener('change', ()=>{ settings.softDropPoints = chkSoft.checked; saveSettings(settings); }); }
+  if(selPalette){
+    selPalette.value = settings.palette || 'standard';
+    selPalette.addEventListener('change', ()=>{
+      settings.palette = selPalette.value;
+      COLORS = COLOR_SETS[settings.palette] || COLOR_SETS.standard;
+      saveSettings(settings);
+      drawBoard();
+      updateSide();
+    });
+  }
 
   // Initiale Anzeige
   renderHS();
