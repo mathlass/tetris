@@ -549,21 +549,47 @@ document.addEventListener('contextmenu', e => e.preventDefault());
     mPause:()=>{ if(running){ setPaused(!paused); } },
     mStart:()=>{ reset(); update(); }
   };
-  Object.keys(touchMap).forEach(id=>{ const el=document.getElementById(id); if(el){ el.addEventListener('click', touchMap[id]); }});
+  Object.keys(touchMap).forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el) return;
+    if(id==='mLeft' || id==='mRight') return;
+    el.addEventListener('click', touchMap[id]);
+  });
+
+  function addHoldRepeat(id, fn){
+    const el=document.getElementById(id);
+    if(!el) return;
+    let t=null, iv=null;
+    const clear=()=>{ if(t){clearTimeout(t); t=null;} if(iv){clearInterval(iv); iv=null;} };
+    const start=(e)=>{ e.preventDefault(); fn(); t=setTimeout(()=>{ iv=setInterval(fn,80); },150); };
+    const end=()=>clear();
+    ['touchstart','mousedown'].forEach(evt=>el.addEventListener(evt,start));
+    ['touchend','mouseup','mouseleave','touchcancel'].forEach(evt=>el.addEventListener(evt,end));
+  }
+  addHoldRepeat('mLeft', touchMap.mLeft);
+  addHoldRepeat('mRight', touchMap.mRight);
 
   // Swipe Gestures auf dem Board
   (function(){
     const el=document.querySelector('.board-wrap'); if(!el) return;
-    let sx=0, sy=0, st=0;
-    el.addEventListener('touchstart', (e)=>{ const t=e.changedTouches[0]; sx=t.clientX; sy=t.clientY; st=performance.now();});
+    let sx=0, sy=0, st=0, lx=0, moved=false;
+    el.addEventListener('touchstart', (e)=>{ const t=e.changedTouches[0]; sx=lx=t.clientX; sy=t.clientY; st=performance.now(); moved=false;});
+    el.addEventListener('touchmove', (e)=>{
+      const t=e.changedTouches[0]; const dx=t.clientX-lx; const absX=Math.abs(dx); const MOVE_THRESH=12;
+      if(absX>MOVE_THRESH){
+        e.preventDefault();
+        if(dx>0) touchMap.mRight(); else touchMap.mLeft();
+        lx=t.clientX; moved=true;
+      }
+    }, {passive:false});
     el.addEventListener('touchend', (e)=>{
       const t=e.changedTouches[0]; const dx=t.clientX-sx; const dy=t.clientY-sy; const dt=performance.now()-st;
       const absX=Math.abs(dx), absY=Math.abs(dy);
-      const THRESH=24; // Pixel
-      if(dt<400){
-        if(absX>absY && absX>THRESH){ if(dx>0) touchMap.mRight(); else touchMap.mLeft(); return; }
+      const THRESH=16; // Pixel
+      if(dt<600){
+        if(!moved && absX>absY && absX>THRESH){ if(dx>0) touchMap.mRight(); else touchMap.mLeft(); return; }
         if(absY>absX && absY>THRESH){ if(dy>0) touchMap.mHard(); else touchMap.mRotate(); return; }
-        if(absX<10 && absY<10) touchMap.mRotate();
+        if(!moved && absX<10 && absY<10) touchMap.mRotate();
       }
     }, {passive:true});
   })();
