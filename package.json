@@ -1,0 +1,14 @@
+{
+  "name": "tetris",
+  "version": "1.0.0",
+  "description": "Erstellt: 2025-08-15",
+  "main": "tetris.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "echo 'No tests specified'"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs"
+}

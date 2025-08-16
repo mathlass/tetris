@@ -97,28 +97,32 @@ document.addEventListener('contextmenu', e => e.preventDefault());
     ]
   };
 
-  // ==== Highscores (LocalStorage)
-  const HS_KEY_BASE = 'tetris_highscores_v1';
+  // ==== Highscores (Server)
   const BEST_KEY_BASE = 'tetris_best';
-  const hsKey = m => `${HS_KEY_BASE}_${m}`;
   const bestKey = m => `${BEST_KEY_BASE}_${m}`;
-  function loadHS(m){ try{ return JSON.parse(localStorage.getItem(hsKey(m))) || []; }catch(e){ return []; } }
-  function saveHS(list,m){ localStorage.setItem(hsKey(m), JSON.stringify(list)); }
-  function addHS(entry,m){
-    const list = loadHS(m);
-    list.push(entry);
-    list.sort((a,b)=>b.score - a.score || b.lines - a.lines || b.level - a.level);
-    const top10 = list.slice(0,10);
-    saveHS(top10,m);
-    return top10;
+  async function loadHS(m){
+    const res = await fetch(`/api/highscores?mode=${m}`);
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    return await res.json();
   }
-  function renderHS(m=mode){
+  async function addHS(entry,m){
+    await fetch('/api/highscores', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...entry, mode: m })
+    });
+  }
+  async function renderHS(m=mode){
     const tbody = document.querySelector('#hsTable tbody');
     if(!tbody) return;
-    const list = loadHS(m);
-    tbody.innerHTML = list.map((e,i)=>
-      `<tr><td>${i+1}</td><td>${e.name}</td><td>${e.score}</td><td>${e.lines}</td><td>${e.level}</td><td>${e.date}</td></tr>`
-    ).join('');
+    try {
+      const list = await loadHS(m);
+      tbody.innerHTML = list.map((e,i)=>
+        `<tr><td>${i+1}</td><td>${e.name}</td><td>${e.score}</td><td>${e.lines}</td><td>${e.level}</td><td>${e.date}</td></tr>`
+      ).join('');
+    } catch (e) {
+      tbody.innerHTML = '<tr><td colspan="6">Fehler beim Laden</td></tr>';
+    }
     const label=document.getElementById('hsModeLabel');
     if(label) label.textContent = (m===MODE_ULTRA? 'Ultra' : 'Classic');
   }
@@ -454,8 +458,8 @@ document.addEventListener('contextmenu', e => e.preventDefault());
     best = Math.max(best, score);
     localStorage.setItem(bestKey(mode), best);
     const name = playerName.trim() || 'Player';
-    addHS({ name, score, lines, level, date: new Date().toISOString().slice(0,10) }, mode);
-    renderHS(mode);
+      addHS({ name, score, lines, level, date: new Date().toISOString().slice(0,10) }, mode)
+        .then(()=>renderHS(mode));
     updateSide();
     showOverlay({score, lines, level, best});
     sfx.gameover();
@@ -555,25 +559,32 @@ document.addEventListener('contextmenu', e => e.preventDefault());
   const tabSettings = document.getElementById('tabSettings');
   const scorePanel = document.getElementById('scorePanel');
   const settingsPanel = document.getElementById('settingsPanel');
-  if(tabScore && tabSettings){
-    tabScore.addEventListener('click', ()=>{ scorePanel.style.display='block'; settingsPanel.style.display='none'; });
-    tabSettings.addEventListener('click', ()=>{ scorePanel.style.display='none'; settingsPanel.style.display='block'; });
-  }
-  const btnStart = document.getElementById('btnStart');
+    if(tabScore && tabSettings){
+      tabScore.addEventListener('click', ()=>{ scorePanel.style.display='block'; settingsPanel.style.display='none'; renderHS(mode); });
+      tabSettings.addEventListener('click', ()=>{ scorePanel.style.display='none'; settingsPanel.style.display='block'; });
+    }
+    const btnStart = document.getElementById('btnStart');
   if(btnStart){ btnStart.addEventListener('click', e=>{ e.preventDefault(); reset(); update(); }); }
   const modeSelect = document.getElementById('modeSelect');
   if(modeSelect){ modeSelect.addEventListener('change', ()=>{ reset(); update(); }); }
   document.getElementById('btnPause').addEventListener('click', ()=>{ if(running){ setPaused(!paused); }});
-  const btnResetHS = document.getElementById('btnResetHS');
-  if(btnResetHS){
-    btnResetHS.addEventListener('click', ()=>{
-      saveHS([], mode);
-      best = 0;
-      localStorage.removeItem(bestKey(mode));
-      updateSide();
-      renderHS(mode);
-    });
-  }
+    const btnResetHS = document.getElementById('btnResetHS');
+    if(btnResetHS){
+      btnResetHS.addEventListener('click', ()=>{
+        fetch('/api/highscores', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ mode })
+        }).finally(()=>{
+          best = 0;
+          localStorage.removeItem(bestKey(mode));
+          updateSide();
+          renderHS(mode);
+        });
+      });
+    }
+    const btnReloadHS = document.getElementById('btnReloadHS');
+    if(btnReloadHS){ btnReloadHS.addEventListener('click', ()=>renderHS(mode)); }
   // Overlay Buttons
   const btnRestart = document.getElementById('btnRestart');
   if(btnRestart){ btnRestart.addEventListener('click', ()=>{ reset(); update(); }); }
