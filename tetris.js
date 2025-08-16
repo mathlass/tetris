@@ -12,6 +12,19 @@ if (btnTheme) {
     );
   });
 }
+
+const PLAYER_KEY = 'tetris_player';
+let playerName = localStorage.getItem(PLAYER_KEY) || 'Player';
+const btnPlayer = document.getElementById('btnPlayer');
+if (btnPlayer) {
+  btnPlayer.addEventListener('click', () => {
+    const name = prompt('Spielername:', playerName);
+    if (name !== null) {
+      playerName = name.trim() || 'Player';
+      localStorage.setItem(PLAYER_KEY, playerName);
+    }
+  });
+}
 document.addEventListener('contextmenu', e => e.preventDefault());
 (() => {
   // ==== Konfiguration
@@ -421,8 +434,7 @@ document.addEventListener('contextmenu', e => e.preventDefault());
     setPaused(false);
     best = Math.max(best, score);
     localStorage.setItem(bestKey(mode), best);
-    const nameEl = document.getElementById('playerName');
-    const name = (nameEl && nameEl.value ? nameEl.value : 'Player').trim() || 'Player';
+    const name = playerName.trim() || 'Player';
     addHS({ name, score, lines, level, date: new Date().toISOString().slice(0,10) }, mode);
     renderHS(mode);
     updateSide();
