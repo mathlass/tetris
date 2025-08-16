@@ -16,7 +16,7 @@
   <div class="wrap">
     <div>
       <h1>🧱 Tetris</h1>
-      <p class="tag">Vanilla JavaScript • Canvas • Level/Score/Lines • Soft/Hard Drop • Pause • Hold • 7‑Bag RNG</p>
+      <p class="tag">Vanilla JavaScript • Canvas • Level/Score/Lines • Soft/Hard Drop • Pause • 7‑Bag RNG</p>
       <div class="controls top-controls">
         <button id="btnMenu">Menü</button>
         <button id="btnPlayer">Spieler</button>
@@ -46,25 +46,15 @@
           
           <div class="tag" id="comboTag"></div>
         </div>
-        <div class="panel"><div class="next-hold">
-            <div>
-              <div class="tag">Nächstes</div>
-              <canvas id="next" class="mini" width="120" height="120"></canvas>
-            </div>
-            <div>
-              <div class="tag">Hold</div>
-              <canvas id="hold" class="mini" width="120" height="120"></canvas>
-            </div>
-          </div>
+        <div class="panel">
           <h3>Steuerung</h3>
-          <p>Nutze die Bildschirm-Buttons (◀︎/▶︎/⟳/HOLD/Soft/Pause/Neu) auf Mobilgeräten.</p>
+          <p>Nutze die Bildschirm-Buttons (◀︎/▶︎/⟳/Soft/Pause/Neu) auf Mobilgeräten.</p>
           <p>Auf Desktop funktionieren zusätzlich folgende Tasten:</p>
           <ul>
             <li><kbd>←</kbd>/<kbd>→</kbd>: bewegen</li>
             <li><kbd>↓</kbd>: schneller fallen (Soft Drop)</li>
             <li><kbd>↑</kbd> oder <kbd>W</kbd>: rotieren (im Uhrzeigersinn)</li>
             <li><kbd>Leertaste</kbd>: Hard Drop</li>
-            <li><kbd>Shift</kbd>: Hold tauschen</li>
             <li><kbd>P</kbd>: Pause</li>
           </ul>
         </div>
@@ -88,7 +78,6 @@
     <button id="mLeft">◀︎</button>
     <button id="mRotate">⟳</button>
     <button id="mRight">▶︎</button>
-    <button id="mHold">HOLD</button>
     <button id="mSoft">Soft ↓</button>
     <button id="mPause">Pause</button>
     <button id="mStart">Neu</button>
@@ -107,7 +96,7 @@
       </div>
       <table class="table" id="hsTable">
         <thead>
-          <tr><th>#</th><th>Name</th><th>Score</th><th>Lines</th><th>Level</th><th>Datum</th></tr>
+          <tr><th>#</th><th>Name</th><th>Score</th><th>Lines</th><th>Datum</th></tr>
         </thead>
         <tbody></tbody>
       </table>

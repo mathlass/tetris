@@ -107,7 +107,7 @@ document.addEventListener('contextmenu', e => e.preventDefault());
   function addHS(entry,m){
     const list = loadHS(m);
     list.push(entry);
-    list.sort((a,b)=>b.score - a.score || b.lines - a.lines || b.level - a.level);
+    list.sort((a,b)=>b.score - a.score || b.lines - a.lines);
     const top10 = list.slice(0,10);
     saveHS(top10,m);
     return top10;
@@ -117,7 +117,7 @@ document.addEventListener('contextmenu', e => e.preventDefault());
     if(!tbody) return;
     const list = loadHS(m);
     tbody.innerHTML = list.map((e,i)=>
-      `<tr><td>${i+1}</td><td>${e.name}</td><td>${e.score}</td><td>${e.lines}</td><td>${e.level}</td><td>${e.date}</td></tr>`
+      `<tr><td>${i+1}</td><td>${e.name}</td><td>${e.score}</td><td>${e.lines}</td><td>${e.date}</td></tr>`
     ).join('');
     const label=document.getElementById('hsModeLabel');
     if(label) label.textContent = (m===MODE_ULTRA? 'Ultra' : 'Classic');
@@ -166,12 +166,8 @@ document.addEventListener('contextmenu', e => e.preventDefault());
   // ==== State
   const canvas = document.getElementById('game');
   const ctx = canvas.getContext('2d');
-  const nextCanvas = document.getElementById('next');
-  const nctx = nextCanvas.getContext('2d');
-  const holdCanvas = document.getElementById('hold');
-  const hctx = holdCanvas.getContext('2d');
 
-  let board, cur, bag=[], queue=[], hold=null, canHold=true;
+  let board, cur, bag=[], queue=[];
   let score=0, lines=0, level=1, best=0;
   let combo=-1, backToBack=false;
   let mode = MODE_CLASSIC;
@@ -214,7 +210,7 @@ document.addEventListener('contextmenu', e => e.preventDefault());
     score=0; lines=0; level=1; dropInterval = FALL_BASE_MS; dropTimer=0; lastTime = performance.now();
     bag=[]; queue = [pullNext(), pullNext(), pullNext()];
     cur = pullNext();
-    hold=null; canHold=true; running=true; setPaused(false);
+    running=true; setPaused(false);
     // Mode & Timer
     const sel = document.getElementById('modeSelect');
     mode = sel ? sel.value : MODE_CLASSIC;
@@ -330,8 +326,7 @@ document.addEventListener('contextmenu', e => e.preventDefault());
     if(scoreTop) scoreTop.textContent = `Score: ${score}`;
     const bestTop = document.getElementById('topBest');
     if(bestTop) bestTop.textContent = `Best: ${best}`;
-    if(nctx) drawMini(nctx, queue[0]);
-    if(hctx) drawMini(hctx, hold);
+    
     const comboEl = document.getElementById('comboTag');
     if(comboEl){
       let t = '';
@@ -443,7 +438,6 @@ document.addEventListener('contextmenu', e => e.preventDefault());
     clearLines();
     cur = queue.shift();
     queue.push(pullNext());
-    canHold=true;
     if(collides(cur)) { gameOver(); return; }
     updateSide();
   }
@@ -454,7 +448,7 @@ document.addEventListener('contextmenu', e => e.preventDefault());
     best = Math.max(best, score);
     localStorage.setItem(bestKey(mode), best);
     const name = playerName.trim() || 'Player';
-    addHS({ name, score, lines, level, date: new Date().toISOString().slice(0,10) }, mode);
+    addHS({ name, score, lines, date: new Date().toISOString().slice(0,10) }, mode);
     renderHS(mode);
     updateSide();
     showOverlay({score, lines, level, best});
@@ -504,7 +498,7 @@ document.addEventListener('contextmenu', e => e.preventDefault());
     if(!running) return;
     if(e.code==='KeyP'){ setPaused(!paused); return; }
     if(paused) return;
-    if(['ArrowLeft','ArrowRight','ArrowDown','ArrowUp','Space','KeyW','ShiftLeft','ShiftRight'].includes(e.code)) e.preventDefault();
+    if(['ArrowLeft','ArrowRight','ArrowDown','ArrowUp','Space','KeyW'].includes(e.code)) e.preventDefault();
     switch(e.code){
       case 'ArrowLeft':{
         const p = {...cur, x:cur.x-1};
@@ -520,16 +514,6 @@ document.addEventListener('contextmenu', e => e.preventDefault());
       case 'ArrowUp':
       case 'KeyW': cur = rotate(cur); sfx.rotate(); break;
       case 'Space': hardDrop(); break;
-      case 'ShiftLeft':
-      case 'ShiftRight': {
-        if(!canHold) break;
-        const tmp = hold ? newPiece(hold.type) : null;
-        hold = newPiece(cur.type);
-        if(tmp){ cur = tmp; cur.x = Math.floor(COLS/2)-2; cur.y=-2; }
-        else { cur = queue.shift(); queue.push(pullNext()); }
-        canHold=false; updateSide();
-        break;
-      }
     }
   }, {passive:false});
 
@@ -587,7 +571,6 @@ document.addEventListener('contextmenu', e => e.preventDefault());
     mRotate:()=>{cur=rotate(cur); sfx.rotate();},
     mSoft:()=>softDrop(),
     mHard:()=>hardDrop(),
-    mHold:()=>{ if(!canHold) return; const tmp = hold ? newPiece(hold.type) : null; hold = newPiece(cur.type); if(tmp){ cur = tmp; cur.x=Math.floor(COLS/2)-2; cur.y=-2; } else { cur=queue.shift(); queue.push(pullNext()); } canHold=false; updateSide(); },
     mPause:()=>{ if(running){ setPaused(!paused); } },
     mStart:()=>{ reset(); update(); }
   };
