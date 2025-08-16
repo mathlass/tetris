@@ -617,7 +617,7 @@
     }
   }, {passive:false});
 
-  // ==== Start new game with prompts
+  // ==== Start new game
   function startGame(){
     const storedName = localStorage.getItem('tetris_name') || '';
     const name = (prompt('Name:', storedName) || storedName || 'Player').trim() || 'Player';
@@ -626,9 +626,7 @@
     if(nameEl) nameEl.value = name;
 
     const modeSelectEl = document.getElementById('modeSelect');
-    const storedMode = localStorage.getItem('tetris_mode') || (modeSelectEl ? modeSelectEl.value : MODE_CLASSIC);
-    const modeVal = (prompt('Modus (classic/ultra):', storedMode) || storedMode);
-    if(modeSelectEl) modeSelectEl.value = modeVal;
+    const modeVal = modeSelectEl ? modeSelectEl.value : MODE_CLASSIC;
     localStorage.setItem('tetris_mode', modeVal);
 
     reset();
