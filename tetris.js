@@ -201,6 +201,11 @@ document.addEventListener('contextmenu', e => e.preventDefault());
     const sel = document.getElementById('modeSelect');
     mode = sel ? sel.value : MODE_CLASSIC;
     timeLeft = (mode===MODE_ULTRA) ? ULTRA_SECONDS : null;
+    const tEl = document.getElementById('timer');
+    if(tEl){
+      tEl.style.visibility = timeLeft === null ? 'hidden' : 'visible';
+      if(timeLeft===null) tEl.textContent='';
+    }
     updateSide(); drawBoard();
   }
 
@@ -408,11 +413,13 @@ document.addEventListener('contextmenu', e => e.preventDefault());
     const delta = time - lastTime; lastTime = time;
     if(!paused){
       // Timer-Logik für Ultra Mode
+      const tEl = document.getElementById('timer');
       if(timeLeft!==null){
         timeLeft = Math.max(0, timeLeft - delta/1000);
-        const tEl = document.getElementById('timer');
         if(tEl){ const s=Math.floor(timeLeft%60).toString().padStart(2,'0'); tEl.textContent=`⏱️ ${Math.floor(timeLeft/60)}:${s}`; }
         if(timeLeft===0){ gameOver(); }
+      } else if(tEl){
+        tEl.textContent='';
       }
       dropTimer += delta;
       if(dropTimer > dropInterval){
