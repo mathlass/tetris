@@ -5,6 +5,7 @@ import {
 } from './constants.js';
 import { newPiece, refillBag } from './helpers.js';
 import { createSfx } from './audio.js';
+import { collides, clearLines as clearBoardLines, rotate, getDropY } from './logic.js';
 
 export function initGame(){
   // ==== Konfiguration
@@ -178,7 +179,7 @@ export function initGame(){
     clearCanvas(ctx);
     // ghost piece (optional)
     if(settings.ghost){
-      const ghostY = getDropY();
+      const ghostY = getDropY(board, cur);
       drawPiece(cur, ghostY, true);
     }
     // board
@@ -239,20 +240,6 @@ export function initGame(){
   }
 
   // ==== Logik
-  function collides(p){
-    const m = p.shape[p.rot];
-    for(let y=0;y<m.length;y++){
-      for(let x=0;x<m[y].length;x++){
-        if(!m[y][x]) continue;
-        const nx = p.x + x;
-        const ny = p.y + y;
-        if(nx<0 || nx>=COLS || ny>=ROWS) return true;
-        if(ny>=0 && board[ny][nx]) return true;
-      }
-    }
-    return false;
-  }
-
   function isOutOfTop(p){
     const m = p.shape[p.rot];
     for(let y=0;y<m.length;y++){
@@ -261,16 +248,6 @@ export function initGame(){
       }
     }
     return false;
-  }
-
-  function rotate(p){
-    const test = {...p, rot:(p.rot+1)%p.shape.length};
-    if(!collides(test)) return test;
-    for(const dx of [-1,1,-2,2]){
-      const kicked = {...test, x:test.x+dx};
-      if(!collides(kicked)) return kicked;
-    }
-    return p;
   }
 
   function merge(){
@@ -285,17 +262,26 @@ export function initGame(){
     }
   }
 
-  function clearLines(){
-    let cleared=0;
-    outer: for(let y=ROWS-1;y>=0;y--){
-      for(let x=0;x<COLS;x++){
-        if(!board[y][x]) continue outer;
-      }
-      board.splice(y,1);
-      board.unshift(Array(COLS).fill(0));
-      cleared++;
-      y++;
-    }
+  function hardDrop(){
+    const targetY = getDropY(board, cur);
+    const dropped = targetY - cur.y;
+    cur.y = targetY;
+    if(settings.softDropPoints) score += dropped*2;
+    sfx.hard();
+    lockPiece();
+  }
+
+  function softDrop(){
+    const p = {...cur, y:cur.y+1};
+    if(!collides(board, p)) { cur.y++; if(settings.softDropPoints) score += 1; }
+    else lockPiece();
+  }
+
+  function lockPiece(){
+    if(isOutOfTop(cur)) { gameOver(); return; }
+    sfx.lock();
+    merge();
+    const cleared = clearBoardLines(board);
     if(cleared>0){
       score += SCORE_LINE[cleared];
       combo = (combo<0?0:combo+1);
@@ -308,39 +294,9 @@ export function initGame(){
     } else {
       combo = -1;
     }
-  }
-
-  function getDropY(){
-    const p = {...cur};
-    while(true){
-      p.y++;
-      if(collides(p)) { p.y--; return p.y; }
-    }
-  }
-
-  function hardDrop(){
-    const targetY = getDropY();
-    const dropped = targetY - cur.y;
-    cur.y = targetY;
-    if(settings.softDropPoints) score += dropped*2;
-    sfx.hard();
-    lockPiece();
-  }
-
-  function softDrop(){
-    const p = {...cur, y:cur.y+1};
-    if(!collides(p)) { cur.y++; if(settings.softDropPoints) score += 1; }
-    else lockPiece();
-  }
-
-  function lockPiece(){
-    if(isOutOfTop(cur)) { gameOver(); return; }
-    sfx.lock();
-    merge();
-    clearLines();
     cur = queue.shift();
     queue.push(pullNext());
-    if(collides(cur)) { gameOver(); return; }
+    if(collides(board, cur)) { gameOver(); return; }
     updateSide();
   }
 
@@ -404,17 +360,17 @@ export function initGame(){
     switch(e.code){
       case 'ArrowLeft':{
         const p = {...cur, x:cur.x-1};
-        if(!collides(p)) { cur.x--; sfx.move(); }
+        if(!collides(board, p)) { cur.x--; sfx.move(); }
         break;
       }
       case 'ArrowRight':{
         const p = {...cur, x:cur.x+1};
-        if(!collides(p)) { cur.x++; sfx.move(); }
+        if(!collides(board, p)) { cur.x++; sfx.move(); }
         break;
       }
       case 'ArrowDown': softDrop(); break;
       case 'ArrowUp':
-      case 'KeyW': cur = rotate(cur); sfx.rotate(); break;
+      case 'KeyW': cur = rotate(board, cur); sfx.rotate(); break;
       case 'Space': hardDrop(); break;
     }
   }, {passive:false});
@@ -468,9 +424,9 @@ export function initGame(){
 
   // Touch Buttons
   const touchMap = {
-    mLeft:()=>{const p={...cur,x:cur.x-1}; if(!collides(p)) {cur.x--; sfx.move();}},
-    mRight:()=>{const p={...cur,x:cur.x+1}; if(!collides(p)) {cur.x++; sfx.move();}},
-    mRotate:()=>{cur=rotate(cur); sfx.rotate();},
+    mLeft:()=>{const p={...cur,x:cur.x-1}; if(!collides(board, p)) {cur.x--; sfx.move();}},
+    mRight:()=>{const p={...cur,x:cur.x+1}; if(!collides(board, p)) {cur.x++; sfx.move();}},
+    mRotate:()=>{cur=rotate(board, cur); sfx.rotate();},
     mSoft:()=>softDrop(),
     mHard:()=>hardDrop(),
     mPause:()=>{ if(running){ setPaused(!paused); } },
