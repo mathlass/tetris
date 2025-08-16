@@ -11,9 +11,29 @@
   <link rel="manifest" href="manifest.json" />
   <link rel="apple-touch-icon" href="icons/icon-180.png" />
   <style>
-    :root { --bg:#0f1115; --fg:#e8eaed; --muted:#a7b0be; --accent:#6ee7ff; }
-    .theme-light { --bg:#ffffff; --fg:#202124; --muted:#5f6368; --accent:#0066cc; }
-    html,body{height:100%;margin:0;background:var(--bg);color:var(--fg);font:500 16px/1.4 system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;overflow:hidden}
+    :root {
+      --bg:#0f1115; --fg:#e8eaed; --muted:#a7b0be; --accent:#6ee7ff;
+      --panel-bg:#161a23; --panel-border:#242a36;
+      --canvas-bg:#0a0c10; --canvas-border:#202533;
+      --stat-bg:#0d1119; --stat-border:#1f2533;
+      --button-bg:#121722; --button-border:#2a3142; --button-hover-bg:#1a2030;
+      --kbd-bg:#222739; --kbd-border:#2c3550;
+      --mini-bg:#0d1119; --mini-border:#1f2533;
+      --input-bg:#0d1119; --input-border:#1f2533;
+      --table-head-bg:#0d1119; --table-even-bg:#0f1521; --table-border:#1f2533;
+    }
+    .theme-light {
+      --bg:#ffffff; --fg:#202124; --muted:#5f6368; --accent:#0066cc;
+      --panel-bg:#f1f3f4; --panel-border:#dadce0;
+      --canvas-bg:#ffffff; --canvas-border:#dadce0;
+      --stat-bg:#f1f3f4; --stat-border:#dadce0;
+      --button-bg:#f8f9fa; --button-border:#dadce0; --button-hover-bg:#e8eaed;
+      --kbd-bg:#e8eaed; --kbd-border:#dadce0;
+      --mini-bg:#f1f3f4; --mini-border:#dadce0;
+      --input-bg:#f8f9fa; --input-border:#dadce0;
+      --table-head-bg:#f1f3f4; --table-even-bg:#f8f9fa; --table-border:#dadce0;
+    }
+    html,body{height:100%;margin:0;background:var(--bg);color:var(--fg);font:500 16px/1.4 system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;overflow-x:hidden;overflow-y:auto}
     .wrap{max-width:980px;margin:24px auto;padding:0 16px;display:grid;grid-template-columns:1fr auto;gap:24px}
     h1{font-size:28px;margin:0 0 8px}
     p{color:var(--muted);margin:0 0 12px}
@@ -25,38 +45,39 @@
       .mobile-controls{display:grid}
       .game-area{flex-direction:column;align-items:center}
     }
-    .panel{background:#161a23;border:1px solid #242a36;border-radius:16px;padding:14px 16px;box-shadow:0 10px 30px rgba(0,0,0,.2)}
-    canvas{display:block;background:#0a0c10;border-radius:12px;border:1px solid #202533}
+    .panel{background:var(--panel-bg);border:1px solid var(--panel-border);border-radius:16px;padding:14px 16px;box-shadow:0 10px 30px rgba(0,0,0,.2)}
+    canvas{display:block;background:var(--canvas-bg);border-radius:12px;border:1px solid var(--canvas-border)}
     .stats{display:flex;flex-direction:column;gap:8px}
-    .stat{background:#0d1119;border:1px solid #1f2533;border-radius:12px;padding:10px;text-align:center}
+    .stat{background:var(--stat-bg);border:1px solid var(--stat-border);border-radius:12px;padding:10px;text-align:center}
     .stat b{display:block;font-size:22px;margin-top:6px;color:var(--accent)}
     .buttons{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
-    button{cursor:pointer;border:1px solid #2a3142;background:#121722;color:var(--fg);padding:10px 14px;border-radius:12px}
-    button:hover{background:#1a2030}
-    kbd{background:#222739;border:1px solid #2c3550;border-bottom-width:3px;border-radius:6px;padding:2px 6px;margin:0 2px}
+    button{cursor:pointer;border:1px solid var(--button-border);background:var(--button-bg);color:var(--fg);padding:10px 14px;border-radius:12px}
+    button:hover{background:var(--button-hover-bg)}
+    kbd{background:var(--kbd-bg);border:1px solid var(--kbd-border);border-bottom-width:3px;border-radius:6px;padding:2px 6px;margin:0 2px}
     ul{padding-left:18px;margin:6px 0}
     .next-hold{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
-    .mini{background:#0d1119;border:1px solid #1f2533;border-radius:12px;padding:6px}
-    .footer{grid-column:1/-1;color:#98a3b6;margin-top:8px}
-    .tag{font-size:12px;color:#8aa4b8}
+    .mini{background:var(--mini-bg);border:1px solid var(--mini-border);border-radius:12px;padding:6px}
+    .footer{grid-column:1/-1;color:var(--muted);margin-top:8px}
+    .tag{font-size:12px;color:var(--muted)}
     .controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:10px 0}
-    .input{background:#0d1119;border:1px solid #1f2533;border-radius:10px;padding:8px 10px;color:var(--fg)}
+    .top-controls{margin-bottom:8px}
+    .input{background:var(--input-bg);border:1px solid var(--input-border);border-radius:10px;padding:8px 10px;color:var(--fg)}
     .table{width:100%;border-collapse:collapse;margin-top:8px}
-    .table th,.table td{border:1px solid #1f2533;padding:8px;text-align:left}
-    .table thead th{background:#0d1119;color:#8aa4b8}
-    .table tbody tr:nth-child(even){background:#0f1521}
+    .table th,.table td{border:1px solid var(--table-border);padding:8px;text-align:left}
+    .table thead th{background:var(--table-head-bg);color:var(--muted)}
+    .table tbody tr:nth-child(even){background:var(--table-even-bg)}
     /* Menu Overlay */
     #menuOverlay{position:fixed;inset:0;overflow-y:auto;background:rgba(0,0,0,.6);padding:24px 16px;opacity:0;pointer-events:none;transition:opacity .25s ease;z-index:9998}
     #menuOverlay.show{opacity:1;pointer-events:auto}
     /* Overlay Game Over */
     #overlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s ease;background:rgba(0,0,0,.45);backdrop-filter:blur(2px) saturate(1.1);z-index:9999}
     #overlay.show{opacity:1;pointer-events:auto}
-    #overlay .overlay-card{background:#0d1119;border:1px solid #1f2533;border-radius:16px;padding:20px 22px;min-width:320px;max-width:90vw;animation:pop .3s ease-out}
+    #overlay .overlay-card{background:var(--stat-bg);border:1px solid var(--stat-border);border-radius:16px;padding:20px 22px;min-width:320px;max-width:90vw;animation:pop .3s ease-out}
     #overlay h2{margin:0 0 6px}
     @keyframes pop{from{transform:scale(.95);opacity:.6} to{transform:scale(1);opacity:1}}
     /* Pause Overlay */
     .board-wrap{position:relative;touch-action:none}
-    #pauseOverlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:48px;letter-spacing:2px;color:#e8eaed;background:rgba(0,0,0,.35);opacity:0;pointer-events:none;transition:opacity .2s ease;border-radius:12px}
+    #pauseOverlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:48px;letter-spacing:2px;color:var(--fg);background:rgba(0,0,0,.35);opacity:0;pointer-events:none;transition:opacity .2s ease;border-radius:12px}
     #pauseOverlay.show{opacity:1}
     /* Mobile touch controls */
     .mobile-controls{display:none;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
@@ -69,17 +90,19 @@
     <div>
       <h1>🧱 Tetris</h1>
       <p class="tag">Vanilla JavaScript • Canvas • Level/Score/Lines • Soft/Hard Drop • Pause • Hold • 7‑Bag RNG</p>
-      <button id="btnMenu" style="margin-bottom:8px">Menü</button>
-      <button id="themeToggle" style="margin-bottom:8px">Theme</button>
+      <div class="controls top-controls">
+        <button id="btnMenu">Menü</button>
+        <button id="themeToggle">Theme</button>
+        <label>Modus:
+          <select id="modeSelect">
+            <option value="classic">Classic (endlos)</option>
+            <option value="ultra">Ultra – 2 Minuten</option>
+          </select>
+        </label>
+      </div>
       <div class="grid">
         <div class="panel">
           <div class="controls" style="margin:0 0 8px">
-            <label>Modus:
-              <select id="modeSelect">
-                <option value="classic">Classic (endlos)</option>
-                <option value="ultra">Ultra – 2 Minuten</option>
-              </select>
-            </label>
             <span class="timer" id="timer" style="margin-left:auto"></span>
           </div>
           <div class="game-area">
@@ -701,7 +724,8 @@ if (btnTheme) {
     tabScore.addEventListener('click', ()=>{ scorePanel.style.display='block'; settingsPanel.style.display='none'; });
     tabSettings.addEventListener('click', ()=>{ scorePanel.style.display='none'; settingsPanel.style.display='block'; });
   }
-  document.getElementById('btnStart').addEventListener('click', ()=>{ reset(); update(); });
+  const btnStart = document.getElementById('btnStart');
+  if(btnStart){ btnStart.addEventListener('click', e=>{ e.preventDefault(); reset(); update(); }); }
   const modeSelect = document.getElementById('modeSelect');
   if(modeSelect){ modeSelect.addEventListener('change', ()=>{ reset(); update(); }); }
   document.getElementById('btnPause').addEventListener('click', ()=>{ if(running){ setPaused(!paused); }});
