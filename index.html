@@ -11,7 +11,7 @@
   <link rel="manifest" href="manifest.json" />
   <link rel="apple-touch-icon" href="icons/icon-180.png" />
   <style>
-    :root { --bg:#0f1115; --fg:#e8eaed; --muted:#a7b0be; --accent:#6ee7ff; }
+    :root { --bg:#0f1115; --fg:#e8eaed; --muted:#a7b0be; --accent:#6ee7ff; --grid:#202533; }
     html,body{height:100%;margin:0;background:var(--bg);color:var(--fg);font:500 16px/1.4 system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;overflow:hidden}
     .wrap{max-width:980px;margin:24px auto;padding:0 16px;display:grid;grid-template-columns:1fr auto;gap:24px}
     h1{font-size:28px;margin:0 0 8px}
@@ -23,7 +23,7 @@
       .mobile-controls{display:grid}
     }
     .panel{background:#161a23;border:1px solid #242a36;border-radius:16px;padding:14px 16px;box-shadow:0 10px 30px rgba(0,0,0,.2)}
-    canvas{display:block;background:#0a0c10;border-radius:12px;border:1px solid #202533}
+    canvas{display:block;background:#0a0c10;border-radius:12px;border:1px solid var(--grid)}
     .stats{display:grid;grid-template-columns:1fr 1fr;gap:8px}
     .stat{background:#0d1119;border:1px solid #1f2533;border-radius:12px;padding:10px;text-align:center}
     .stat b{display:block;font-size:22px;margin-top:6px;color:var(--accent)}
@@ -168,6 +168,7 @@
       <div class="controls">
         <label><input type="checkbox" id="optSound" checked> Sound</label>
         <label><input type="checkbox" id="optGhost" checked> Ghost Piece</label>
+        <label><input type="checkbox" id="optGrid" checked> Raster</label>
         <label><input type="checkbox" id="optSoftDropPoints" checked> Soft‑Drop Punkte</label>
       </div>
     </div>
@@ -277,7 +278,7 @@
   }
 
   // ==== Settings (persist)
-  const defaultSettings = { sound:true, ghost:true, softDropPoints:true };
+  const defaultSettings = { sound:true, ghost:true, softDropPoints:true, grid:true };
   function loadSettings(){
     try{ return Object.assign({}, defaultSettings, JSON.parse(localStorage.getItem(SETTINGS_KEY)||'{}')); }catch{ return {...defaultSettings}; }
   }
@@ -390,6 +391,16 @@
 
   function drawBoard(){
     clearCanvas(ctx);
+    if(settings.grid){
+      const gridColor = getComputedStyle(document.documentElement).getPropertyValue('--grid').trim();
+      ctx.strokeStyle = gridColor;
+      ctx.lineWidth = 0.5;
+      for(let y=0;y<ROWS;y++){
+        for(let x=0;x<COLS;x++){
+          ctx.strokeRect(x*SIZE+0.5, y*SIZE+0.5, SIZE-1, SIZE-1);
+        }
+      }
+    }
     // ghost piece (optional)
     if(settings.ghost){
       const ghostY = getDropY();
@@ -722,9 +733,11 @@
   // Settings bindings
   const chkSound = document.getElementById('optSound');
   const chkGhost = document.getElementById('optGhost');
+  const chkGrid = document.getElementById('optGrid');
   const chkSoft = document.getElementById('optSoftDropPoints');
   if(chkSound){ chkSound.checked = !!settings.sound; chkSound.addEventListener('change', ()=>{ settings.sound = chkSound.checked; saveSettings(settings); }); }
   if(chkGhost){ chkGhost.checked = !!settings.ghost; chkGhost.addEventListener('change', ()=>{ settings.ghost = chkGhost.checked; saveSettings(settings); drawBoard(); }); }
+  if(chkGrid){ chkGrid.checked = !!settings.grid; chkGrid.addEventListener('change', ()=>{ settings.grid = chkGrid.checked; saveSettings(settings); drawBoard(); }); }
   if(chkSoft){ chkSoft.checked = !!settings.softDropPoints; chkSoft.addEventListener('change', ()=>{ settings.softDropPoints = chkSoft.checked; saveSettings(settings); }); }
 
   // Initiale Anzeige
