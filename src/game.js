@@ -1,112 +1,16 @@
-const THEME_KEY = 'tetris_theme';
-if (localStorage.getItem(THEME_KEY) === 'light') {
-  document.body.classList.add('theme-light');
-}
-const btnTheme = document.getElementById('themeToggle');
-if (btnTheme) {
-  btnTheme.addEventListener('click', () => {
-    document.body.classList.toggle('theme-light');
-    localStorage.setItem(
-      THEME_KEY,
-      document.body.classList.contains('theme-light') ? 'light' : 'dark'
-    );
-  });
-}
+import {
+  COLS, ROWS, SIZE, FALL_BASE_MS, LINES_PER_LEVEL, SCORE_LINE,
+  SETTINGS_KEY, MODE_CLASSIC, MODE_ULTRA, ULTRA_SECONDS, COLOR_SETS,
+  HS_KEY_BASE, BEST_KEY_BASE, PLAYER_KEY
+} from './constants.js';
+import { newPiece, refillBag } from './helpers.js';
+import { createSfx } from './audio.js';
 
-const PLAYER_KEY = 'tetris_player';
-let playerName = localStorage.getItem(PLAYER_KEY) || 'Player';
-if (localStorage.getItem(PLAYER_KEY) === null) {
-  const name = prompt('Bitte Spielername eingeben:');
-  if (name !== null) {
-    playerName = name.trim() || 'Player';
-    localStorage.setItem(PLAYER_KEY, playerName);
-  }
-}
-const btnPlayer = document.getElementById('btnPlayer');
-if (btnPlayer) {
-  btnPlayer.addEventListener('click', () => {
-    const name = prompt('Spielername:', playerName);
-    if (name !== null) {
-      playerName = name.trim() || 'Player';
-      localStorage.setItem(PLAYER_KEY, playerName);
-    }
-  });
-}
-document.addEventListener('contextmenu', e => e.preventDefault());
-(() => {
+export function initGame(){
   // ==== Konfiguration
-  const COLS=10, ROWS=20, SIZE=30;
-  const FALL_BASE_MS = 800; // Basisintervall (Level 1)
-  const LINES_PER_LEVEL = 10;
-  const SCORE_LINE = [0,100,300,500,800];
-  const SETTINGS_KEY = 'tetris_settings_v1';
-  const MODE_CLASSIC = 'classic';
-  const MODE_ULTRA = 'ultra';
-  const ULTRA_SECONDS = 120;
-
-  const COLOR_SETS = {
-    standard: {
-      0: '#000000', // leer (wird nicht gemalt)
-      I: '#4fd1ff', J: '#4c6ef5', L: '#f59f00', O: '#fcc419',
-      S: '#51cf66', T: '#be4bdb', Z: '#ff6b6b'
-    },
-    accessible: {
-      0: '#000000',
-      I: '#0072b2', J: '#56b4e9', L: '#e69f00', O: '#f0e442',
-      S: '#009e73', T: '#cc79a7', Z: '#d55e00'
-    }
-  };
   let COLORS = COLOR_SETS.standard;
 
-  // Tetromino-Matrizen (4×4 Frames) – im Uhrzeigersinn rotierend
-  const SHAPES = {
-    I: [
-      [[0,0,0,0],[1,1,1,1],[0,0,0,0],[0,0,0,0]],
-      [[0,0,1,0],[0,0,1,0],[0,0,1,0],[0,0,1,0]],
-      [[0,0,0,0],[0,0,0,0],[1,1,1,1],[0,0,0,0]],
-      [[0,1,0,0],[0,1,0,0],[0,1,0,0],[0,1,0,0]]
-    ],
-    J: [
-      [[1,0,0],[1,1,1],[0,0,0]],
-      [[0,1,1],[0,1,0],[0,1,0]],
-      [[0,0,0],[1,1,1],[0,0,1]],
-      [[0,1,0],[0,1,0],[1,1,0]]
-    ],
-    L: [
-      [[0,0,1],[1,1,1],[0,0,0]],
-      [[0,1,0],[0,1,0],[0,1,1]],
-      [[0,0,0],[1,1,1],[1,0,0]],
-      [[1,1,0],[0,1,0],[0,1,0]]
-    ],
-    O: [
-      [[1,1],[1,1]],
-      [[1,1],[1,1]],
-      [[1,1],[1,1]],
-      [[1,1],[1,1]]
-    ],
-    S: [
-      [[0,1,1],[1,1,0],[0,0,0]],
-      [[0,1,0],[0,1,1],[0,0,1]],
-      [[0,0,0],[0,1,1],[1,1,0]],
-      [[1,0,0],[1,1,0],[0,1,0]]
-    ],
-    T: [
-      [[0,1,0],[1,1,1],[0,0,0]],
-      [[0,1,0],[0,1,1],[0,1,0]],
-      [[0,0,0],[1,1,1],[0,1,0]],
-      [[0,1,0],[1,1,0],[0,1,0]]
-    ],
-    Z: [
-      [[1,1,0],[0,1,1],[0,0,0]],
-      [[0,0,1],[0,1,1],[0,1,0]],
-      [[0,0,0],[1,1,0],[0,1,1]],
-      [[0,1,0],[1,1,0],[1,0,0]]
-    ]
-  };
-
   // ==== Highscores (LocalStorage)
-  const HS_KEY_BASE = 'tetris_highscores_v1';
-  const BEST_KEY_BASE = 'tetris_best';
   const hsKey = m => `${HS_KEY_BASE}_${m}`;
   const bestKey = m => `${BEST_KEY_BASE}_${m}`;
   function loadHS(m){ try{ return JSON.parse(localStorage.getItem(hsKey(m))) || []; }catch(e){ return []; } }
@@ -166,24 +70,7 @@ document.addEventListener('contextmenu', e => e.preventDefault());
   COLORS = COLOR_SETS[settings.palette] || COLOR_SETS.standard;
 
   // ==== Audio (WebAudio beeps)
-  let actx = null;
-  function ensureAudio(){ if(!settings.sound) return null; if(!actx){ try{ actx = new (window.AudioContext||window.webkitAudioContext)(); }catch{} } return actx; }
-  function beep(freq=440, dur=0.06, type='sine', gain=0.05){
-    const ac = ensureAudio(); if(!ac) return;
-    const o = ac.createOscillator(); const g = ac.createGain();
-    o.type = type; o.frequency.value=freq; g.gain.value=gain;
-    o.connect(g); g.connect(ac.destination);
-    const t = ac.currentTime; o.start(t); o.stop(t+dur);
-  }
-  const sfx = {
-    move: ()=>beep(300,0.03,'square',0.025),
-    rotate: ()=>beep(520,0.04,'sine',0.035),
-    lock: ()=>beep(220,0.06,'triangle',0.05),
-    clear: ()=>{ beep(700,0.05,'sine',0.05); setTimeout(()=>beep(920,0.05,'sine',0.05),40); },
-    level: ()=>{ beep(500,0.08,'triangle',0.06); setTimeout(()=>beep(750,0.08,'triangle',0.06),70); },
-    hard: ()=>beep(180,0.05,'square',0.06),
-    gameover: ()=>{ beep(200,0.08,'sawtooth',0.07); setTimeout(()=>beep(150,0.12,'sawtooth',0.06),90); }
-  };
+  const sfx = createSfx(settings);
 
   // ==== Overlay helpers
   const overlay = () => document.getElementById('overlay');
@@ -219,22 +106,8 @@ document.addEventListener('contextmenu', e => e.preventDefault());
     return Array.from({length:ROWS}, ()=>Array(COLS).fill(0));
   }
 
-  function newPiece(type){
-    const shape = SHAPES[type];
-    return {type, rot:0, x: Math.floor(COLS/2)-2, y: -2, shape};
-  }
-
-  function refillBag(){
-    const types=['I','J','L','O','S','T','Z'];
-    for(let i=types.length-1;i>0;i--){
-      const j=Math.floor(Math.random()*(i+1));
-      [types[i],types[j]]=[types[j],types[i]];
-    }
-    bag.push(...types);
-  }
-
   function pullNext(){
-    if(bag.length<3) refillBag();
+    if(bag.length<3) refillBag(bag);
     const t = bag.shift();
     return newPiece(t);
   }
@@ -476,7 +349,7 @@ document.addEventListener('contextmenu', e => e.preventDefault());
     setPaused(false);
     best = Math.max(best, score);
     localStorage.setItem(bestKey(mode), best);
-    const name = sanitizeName(playerName.trim() || 'Player');
+    const name = sanitizeName((localStorage.getItem(PLAYER_KEY) || 'Player').trim());
     addHS({ name, score, lines, date: new Date().toISOString().slice(0,10) }, mode);
     renderHS(mode);
     updateSide();
@@ -670,11 +543,4 @@ document.addEventListener('contextmenu', e => e.preventDefault());
   // Initiale Anzeige
   renderHS(mode);
   updateSide();
-})();
-
-// Register external Service Worker (works on Netlify & GitHub Pages)
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('sw.js', { scope: './' }).catch(()=>{});
-  });
 }
