@@ -1,3 +1,9 @@
+@font-face{
+  font-family:'Press Start 2P';
+  src:url('fonts/PressStart2P.woff2') format('woff2');
+  font-weight:400;
+  font-style:normal
+}
 :root {
   --bg:#0f1115; --fg:#e8eaed; --muted:#a7b0be; --accent:#6ee7ff;
   --panel-bg:#161a23; --panel-border:#242a36;
@@ -22,7 +28,7 @@
 }
 html,body{height:100%;margin:0;background:var(--bg);color:var(--fg);font:500 16px/1.4 system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;overflow-x:hidden;overflow-y:auto}
 .wrap{max-width:980px;margin:24px auto;padding:0 16px;display:grid;grid-template-columns:1fr auto;gap:24px}
-h1{font-size:28px;margin:0 0 8px}
+h1{font-size:28px;letter-spacing:1px;margin:0 0 8px;font-family:'Press Start 2P',monospace}
 p{color:var(--muted);margin:0 0 12px}
 .grid{display:grid;grid-template-columns:320px 160px;gap:16px;align-items:start}
 .game-area{display:flex;gap:16px;align-items:flex-start}
@@ -38,7 +44,7 @@ p{color:var(--muted);margin:0 0 12px}
 canvas{display:block;background:var(--canvas-bg);border-radius:12px;border:1px solid var(--canvas-border)}
 .stats{display:flex;flex-direction:column;gap:8px}
 .stat{background:var(--stat-bg);border:1px solid var(--stat-border);border-radius:12px;padding:10px;text-align:center}
-.stat b{display:block;font-size:22px;margin-top:6px;color:var(--accent)}
+.stat b{display:block;font-size:22px;margin-top:6px;color:var(--accent);font-family:'Press Start 2P',monospace;letter-spacing:1px}
 .buttons{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
 button{cursor:pointer;border:1px solid var(--button-border);background:var(--button-bg);color:var(--fg);padding:10px 14px;border-radius:12px;touch-action:manipulation}
 button:hover{background:var(--button-hover-bg)}
@@ -62,12 +68,12 @@ ul{padding-left:18px;margin:6px 0}
 #overlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s ease;background:rgba(0,0,0,.45);backdrop-filter:blur(2px) saturate(1.1);z-index:9999}
 #overlay.show{opacity:1;pointer-events:auto}
 #overlay .overlay-card{background:var(--stat-bg);border:1px solid var(--stat-border);border-radius:16px;padding:20px 22px;min-width:320px;max-width:90vw;animation:pop .3s ease-out}
-#overlay h2{margin:0 0 6px}
+#overlay h2{margin:0 0 6px;font-family:'Press Start 2P',monospace;letter-spacing:1px}
 @keyframes pop{from{transform:scale(.95);opacity:.6} to{transform:scale(1);opacity:1}}
 /* Pause Overlay */
 .board-wrap{position:relative;touch-action:none;width:100%;max-width:300px;margin:0 auto}
 #game{width:100%;height:auto}
-#pauseOverlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:48px;letter-spacing:2px;color:var(--fg);background:rgba(0,0,0,.35);opacity:0;pointer-events:none;transition:opacity .2s ease;border-radius:12px}
+#pauseOverlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:48px;letter-spacing:2px;color:var(--fg);background:rgba(0,0,0,.35);opacity:0;pointer-events:none;transition:opacity .2s ease;border-radius:12px;font-family:'Press Start 2P',monospace}
 #pauseOverlay.show{opacity:1}
 /* Mobile touch controls */
 .mobile-controls{display:none;grid-template-columns:repeat(4,1fr);gap:8px}
