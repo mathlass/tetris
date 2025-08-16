@@ -18,14 +18,16 @@
     h1{font-size:28px;margin:0 0 8px}
     p{color:var(--muted);margin:0 0 12px}
     .grid{display:grid;grid-template-columns:320px 160px;gap:16px;align-items:start}
+    .game-area{display:flex;gap:16px;align-items:flex-start}
     @media (max-width:720px){
       .wrap{grid-template-columns:1fr}
       .grid{grid-template-columns:1fr}
       .mobile-controls{display:grid}
+      .game-area{flex-direction:column;align-items:center}
     }
     .panel{background:#161a23;border:1px solid #242a36;border-radius:16px;padding:14px 16px;box-shadow:0 10px 30px rgba(0,0,0,.2)}
     canvas{display:block;background:#0a0c10;border-radius:12px;border:1px solid #202533}
-    .stats{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .stats{display:flex;flex-direction:column;gap:8px}
     .stat{background:#0d1119;border:1px solid #1f2533;border-radius:12px;padding:10px;text-align:center}
     .stat b{display:block;font-size:22px;margin-top:6px;color:var(--accent)}
     .buttons{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
@@ -71,12 +73,6 @@
       <button id="themeToggle" style="margin-bottom:8px">Theme</button>
       <div class="grid">
         <div class="panel">
-          <div class="stats" style="margin-bottom:8px">
-            <div class="stat">Score<b id="score">0</b></div>
-            <div class="stat">Level<b id="level">1</b></div>
-            <div class="stat">Lines<b id="lines">0</b></div>
-            <div class="stat">Best<b id="best">0</b></div>
-          </div>
           <div class="controls" style="margin:0 0 8px">
             <label>Modus:
               <select id="modeSelect">
@@ -86,9 +82,15 @@
             </label>
             <span class="timer" id="timer" style="margin-left:auto"></span>
           </div>
-          <div class="board-wrap">
-            <canvas id="game" width="300" height="600" aria-label="Tetris Board"></canvas>
-            <div id="pauseOverlay" aria-hidden="true">PAUSE</div>
+          <div class="game-area">
+            <div class="board-wrap">
+              <canvas id="game" width="300" height="600" aria-label="Tetris Board"></canvas>
+              <div id="pauseOverlay" aria-hidden="true">PAUSE</div>
+            </div>
+            <div class="stats">
+              <div class="stat">Score<b id="score">0</b></div>
+              <div class="stat">Best<b id="best">0</b></div>
+            </div>
           </div>
           <div class="buttons">
             <button id="btnStart">Start/Neu</button>
@@ -467,12 +469,12 @@ if (btnTheme) {
   }
 
   function updateSide(){
-    document.getElementById('score').textContent = score;
-    document.getElementById('lines').textContent = lines;
-    document.getElementById('level').textContent = level;
-    document.getElementById('best').textContent = best;
-    drawMini(nctx, queue[0]);
-    drawMini(hctx, hold);
+    const scoreEl = document.getElementById('score');
+    if(scoreEl) scoreEl.textContent = score;
+    const bestEl = document.getElementById('best');
+    if(bestEl) bestEl.textContent = best;
+    if(nctx) drawMini(nctx, queue[0]);
+    if(hctx) drawMini(hctx, hold);
     const comboEl = document.getElementById('comboTag');
     if(comboEl){
       let t = '';
