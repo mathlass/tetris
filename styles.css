@@ -50,7 +50,6 @@ button{cursor:pointer;border:1px solid var(--button-border);background:var(--but
 button:hover{background:var(--button-hover-bg)}
 kbd{background:var(--kbd-bg);border:1px solid var(--kbd-border);border-bottom-width:3px;border-radius:6px;padding:2px 6px;margin:0 2px}
 ul{padding-left:18px;margin:6px 0}
-.next-hold{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
 .mini{background:var(--mini-bg);border:1px solid var(--mini-border);border-radius:12px;padding:6px}
 .footer{grid-column:1/-1;color:var(--muted);margin-top:8px}
 .tag{font-size:12px;color:var(--muted)}
