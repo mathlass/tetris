@@ -2,7 +2,7 @@ import { SHAPES, COLS } from './constants.js';
 
 export function newPiece(type){
   const shape = SHAPES[type];
-  return {type, rot:0, x: Math.floor(COLS/2)-2, y: -2, shape};
+  return {type, rot:0, x: Math.floor(COLS/2)-2, y: -2, shape, rotated:false};
 }
 
 export function refillBag(bag){

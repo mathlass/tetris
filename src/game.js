@@ -1,6 +1,6 @@
 import {
   COLS, ROWS, SIZE, FALL_BASE_MS, LINES_PER_LEVEL, SCORE_LINE,
-  SETTINGS_KEY, MODE_CLASSIC, MODE_ULTRA, ULTRA_SECONDS, COLOR_SETS,
+  SETTINGS_KEY, MODE_CLASSIC, MODE_ULTRA, MODE_CLASSIC_ONCE, ULTRA_SECONDS, COLOR_SETS,
   HS_KEY_BASE, BEST_KEY_BASE, PLAYER_KEY
 } from './constants.js';
 import { newPiece, refillBag } from './helpers.js';
@@ -58,7 +58,12 @@ export function initGame(){
       tbody.appendChild(tr);
     });
     const label=document.getElementById('hsModeLabel');
-    if(label) label.textContent = (m===MODE_ULTRA? 'Ultra' : 'Classic');
+    if(label){
+      label.textContent =
+        m===MODE_ULTRA ? 'Ultra' :
+        m===MODE_CLASSIC_ONCE ? 'Classic – 1 Drehung' :
+        'Classic';
+    }
   }
 
   // ==== Settings (persist)
@@ -370,7 +375,15 @@ export function initGame(){
       }
       case 'ArrowDown': softDrop(); break;
       case 'ArrowUp':
-      case 'KeyW': cur = rotate(board, cur); sfx.rotate(); break;
+      case 'KeyW': {
+        if(mode !== MODE_CLASSIC_ONCE || !cur.rotated){
+          const r = rotate(board, cur);
+          if(r !== cur && mode === MODE_CLASSIC_ONCE) r.rotated = true;
+          cur = r;
+          sfx.rotate();
+        }
+        break;
+      }
       case 'Space': hardDrop(); break;
     }
   }, {passive:false});
@@ -426,7 +439,14 @@ export function initGame(){
   const touchMap = {
     mLeft:()=>{const p={...cur,x:cur.x-1}; if(!collides(board, p)) {cur.x--; sfx.move();}},
     mRight:()=>{const p={...cur,x:cur.x+1}; if(!collides(board, p)) {cur.x++; sfx.move();}},
-    mRotate:()=>{cur=rotate(board, cur); sfx.rotate();},
+    mRotate:()=>{
+      if(mode !== MODE_CLASSIC_ONCE || !cur.rotated){
+        const r = rotate(board, cur);
+        if(r !== cur && mode === MODE_CLASSIC_ONCE) r.rotated = true;
+        cur = r;
+        sfx.rotate();
+      }
+    },
     mSoft:()=>softDrop(),
     mHard:()=>hardDrop(),
     mPause:()=>{ if(running){ setPaused(!paused); } },
