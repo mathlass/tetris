@@ -85,24 +85,29 @@ document.addEventListener('contextmenu', e => e.preventDefault());
   };
 
   // ==== Highscores (LocalStorage)
-  const HS_KEY = 'tetris_highscores_v1';
-  function loadHS(){ try{ return JSON.parse(localStorage.getItem(HS_KEY)) || []; }catch(e){ return []; } }
-  function saveHS(list){ localStorage.setItem(HS_KEY, JSON.stringify(list)); }
-  function addHS(entry){
-    const list = loadHS();
+  const HS_KEY_BASE = 'tetris_highscores_v1';
+  const BEST_KEY_BASE = 'tetris_best';
+  const hsKey = m => `${HS_KEY_BASE}_${m}`;
+  const bestKey = m => `${BEST_KEY_BASE}_${m}`;
+  function loadHS(m){ try{ return JSON.parse(localStorage.getItem(hsKey(m))) || []; }catch(e){ return []; } }
+  function saveHS(list,m){ localStorage.setItem(hsKey(m), JSON.stringify(list)); }
+  function addHS(entry,m){
+    const list = loadHS(m);
     list.push(entry);
     list.sort((a,b)=>b.score - a.score || b.lines - a.lines || b.level - a.level);
     const top10 = list.slice(0,10);
-    saveHS(top10);
+    saveHS(top10,m);
     return top10;
   }
-  function renderHS(){
+  function renderHS(m=mode){
     const tbody = document.querySelector('#hsTable tbody');
     if(!tbody) return;
-    const list = loadHS();
+    const list = loadHS(m);
     tbody.innerHTML = list.map((e,i)=>
       `<tr><td>${i+1}</td><td>${e.name}</td><td>${e.score}</td><td>${e.lines}</td><td>${e.level}</td><td>${e.date}</td></tr>`
     ).join('');
+    const label=document.getElementById('hsModeLabel');
+    if(label) label.textContent = (m===MODE_ULTRA? 'Ultra' : 'Classic');
   }
 
   // ==== Settings (persist)
@@ -154,7 +159,7 @@ document.addEventListener('contextmenu', e => e.preventDefault());
   const hctx = holdCanvas.getContext('2d');
 
   let board, cur, bag=[], queue=[], hold=null, canHold=true;
-  let score=0, lines=0, level=1, best=Number(localStorage.getItem('tetris_best')||0);
+  let score=0, lines=0, level=1, best=0;
   let combo=-1, backToBack=false;
   let mode = MODE_CLASSIC;
   let timeLeft = null; // in Sekunden für Ultra
@@ -201,12 +206,19 @@ document.addEventListener('contextmenu', e => e.preventDefault());
     const sel = document.getElementById('modeSelect');
     mode = sel ? sel.value : MODE_CLASSIC;
     timeLeft = (mode===MODE_ULTRA) ? ULTRA_SECONDS : null;
+    best = Number(localStorage.getItem(bestKey(mode))||0);
     const tEl = document.getElementById('timer');
     if(tEl){
       tEl.style.visibility = timeLeft === null ? 'hidden' : 'visible';
       if(timeLeft===null) tEl.textContent='';
+      else {
+        const s = Math.floor(timeLeft%60).toString().padStart(2,'0');
+        tEl.textContent = `⏱️ ${Math.floor(timeLeft/60)}:${s}`;
+      }
     }
-    updateSide(); drawBoard();
+    updateSide();
+    drawBoard();
+    renderHS(mode);
   }
 
   // ==== Rendering
@@ -408,11 +420,11 @@ document.addEventListener('contextmenu', e => e.preventDefault());
     running=false;
     setPaused(false);
     best = Math.max(best, score);
-    localStorage.setItem('tetris_best', best);
+    localStorage.setItem(bestKey(mode), best);
     const nameEl = document.getElementById('playerName');
     const name = (nameEl && nameEl.value ? nameEl.value : 'Player').trim() || 'Player';
-    addHS({ name, score, lines, level, date: new Date().toISOString().slice(0,10) });
-    renderHS();
+    addHS({ name, score, lines, level, date: new Date().toISOString().slice(0,10) }, mode);
+    renderHS(mode);
     updateSide();
     showOverlay({score, lines, level, best});
     sfx.gameover();
@@ -525,11 +537,11 @@ document.addEventListener('contextmenu', e => e.preventDefault());
   const btnResetHS = document.getElementById('btnResetHS');
   if(btnResetHS){
     btnResetHS.addEventListener('click', ()=>{
-      saveHS([]);
+      saveHS([], mode);
       best = 0;
-      localStorage.removeItem('tetris_best');
+      localStorage.removeItem(bestKey(mode));
       updateSide();
-      renderHS();
+      renderHS(mode);
     });
   }
   // Overlay Buttons
@@ -614,7 +626,7 @@ document.addEventListener('contextmenu', e => e.preventDefault());
   }
 
   // Initiale Anzeige
-  renderHS();
+  renderHS(mode);
   updateSide();
 })();
 
