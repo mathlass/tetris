@@ -94,7 +94,7 @@ document.addEventListener('contextmenu', e => e.preventDefault());
   function addHS(entry,m){
     const list = loadHS(m);
     list.push(entry);
-    list.sort((a,b)=>b.score - a.score || b.lines - a.lines || b.level - a.level);
+    list.sort((a,b)=>b.score - a.score || b.lines - a.lines);
     const top10 = list.slice(0,10);
     saveHS(top10,m);
     return top10;
@@ -104,7 +104,7 @@ document.addEventListener('contextmenu', e => e.preventDefault());
     if(!tbody) return;
     const list = loadHS(m);
     tbody.innerHTML = list.map((e,i)=>
-      `<tr><td>${i+1}</td><td>${e.name}</td><td>${e.score}</td><td>${e.lines}</td><td>${e.level}</td><td>${e.date}</td></tr>`
+      `<tr><td>${i+1}</td><td>${e.name}</td><td>${e.score}</td><td>${e.lines}</td><td>${e.date}</td></tr>`
     ).join('');
     const label=document.getElementById('hsModeLabel');
     if(label) label.textContent = (m===MODE_ULTRA? 'Ultra' : 'Classic');
@@ -423,7 +423,7 @@ document.addEventListener('contextmenu', e => e.preventDefault());
     localStorage.setItem(bestKey(mode), best);
     const nameEl = document.getElementById('playerName');
     const name = (nameEl && nameEl.value ? nameEl.value : 'Player').trim() || 'Player';
-    addHS({ name, score, lines, level, date: new Date().toISOString().slice(0,10) }, mode);
+    addHS({ name, score, lines, date: new Date().toISOString().slice(0,10) }, mode);
     renderHS(mode);
     updateSide();
     showOverlay({score, lines, level, best});
