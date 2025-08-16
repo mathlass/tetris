@@ -12,6 +12,7 @@ if (btnTheme) {
     );
   });
 }
+document.addEventListener('contextmenu', e => e.preventDefault());
 (() => {
   // ==== Konfiguration
   const COLS=10, ROWS=20, SIZE=30;

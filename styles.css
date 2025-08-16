@@ -29,8 +29,10 @@ p{color:var(--muted);margin:0 0 12px}
 @media (max-width:720px){
   .wrap{grid-template-columns:1fr}
   .grid{grid-template-columns:1fr}
-  .mobile-controls{display:grid}
   .game-area{flex-direction:column;align-items:center}
+  .board-wrap{max-width:90vw}
+  .mobile-controls{display:grid;position:fixed;left:50%;transform:translateX(-50%);bottom:10px;width:100%;max-width:480px;background:var(--panel-bg);border:1px solid var(--panel-border);padding:8px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.3);z-index:1000}
+  body{padding-bottom:120px}
 }
 .panel{background:var(--panel-bg);border:1px solid var(--panel-border);border-radius:16px;padding:14px 16px;box-shadow:0 10px 30px rgba(0,0,0,.2)}
 canvas{display:block;background:var(--canvas-bg);border-radius:12px;border:1px solid var(--canvas-border)}
@@ -38,7 +40,7 @@ canvas{display:block;background:var(--canvas-bg);border-radius:12px;border:1px s
 .stat{background:var(--stat-bg);border:1px solid var(--stat-border);border-radius:12px;padding:10px;text-align:center}
 .stat b{display:block;font-size:22px;margin-top:6px;color:var(--accent)}
 .buttons{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
-button{cursor:pointer;border:1px solid var(--button-border);background:var(--button-bg);color:var(--fg);padding:10px 14px;border-radius:12px}
+button{cursor:pointer;border:1px solid var(--button-border);background:var(--button-bg);color:var(--fg);padding:10px 14px;border-radius:12px;touch-action:manipulation}
 button:hover{background:var(--button-hover-bg)}
 kbd{background:var(--kbd-bg);border:1px solid var(--kbd-border);border-bottom-width:3px;border-radius:6px;padding:2px 6px;margin:0 2px}
 ul{padding-left:18px;margin:6px 0}
@@ -63,10 +65,11 @@ ul{padding-left:18px;margin:6px 0}
 #overlay h2{margin:0 0 6px}
 @keyframes pop{from{transform:scale(.95);opacity:.6} to{transform:scale(1);opacity:1}}
 /* Pause Overlay */
-.board-wrap{position:relative;touch-action:none}
+.board-wrap{position:relative;touch-action:none;width:100%;max-width:300px;margin:0 auto}
+#game{width:100%;height:auto}
 #pauseOverlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:48px;letter-spacing:2px;color:var(--fg);background:rgba(0,0,0,.35);opacity:0;pointer-events:none;transition:opacity .2s ease;border-radius:12px}
 #pauseOverlay.show{opacity:1}
 /* Mobile touch controls */
-.mobile-controls{display:none;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
+.mobile-controls{display:none;grid-template-columns:repeat(4,1fr);gap:8px}
 .mobile-controls button{padding:12px 10px;font-size:16px;border-radius:12px}
 .timer{font-weight:700; font-size:18px; color:var(--accent)}
