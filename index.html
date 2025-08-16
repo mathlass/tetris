@@ -42,6 +42,9 @@
     .table th,.table td{border:1px solid #1f2533;padding:8px;text-align:left}
     .table thead th{background:#0d1119;color:#8aa4b8}
     .table tbody tr:nth-child(even){background:#0f1521}
+    /* Menu Overlay */
+    #menuOverlay{position:fixed;inset:0;overflow-y:auto;background:rgba(0,0,0,.6);padding:24px 16px;opacity:0;pointer-events:none;transition:opacity .25s ease;z-index:9998}
+    #menuOverlay.show{opacity:1;pointer-events:auto}
     /* Overlay Game Over */
     #overlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s ease;background:rgba(0,0,0,.45);backdrop-filter:blur(2px) saturate(1.1);z-index:9999}
     #overlay.show{opacity:1;pointer-events:auto}
@@ -63,6 +66,7 @@
     <div>
       <h1>🧱 Tetris</h1>
       <p class="tag">Vanilla JavaScript • Canvas • Level/Score/Lines • Soft/Hard Drop • Pause • Hold • 7‑Bag RNG</p>
+      <button id="btnMenu" style="margin-bottom:8px">Menü</button>
       <div class="grid">
         <div class="panel">
           <div class="board-wrap">
@@ -124,34 +128,9 @@
         </div>
       </div>
 
-      <!-- Scoreboard separat, aber im ursprünglichen Layout-Stil -->
-      <div class="panel" style="margin-top:16px;">
-        <h3>Scoreboard</h3>
-        <div class="controls">
-          <label for="playerName">Name:</label>
-          <input id="playerName" class="input" placeholder="Dein Name" maxlength="16" />
-          <button id="btnResetHS">Highscores löschen</button>
-        </div>
-        <table class="table" id="hsTable">
-          <thead>
-            <tr><th>#</th><th>Name</th><th>Score</th><th>Lines</th><th>Level</th><th>Datum</th></tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </div>
-
-      <div class="panel" style="margin-top:16px;">
-        <h3>Einstellungen</h3>
-        <div class="controls">
-          <label><input type="checkbox" id="optSound" checked> Sound</label>
-          <label><input type="checkbox" id="optGhost" checked> Ghost Piece</label>
-          <label><input type="checkbox" id="optSoftDropPoints" checked> Soft‑Drop Punkte</label>
-        </div>
-      </div>
-
     </div>
 
-    <div class="panel">
+  <div class="panel">
       <h3>Hinweise</h3>
       <ul>
         <li>Level steigt alle 10 Lines → schnellere Fallgeschwindigkeit.</li>
@@ -161,6 +140,36 @@
     </div>
 
     <div class="footer">© 2025 – Einzeldatei. Speichere diese Seite als <code>tetris.html</code> und öffne sie im Browser.</div>
+  </div>
+
+  <div id="menuOverlay" aria-hidden="true">
+    <div class="buttons" style="justify-content:center;margin:24px 0;">
+      <button id="tabScore">Scoreboard</button>
+      <button id="tabSettings">Einstellungen</button>
+    </div>
+    <div class="panel" id="scorePanel" style="margin-top:16px;">
+      <h3>Scoreboard</h3>
+      <div class="controls">
+        <label for="playerName">Name:</label>
+        <input id="playerName" class="input" placeholder="Dein Name" maxlength="16" />
+        <button id="btnResetHS">Highscores löschen</button>
+      </div>
+      <table class="table" id="hsTable">
+        <thead>
+          <tr><th>#</th><th>Name</th><th>Score</th><th>Lines</th><th>Level</th><th>Datum</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div class="panel" id="settingsPanel" style="margin-top:16px;display:none;">
+      <h3>Einstellungen</h3>
+      <div class="controls">
+        <label><input type="checkbox" id="optSound" checked> Sound</label>
+        <label><input type="checkbox" id="optGhost" checked> Ghost Piece</label>
+        <label><input type="checkbox" id="optSoftDropPoints" checked> Soft‑Drop Punkte</label>
+      </div>
+    </div>
   </div>
 
   <!-- Game Over Overlay -->
@@ -627,6 +636,18 @@
   }, {passive:false});
 
   // ==== UI Buttons
+  const menuOverlay = document.getElementById('menuOverlay');
+  function toggleMenu(){ menuOverlay.classList.toggle('show'); }
+  const btnMenu = document.getElementById('btnMenu');
+  if(btnMenu){ btnMenu.addEventListener('click', toggleMenu); }
+  const tabScore = document.getElementById('tabScore');
+  const tabSettings = document.getElementById('tabSettings');
+  const scorePanel = document.getElementById('scorePanel');
+  const settingsPanel = document.getElementById('settingsPanel');
+  if(tabScore && tabSettings){
+    tabScore.addEventListener('click', ()=>{ scorePanel.style.display='block'; settingsPanel.style.display='none'; });
+    tabSettings.addEventListener('click', ()=>{ scorePanel.style.display='none'; settingsPanel.style.display='block'; });
+  }
   document.getElementById('btnStart').addEventListener('click', ()=>{ reset(); update(); });
   const modeSelect = document.getElementById('modeSelect');
   if(modeSelect){ modeSelect.addEventListener('change', ()=>{ reset(); update(); }); }
