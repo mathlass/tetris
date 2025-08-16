@@ -237,13 +237,20 @@ document.addEventListener('contextmenu', e => e.preventDefault());
   // ==== Rendering
   function drawCell(gx, gy, color, targetCtx=ctx, cellSize=SIZE){
     if(color===0) return;
-    targetCtx.fillStyle = color;
-    targetCtx.fillRect(gx*cellSize, gy*cellSize, cellSize, cellSize);
+    const x = gx*cellSize, y = gy*cellSize;
+    const grad = targetCtx.createLinearGradient(x, y, x, y+cellSize);
+    grad.addColorStop(0, shadeColor(color, 0.3));
+    grad.addColorStop(1, shadeColor(color, -0.3));
+    targetCtx.fillStyle = grad;
+    targetCtx.fillRect(x, y, cellSize, cellSize);
     // simple bevel
     targetCtx.fillStyle = 'rgba(255,255,255,0.12)';
-    targetCtx.fillRect(gx*cellSize, gy*cellSize, cellSize, 4);
+    targetCtx.fillRect(x, y, cellSize, 4);
     targetCtx.fillStyle = 'rgba(0,0,0,0.25)';
-    targetCtx.fillRect(gx*cellSize, gy*cellSize+cellSize-4, cellSize, 4);
+    targetCtx.fillRect(x, y+cellSize-4, cellSize, 4);
+    targetCtx.strokeStyle = shadeColor(color, -0.4);
+    targetCtx.lineWidth = 1;
+    targetCtx.strokeRect(x+0.5, y+0.5, cellSize-1, cellSize-1);
   }
 
   function clearCanvas(c){ c.clearRect(0,0,c.canvas.width,c.canvas.height); }
@@ -253,6 +260,18 @@ document.addEventListener('contextmenu', e => e.preventDefault());
     const g = parseInt(hex.slice(3,5),16);
     const b = parseInt(hex.slice(5,7),16);
     return `rgba(${r},${g},${b},${alpha})`;
+  }
+
+  function shadeColor(hex, percent){
+    const r = parseInt(hex.slice(1,3),16);
+    const g = parseInt(hex.slice(3,5),16);
+    const b = parseInt(hex.slice(5,7),16);
+    const t = percent < 0 ? 0 : 255;
+    const p = Math.abs(percent);
+    const R = Math.round((t - r) * p) + r;
+    const G = Math.round((t - g) * p) + g;
+    const B = Math.round((t - b) * p) + b;
+    return `rgb(${R},${G},${B})`;
   }
 
   function drawBoard(){
