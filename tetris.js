@@ -231,12 +231,14 @@ document.addEventListener('contextmenu', e => e.preventDefault());
   }
 
   // ==== Rendering
-  function drawCell(gx, gy, color, targetCtx=ctx, cellSize=SIZE){
-    if(color===0) return;
+  function drawCell(gx, gy, color, targetCtx=ctx, cellSize=SIZE, alpha=1){
+    if(color===0 || alpha<=0) return;
     const x = gx*cellSize, y = gy*cellSize;
     const grad = targetCtx.createLinearGradient(x, y, x, y+cellSize);
     grad.addColorStop(0, shadeColor(color, 0.3));
     grad.addColorStop(1, shadeColor(color, -0.3));
+    targetCtx.save();
+    targetCtx.globalAlpha = alpha;
     targetCtx.fillStyle = grad;
     targetCtx.fillRect(x, y, cellSize, cellSize);
     // simple bevel
@@ -247,16 +249,10 @@ document.addEventListener('contextmenu', e => e.preventDefault());
     targetCtx.strokeStyle = shadeColor(color, -0.4);
     targetCtx.lineWidth = 1;
     targetCtx.strokeRect(x+0.5, y+0.5, cellSize-1, cellSize-1);
+    targetCtx.restore();
   }
 
   function clearCanvas(c){ c.clearRect(0,0,c.canvas.width,c.canvas.height); }
-
-  function hexToRgba(hex, alpha){
-    const r = parseInt(hex.slice(1,3),16);
-    const g = parseInt(hex.slice(3,5),16);
-    const b = parseInt(hex.slice(5,7),16);
-    return `rgba(${r},${g},${b},${alpha})`;
-  }
 
   function shadeColor(hex, percent){
     const r = parseInt(hex.slice(1,3),16);
@@ -290,18 +286,16 @@ document.addEventListener('contextmenu', e => e.preventDefault());
 
   function drawPiece(p, overrideY=null, ghost=false){
     const m = p.shape[p.rot];
-    const ghostColor = hexToRgba(
-      COLORS[p.type],
-      document.body.classList.contains('theme-light') ? 0.2 : 0.12
-    );
-    for(let y=0;y<m.length;y++){
-      for(let x=0;x<m[y].length;x++){
+    const alpha = ghost
+      ? (document.body.classList.contains('theme-light') ? 0.2 : 0.12)
+      : 1;
+    for(let y=0; y<m.length; y++){
+      for(let x=0; x<m[y].length; x++){
         if(m[y][x]){
           const cx = p.x + x;
-          const cy = (overrideY??p.y) + y;
-          if(cy<0) continue; // skip above board
-          const color = ghost ? ghostColor : COLORS[p.type];
-          drawCell(cx, cy, color);
+          const cy = (overrideY ?? p.y) + y;
+          if(cy < 0) continue; // skip above board
+          drawCell(cx, cy, COLORS[p.type], ctx, SIZE, alpha);
         }
       }
     }
