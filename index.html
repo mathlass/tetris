@@ -143,6 +143,7 @@
   </div>
 
   <div id="menuOverlay" aria-hidden="true">
+    <button id="btnMenuClose" style="position:absolute;top:16px;right:16px">Schließen</button>
     <div class="buttons" style="justify-content:center;margin:24px 0;">
       <button id="tabScore">Scoreboard</button>
       <button id="tabSettings">Einstellungen</button>
@@ -603,6 +604,12 @@
       e.preventDefault(); return;
     }
 
+    const mOverlay = document.getElementById('menuOverlay');
+    if(mOverlay && mOverlay.classList.contains('show')){
+      if(e.code==='Escape'){ e.preventDefault(); toggleMenu(); }
+      return;
+    }
+
     if(!running) return;
     if(e.code==='KeyP'){ setPaused(!paused); return; }
     if(paused) return;
@@ -637,9 +644,22 @@
 
   // ==== UI Buttons
   const menuOverlay = document.getElementById('menuOverlay');
-  function toggleMenu(){ menuOverlay.classList.toggle('show'); }
+  let menuPrevPaused = false;
+  function toggleMenu(){
+    const show = !menuOverlay.classList.contains('show');
+    menuOverlay.classList.toggle('show', show);
+    menuOverlay.setAttribute('aria-hidden', String(!show));
+    if(show){
+      menuPrevPaused = paused;
+      setPaused(true);
+    } else {
+      setPaused(menuPrevPaused);
+    }
+  }
   const btnMenu = document.getElementById('btnMenu');
   if(btnMenu){ btnMenu.addEventListener('click', toggleMenu); }
+  const btnMenuClose = document.getElementById('btnMenuClose');
+  if(btnMenuClose){ btnMenuClose.addEventListener('click', toggleMenu); }
   const tabScore = document.getElementById('tabScore');
   const tabSettings = document.getElementById('tabSettings');
   const scorePanel = document.getElementById('scorePanel');
@@ -707,10 +727,9 @@
   if(chkGhost){ chkGhost.checked = !!settings.ghost; chkGhost.addEventListener('change', ()=>{ settings.ghost = chkGhost.checked; saveSettings(settings); drawBoard(); }); }
   if(chkSoft){ chkSoft.checked = !!settings.softDropPoints; chkSoft.addEventListener('change', ()=>{ settings.softDropPoints = chkSoft.checked; saveSettings(settings); }); }
 
-  // Autostart
-  reset();
+  // Initiale Anzeige
   renderHS();
-  update();
+  updateSide();
 })();
 
 // Register external Service Worker (works on Netlify & GitHub Pages)
