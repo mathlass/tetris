@@ -294,12 +294,8 @@ document.addEventListener('contextmenu', e => e.preventDefault());
   }
 
   function updateSide(){
-    const scoreEl = document.getElementById('score');
-    if(scoreEl) scoreEl.textContent = score;
     const scoreTop = document.getElementById('topScore');
     if(scoreTop) scoreTop.textContent = `Score: ${score}`;
-    const bestEl = document.getElementById('best');
-    if(bestEl) bestEl.textContent = best;
     const bestTop = document.getElementById('topBest');
     if(bestTop) bestTop.textContent = `Best: ${best}`;
     if(nctx) drawMini(nctx, queue[0]);
@@ -537,7 +533,6 @@ document.addEventListener('contextmenu', e => e.preventDefault());
   const modeSelect = document.getElementById('modeSelect');
   if(modeSelect){ modeSelect.addEventListener('change', ()=>{ reset(); update(); }); }
   document.getElementById('btnPause').addEventListener('click', ()=>{ if(running){ setPaused(!paused); }});
-  document.getElementById('btnHard').addEventListener('click', ()=>{ if(running&&!paused) hardDrop(); });
   const btnResetHS = document.getElementById('btnResetHS');
   if(btnResetHS){
     btnResetHS.addEventListener('click', ()=>{
