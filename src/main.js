@@ -17,9 +17,11 @@ function switchGame(){
   if(gameSelect.value === 'snake'){
     tetrisWrap.style.display = 'none';
     snakeWrap.style.display = 'block';
+    document.title = 'Snake';
   }else{
     tetrisWrap.style.display = 'block';
     snakeWrap.style.display = 'none';
+    document.title = 'Tetris – Vanilla JS (Einzeldatei) + Scoreboard';
   }
 }
 
