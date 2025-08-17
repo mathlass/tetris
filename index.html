@@ -160,27 +160,37 @@
     </dialog>
   </div>
 
-    <div id="snakeWrap" class="wrap" style="display:none">
-      <div>
-        <h1>🐍 Snake</h1>
-        <div class="controls top-controls">
-          <button id="btnMenu"><span class="material-icons">menu</span> Menü</button>
-          <button id="btnPlayer"><span class="material-icons">person</span> Spieler</button>
-          <button id="themeToggle"><span class="material-icons" id="themeIcon">brightness_6</span> Theme</button>
-          <button id="snakeStart"><span class="material-icons">play_arrow</span> Start/Neu</button>
-          <button id="snakePause"><span class="material-icons">pause</span> Pause</button>
-        </div>
-        <div class="panel" style="margin-top:16px;text-align:center">
-          <div class="controls" style="justify-content:center;margin:0 0 8px">
-            <span class="timer" id="snakeTopScore">Score: 0</span>
-            <span class="timer" id="snakeTopBest">Best: 0</span>
+    <div id="snakeWrap" style="display:none">
+      <div class="wrap">
+        <div>
+          <h1>🐍 Snake</h1>
+          <div class="controls top-controls">
+            <button id="btnMenu"><span class="material-icons">menu</span> Menü</button>
+            <button id="btnPlayer"><span class="material-icons">person</span> Spieler</button>
+            <button id="themeToggle"><span class="material-icons" id="themeIcon">brightness_6</span> Theme</button>
+            <button id="snakeStart"><span class="material-icons">play_arrow</span> Start/Neu</button>
+            <button id="snakePause"><span class="material-icons">pause</span> Pause</button>
           </div>
-          <canvas id="snakeCanvas" width="300" height="300" aria-label="Snake Board"></canvas>
+          <div class="panel" style="margin-top:16px;text-align:center">
+            <div class="controls" style="justify-content:center;margin:0 0 8px">
+              <span class="timer" id="snakeTopScore">Score: 0</span>
+              <span class="timer" id="snakeTopBest">Best: 0</span>
+            </div>
+            <canvas id="snakeCanvas" width="300" height="300" aria-label="Snake Board"></canvas>
+          </div>
+          <div class="panel">
+            <h3>Steuerung</h3>
+            <p>Bewege die Schlange mit den Pfeiltasten. Iss die roten Häppchen und vermeide Kollisionen mit Wänden oder dir selbst.</p>
+          </div>
         </div>
-        <div class="panel">
-          <h3>Steuerung</h3>
-          <p>Bewege die Schlange mit den Pfeiltasten. Iss die roten Häppchen und vermeide Kollisionen mit Wänden oder dir selbst.</p>
-        </div>
+      </div>
+      <div class="mobile-controls" aria-label="Touch Controls">
+        <button id="sLeft" aria-label="Nach links bewegen"><span class="material-icons">chevron_left</span></button>
+        <button id="sUp" aria-label="Nach oben bewegen"><span class="material-icons">keyboard_arrow_up</span></button>
+        <button id="sRight" aria-label="Nach rechts bewegen"><span class="material-icons">chevron_right</span></button>
+        <button id="sDown" aria-label="Nach unten bewegen"><span class="material-icons">keyboard_arrow_down</span></button>
+        <button id="sPause" aria-label="Pause"><span class="material-icons">pause</span></button>
+        <button id="sStart" aria-label="Neues Spiel"><span class="material-icons">replay</span></button>
       </div>
     </div>
 
