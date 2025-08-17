@@ -10,6 +10,8 @@
   <meta name="theme-color" content="#0f1115" />
   <link rel="manifest" href="manifest.json" />
   <link rel="apple-touch-icon" href="icons/icon-180.png" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -17,11 +19,11 @@
     <div>
       <h1>🧱 Tetris</h1>
       <div class="controls top-controls">
-        <button id="btnMenu">Menü</button>
-        <button id="btnPlayer">Spieler</button>
-        <button id="themeToggle">Theme</button>
-        <button id="btnStart">Start/Neu</button>
-        <button id="btnPause">Pause</button>
+        <button id="btnMenu"><span class="material-icons">menu</span> Menü</button>
+        <button id="btnPlayer"><span class="material-icons">person</span> Spieler</button>
+        <button id="themeToggle"><span class="material-icons" id="themeIcon">brightness_6</span> Theme</button>
+        <button id="btnStart"><span class="material-icons">play_arrow</span> Start/Neu</button>
+        <button id="btnPause"><span class="material-icons">pause</span> Pause</button>
         <label>Modus:
           <select id="modeSelect" class="input">
             <option value="classic">Classic (endlos)</option>
@@ -61,7 +63,7 @@
         </div>
         <div class="panel">
           <h3>Steuerung</h3>
-          <p>Nutze die Bildschirm-Buttons (◀︎/▶︎/⟳/Soft/Pause/Neu) auf Mobilgeräten.</p>
+          <p>Nutze die Bildschirm-Buttons (Pfeile/Rotieren/Soft/Pause/Neu) auf Mobilgeräten.</p>
           <p>Auf Desktop funktionieren zusätzlich folgende Tasten:</p>
           <ul>
             <li><kbd>←</kbd>/<kbd>→</kbd>: bewegen</li>
@@ -78,12 +80,12 @@
   </div>
 
   <div class="mobile-controls" aria-label="Touch Controls">
-    <button id="mLeft" aria-label="Nach links bewegen">◀︎</button>
-    <button id="mRotate" aria-label="Figur rotieren">⟳</button>
-    <button id="mRight" aria-label="Nach rechts bewegen">▶︎</button>
-    <button id="mSoft" aria-label="Soft Drop">Soft ↓</button>
-    <button id="mPause" aria-label="Pause">Pause</button>
-    <button id="mStart" aria-label="Neues Spiel">Neu</button>
+    <button id="mLeft" aria-label="Nach links bewegen"><span class="material-icons">chevron_left</span></button>
+    <button id="mRotate" aria-label="Figur rotieren"><span class="material-icons">rotate_right</span></button>
+    <button id="mRight" aria-label="Nach rechts bewegen"><span class="material-icons">chevron_right</span></button>
+    <button id="mSoft" aria-label="Soft Drop"><span class="material-icons">arrow_downward</span></button>
+    <button id="mPause" aria-label="Pause"><span class="material-icons">pause</span></button>
+    <button id="mStart" aria-label="Neues Spiel"><span class="material-icons">replay</span></button>
   </div>
 
   <div id="menuOverlay" aria-hidden="true">
