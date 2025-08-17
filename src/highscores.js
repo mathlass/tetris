@@ -3,6 +3,18 @@ import { HS_KEY_BASE, BEST_KEY_BASE, MODE_ULTRA, MODE_CLASSIC_ONCE } from './con
 export const hsKey = m => `${HS_KEY_BASE}_${m}`;
 export const bestKey = m => `${BEST_KEY_BASE}_${m}`;
 
+async function loadServerHS(m){
+  try{
+    const res = await fetch(`/scores/${m}`);
+    if(res.ok) return await res.json();
+  }catch(e){}
+  return null;
+}
+
+function sendServerHS(entry,m){
+  fetch(`/scores/${m}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(entry)}).catch(()=>{});
+}
+
 export function loadHS(m){
   try{ return JSON.parse(localStorage.getItem(hsKey(m))) || []; }catch(e){ return []; }
 }
@@ -28,17 +40,20 @@ export function sanitizeHS(list,m){
 
 export function addHS(entry,m){
   const list = sanitizeHS(loadHS(m),m);
-  list.push({...entry, name: sanitizeName(entry.name)});
+  const cleanEntry = {...entry, name: sanitizeName(entry.name)};
+  list.push(cleanEntry);
   list.sort((a,b)=>b.score - a.score || b.lines - a.lines);
   const top10 = list.slice(0,10);
   saveHS(top10,m);
+  sendServerHS(cleanEntry,m);
   return top10;
 }
 
-export function renderHS(m){
+export async function renderHS(m){
   const tbody = document.querySelector('#hsTable tbody');
   if(!tbody) return;
-  const list = sanitizeHS(loadHS(m),m);
+  let list = await loadServerHS(m);
+  list = list ? sanitizeHS(list,m) : sanitizeHS(loadHS(m),m);
   while(tbody.firstChild) tbody.removeChild(tbody.firstChild);
   list.forEach((e,i)=>{
     const tr=document.createElement('tr');

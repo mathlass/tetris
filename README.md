@@ -16,5 +16,10 @@ Erstellt: 2025-08-15
 Wenn du eine neue Version veröffentlichst, kann der Browser wegen des Caches noch die alte laden.
 - Einmal **neu laden** (auf iPhone: Adresse antippen → Nach-unten-ziehen → neu laden).
 - Oder die Version in `sw.js` (Konstante `CACHE`) hochzählen (z. B. `tetris-cache-v3`).
+## Score-Server
+Um Highscores geräteübergreifend zu teilen, kann ein kleiner Node-Server genutzt werden.
+1) `npm install` ist nicht nötig – der Server verwendet nur eingebaute Module.
+2) Start: `node server.js` (speichert Daten in `scores.json`).
+3) Das Spiel ruft die Endpunkte `/scores/<mode>` (GET/POST) auf.
 
 Viel Spaß!
