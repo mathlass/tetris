@@ -30,8 +30,6 @@ p{color:var(--muted);margin:0 0 12px}
   .wrap{grid-template-columns:1fr}
   .grid{grid-template-columns:1fr}
   .board-wrap{max-width:90vw}
-  .mobile-controls{display:grid;position:fixed;left:50%;transform:translateX(-50%);bottom:10px;width:100%;max-width:480px;background:var(--panel-bg);border:1px solid var(--panel-border);padding:8px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.3);z-index:1000}
-  body{padding-bottom:120px}
 }
 .panel{background:color-mix(in srgb,var(--panel-bg),transparent 20%);backdrop-filter:blur(8px);border:1px solid var(--panel-border);border-radius:16px;padding:14px 16px;box-shadow:0 10px 30px color-mix(in srgb,var(--bg),#000 30%)}
 canvas{display:block;background:var(--canvas-bg);border-radius:12px;border:1px solid var(--canvas-border)}
@@ -74,6 +72,24 @@ select.input option{background:var(--input-bg);color:var(--fg)}
 #pauseOverlay.show{opacity:1}
 /* Mobile touch controls */
 .mobile-controls{display:none;grid-template-columns:repeat(4,1fr);gap:8px}
+@media (max-width:720px){
+  .mobile-controls{
+    display:grid;
+    position:fixed;
+    left:50%;
+    transform:translateX(-50%);
+    bottom:10px;
+    width:100%;
+    max-width:480px;
+    background:var(--panel-bg);
+    border:1px solid var(--panel-border);
+    padding:8px;
+    border-radius:12px;
+    box-shadow:0 4px 12px rgba(0,0,0,.3);
+    z-index:1000;
+  }
+  body{padding-bottom:120px}
+}
 .mobile-controls button{padding:16px;font-size:24px;border-radius:12px;display:flex;align-items:center;justify-content:center}
 .timer{font-weight:700; font-size:18px; color:var(--accent)}
 [aria-label]::before,[aria-label]::after{display:none;content:none}
