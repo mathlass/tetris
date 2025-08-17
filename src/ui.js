@@ -16,22 +16,37 @@ export function initUI(){
   }
 
   let playerName = localStorage.getItem(PLAYER_KEY) || 'Player';
+  const dlgPlayer = document.getElementById('playerDialog');
+  const inputPlayer = document.getElementById('playerInput');
+  const btnSave = document.getElementById('playerSave');
+  const btnCancel = document.getElementById('playerCancel');
+
+  function openPlayerDialog(){
+    if(!dlgPlayer || !inputPlayer) return;
+    inputPlayer.value = playerName;
+    dlgPlayer.showModal();
+    setTimeout(()=>inputPlayer.focus(),0);
+  }
+
   if (localStorage.getItem(PLAYER_KEY) === null) {
-    const name = prompt('Bitte Spielername eingeben:');
-    if (name !== null) {
-      playerName = name.trim() || 'Player';
+    openPlayerDialog();
+  }
+
+  if (btnSave) {
+    btnSave.addEventListener('click', () => {
+      playerName = inputPlayer.value.trim() || 'Player';
       localStorage.setItem(PLAYER_KEY, playerName);
-    }
+      dlgPlayer.close();
+    });
+  }
+  if (btnCancel) {
+    btnCancel.addEventListener('click', () => {
+      dlgPlayer.close();
+    });
   }
   const btnPlayer = document.getElementById('btnPlayer');
   if (btnPlayer) {
-    btnPlayer.addEventListener('click', () => {
-      const name = prompt('Spielername:', playerName);
-      if (name !== null) {
-        playerName = name.trim() || 'Player';
-        localStorage.setItem(PLAYER_KEY, playerName);
-      }
-    });
+    btnPlayer.addEventListener('click', openPlayerDialog);
   }
 
   document.addEventListener('contextmenu', e => e.preventDefault());

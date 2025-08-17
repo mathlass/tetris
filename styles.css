@@ -82,3 +82,5 @@ select.input option{background:var(--input-bg);color:var(--fg)}
 .mobile-controls button{padding:12px 10px;font-size:16px;border-radius:12px}
 .timer{font-weight:700; font-size:18px; color:var(--accent)}
 [aria-label]::before,[aria-label]::after{display:none;content:none}
+dialog{border:1px solid var(--panel-border);background:var(--panel-bg);color:var(--fg);border-radius:12px;padding:16px}
+dialog::backdrop{background:rgba(0,0,0,.45)}

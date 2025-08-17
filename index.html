@@ -42,6 +42,11 @@
               <canvas id="game" width="300" height="600" aria-label="Tetris Board"></canvas>
               <div id="pauseOverlay" aria-hidden="true">PAUSE</div>
             </div>
+            <div class="next" style="display:flex;flex-direction:column;gap:8px">
+              <div class="mini"><canvas id="next1" width="96" height="80" aria-label="Nächster Stein 1"></canvas></div>
+              <div class="mini"><canvas id="next2" width="96" height="80" aria-label="Nächster Stein 2"></canvas></div>
+              <div class="mini"><canvas id="next3" width="96" height="80" aria-label="Nächster Stein 3"></canvas></div>
+            </div>
           </div>
           
           <div class="tag" id="comboTag"></div>
@@ -131,6 +136,17 @@
       </div>
     </div>
   </div>
+
+  <!-- Spielername Dialog -->
+  <dialog id="playerDialog">
+    <form method="dialog">
+      <label>Spielername:<br><input id="playerInput" class="input" /></label>
+      <div class="buttons" style="justify-content:center;margin-top:14px">
+        <button id="playerCancel" value="cancel">Abbrechen</button>
+        <button id="playerSave" value="default">OK</button>
+      </div>
+    </form>
+  </dialog>
 
   <script type="module" src="src/main.js"></script>
 </body>
