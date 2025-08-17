@@ -15,7 +15,16 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <div class="wrap">
+  <div class="controls top-controls" style="justify-content:center;margin-bottom:8px">
+    <label>Spiel:
+      <select id="gameSelect" class="input">
+        <option value="tetris">Tetris</option>
+        <option value="snake">Snake</option>
+      </select>
+    </label>
+  </div>
+  <div id="tetrisWrap">
+    <div class="wrap">
     <div>
       <h1>🧱 Tetris</h1>
       <div class="controls top-controls">
@@ -77,18 +86,18 @@
 
     </div>
     <div class="footer">© 2025 – Einzeldatei. Speichere diese Seite als <code>tetris.html</code> und öffne sie im Browser.</div>
-  </div>
+    </div>
 
-  <div class="mobile-controls" aria-label="Touch Controls">
+    <div class="mobile-controls" aria-label="Touch Controls">
     <button id="mLeft" aria-label="Nach links bewegen"><span class="material-icons">chevron_left</span></button>
     <button id="mRotate" aria-label="Figur rotieren"><span class="material-icons">rotate_right</span></button>
     <button id="mRight" aria-label="Nach rechts bewegen"><span class="material-icons">chevron_right</span></button>
     <button id="mSoft" aria-label="Soft Drop"><span class="material-icons">arrow_downward</span></button>
     <button id="mPause" aria-label="Pause"><span class="material-icons">pause</span></button>
     <button id="mStart" aria-label="Neues Spiel"><span class="material-icons">replay</span></button>
-  </div>
+    </div>
 
-  <div id="menuOverlay" aria-hidden="true">
+    <div id="menuOverlay" aria-hidden="true">
     <button id="btnMenuClose" style="position:absolute;top:16px;right:16px">Schließen</button>
     <div class="buttons" style="justify-content:center;margin:24px 0;">
       <button id="tabScore">Scoreboard</button>
@@ -121,10 +130,10 @@
         </label>
       </div>
     </div>
-  </div>
+    </div>
 
-  <!-- Game Over Overlay -->
-  <div id="overlay" aria-hidden="true">
+    <!-- Game Over Overlay -->
+    <div id="overlay" aria-hidden="true">
     <div class="overlay-card" role="dialog" aria-modal="true" aria-labelledby="ovTitle">
       <h2 id="ovTitle">Game Over</h2>
       <div class="stats" style="margin-top:8px">
@@ -137,10 +146,10 @@
         <button id="btnClose">Schließen</button>
       </div>
     </div>
-  </div>
+    </div>
 
-  <!-- Spielername Dialog -->
-  <dialog id="playerDialog">
+    <!-- Spielername Dialog -->
+    <dialog id="playerDialog">
     <form method="dialog">
       <label>Spielername:<br><input id="playerInput" class="input" /></label>
       <div class="buttons" style="justify-content:center;margin-top:14px">
@@ -148,7 +157,23 @@
         <button id="playerSave" value="default">OK</button>
       </div>
     </form>
-  </dialog>
+    </dialog>
+  </div>
+
+  <div id="snakeWrap" class="wrap" style="display:none">
+    <div>
+      <h1>🐍 Snake</h1>
+      <div class="controls top-controls">
+        <button id="snakeStart"><span class="material-icons">play_arrow</span> Start/Neu</button>
+      </div>
+      <div class="panel" style="margin-top:16px;text-align:center">
+        <canvas id="snakeCanvas" width="300" height="300" aria-label="Snake Board"></canvas>
+        <div class="controls" style="justify-content:center;margin-top:8px">
+          <span class="timer" id="snakeScoreLabel">Score: <span id="snakeScore">0</span></span>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <script type="module" src="src/main.js"></script>
 </body>

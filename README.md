@@ -1,6 +1,10 @@
 # Tetris – Deploy Paket (GitHub Pages & Netlify)
 Erstellt: 2025-08-15
 
+**Neu:** Neben Tetris gibt es jetzt auch ein einfaches Snake-Spiel. Über den
+Auswahlregler auf der Startseite kann zwischen beiden Spielen gewechselt
+werden.
+
 ## GitHub Pages (empfohlen)
 1) Neues Repo erstellen (z. B. `tetris`).
 2) Diese Dateien (`index.html`, `manifest.json`, `sw.js`, Ordner `icons/`) in den Root-Ordner committen.
