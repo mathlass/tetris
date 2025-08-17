@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert';
-import { refillBag } from '../src/helpers.js';
+import { refillBag } from '../src/pieces.js';
 
 const types = ['I', 'J', 'L', 'O', 'S', 'T', 'Z'];
 

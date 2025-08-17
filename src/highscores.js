@@ -1,26 +1,48 @@
-import { HS_KEY_BASE, BEST_KEY_BASE, MODE_ULTRA, MODE_CLASSIC_ONCE } from './constants.js';
+// Highscore storage and rendering
+import {
+  HS_KEY_BASE,
+  BEST_KEY_BASE,
+  MODE_ULTRA,
+  MODE_CLASSIC_ONCE
+} from './constants.js';
+import { logError } from './logger.js';
 
 export const hsKey = m => `${HS_KEY_BASE}_${m}`;
 export const bestKey = m => `${BEST_KEY_BASE}_${m}`;
 
-async function loadServerHS(m){
-  try{
+async function loadServerHS(m) {
+  try {
     const res = await fetch(`/scores/${m}`);
-    if(res.ok) return await res.json();
-  }catch(e){}
+    if (res.ok) return await res.json();
+  } catch (e) {
+    logError('Failed to load highscores from server', e);
+  }
   return null;
 }
 
-function sendServerHS(entry,m){
-  fetch(`/scores/${m}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(entry)}).catch(()=>{});
+function sendServerHS(entry, m) {
+  fetch(`/scores/${m}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(entry)
+  }).catch(e => logError('Failed to send highscore to server', e));
 }
 
-export function loadHS(m){
-  try{ return JSON.parse(localStorage.getItem(hsKey(m))) || []; }catch(e){ return []; }
+export function loadHS(m) {
+  try {
+    return JSON.parse(localStorage.getItem(hsKey(m))) || [];
+  } catch (e) {
+    logError('Failed to parse highscores from storage', e);
+    return [];
+  }
 }
 
-export function saveHS(list,m){
-  localStorage.setItem(hsKey(m), JSON.stringify(list));
+export function saveHS(list, m) {
+  try {
+    localStorage.setItem(hsKey(m), JSON.stringify(list));
+  } catch (e) {
+    logError('Failed to save highscores', e);
+  }
 }
 
 export function sanitizeName(str){
