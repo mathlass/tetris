@@ -1,10 +1,19 @@
 import { THEME_KEY, PLAYER_KEY } from './constants.js';
 
 export function initUI(){
-  if (localStorage.getItem(THEME_KEY) === 'light') {
+  const prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
+  const storedTheme = localStorage.getItem(THEME_KEY);
+  if (storedTheme === 'light' || (storedTheme === null && prefersLight)) {
     document.body.classList.add('theme-light');
   }
+
   const btnTheme = document.getElementById('themeToggle');
+  const themeIcon = document.getElementById('themeIcon');
+  function updateThemeIcon(){
+    if (!themeIcon) return;
+    themeIcon.textContent = document.body.classList.contains('theme-light') ? 'dark_mode' : 'light_mode';
+  }
+  updateThemeIcon();
   if (btnTheme) {
     btnTheme.addEventListener('click', () => {
       document.body.classList.toggle('theme-light');
@@ -12,6 +21,7 @@ export function initUI(){
         THEME_KEY,
         document.body.classList.contains('theme-light') ? 'light' : 'dark'
       );
+      updateThemeIcon();
     });
   }
 
