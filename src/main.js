@@ -11,9 +11,14 @@ const snakeGame = initSnake();
 const gameSelect = document.getElementById('gameSelect');
 const tetrisWrap = document.getElementById('tetrisWrap');
 const snakeWrap = document.getElementById('snakeWrap');
+const menuOverlay = document.getElementById('menuOverlay');
 
 function switchGame(){
   if(!gameSelect || !tetrisWrap || !snakeWrap) return;
+  if(menuOverlay){
+    menuOverlay.classList.remove('show');
+    menuOverlay.setAttribute('aria-hidden', 'true');
+  }
   if(gameSelect.value === 'snake'){
     tetrisWrap.style.display = 'none';
     snakeWrap.style.display = 'block';

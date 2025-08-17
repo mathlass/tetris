@@ -139,25 +139,29 @@ export function initSnake(){
   if(btnDown) btnDown.addEventListener('click', () => { if(dir.y!==-1) dir={x:0,y:1}; });
   document.addEventListener('keydown', handleKey);
 
+  function toggleMenu(){
+    if(!menuOverlay) return;
+    const show = !menuOverlay.classList.contains('show');
+    menuOverlay.classList.toggle('show', show);
+    menuOverlay.setAttribute('aria-hidden', String(!show));
+    if(show){
+      menuPrevPaused = paused;
+      pause();
+    } else {
+      if(running && !menuPrevPaused) resume();
+    }
+  }
+
   document.querySelectorAll('#btnMenu').forEach(btn =>
-    btn.addEventListener('click', () => { menuPrevPaused = paused; pause(); })
+    btn.addEventListener('click', toggleMenu)
   );
   const btnMenuClose = document.getElementById('btnMenuClose');
   if(btnMenuClose){
-    btnMenuClose.addEventListener('click', () => {
-      if(running && !menuPrevPaused) resume();
-    });
+    btnMenuClose.addEventListener('click', toggleMenu);
   }
 
   document.addEventListener('keydown', e => {
-    if(e.code === 'Escape' && menuOverlay){
-      if(menuOverlay.classList.contains('show')){
-        if(running && !menuPrevPaused) resume();
-      } else {
-        menuPrevPaused = paused;
-        pause();
-      }
-    }
+    if(e.code === 'Escape') toggleMenu();
   });
 
   return { start, stop };
