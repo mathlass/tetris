@@ -162,7 +162,7 @@ export function initGame(){
     clearCanvas(ctx2);
     if(!piece) return;
     const m = piece.shape[0];
-    const size = 24;
+    const size = Math.floor(Math.min(ctx2.canvas.width, ctx2.canvas.height) / 4);
     const offX = Math.floor((ctx2.canvas.width/size - m[0].length)/2);
     const offY = Math.floor((ctx2.canvas.height/size - m.length)/2);
     for(let y=0;y<m.length;y++){
