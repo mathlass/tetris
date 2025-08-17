@@ -223,6 +223,7 @@ export function initGame(){
   }
 
   function hardDrop(){
+    if(paused) return;
     const targetY = getDropY(board, cur);
     const dropped = targetY - cur.y;
     cur.y = targetY;
@@ -232,6 +233,7 @@ export function initGame(){
   }
 
   function softDrop(){
+    if(paused) return;
     const p = {...cur, y:cur.y+1};
     if(!collides(board, p)) { cur.y++; if(settings.softDropPoints) score += 1; }
     else lockPiece();
@@ -392,9 +394,10 @@ export function initGame(){
 
   // Touch Buttons
   const touchMap = {
-    mLeft:()=>{const p={...cur,x:cur.x-1}; if(!collides(board, p)) {cur.x--; sfx.move();}},
-    mRight:()=>{const p={...cur,x:cur.x+1}; if(!collides(board, p)) {cur.x++; sfx.move();}},
+    mLeft:()=>{ if(paused) return; const p={...cur,x:cur.x-1}; if(!collides(board, p)) {cur.x--; sfx.move();}},
+    mRight:()=>{ if(paused) return; const p={...cur,x:cur.x+1}; if(!collides(board, p)) {cur.x++; sfx.move();}},
     mRotate:()=>{
+      if(paused) return;
       if(mode !== MODE_CLASSIC_ONCE || !cur.rotated){
         const r = rotate(board, cur);
         if(r !== cur && mode === MODE_CLASSIC_ONCE) r.rotated = true;
@@ -402,8 +405,8 @@ export function initGame(){
         sfx.rotate();
       }
     },
-    mSoft:()=>softDrop(),
-    mHard:()=>hardDrop(),
+    mSoft:()=>{ if(paused) return; softDrop(); },
+    mHard:()=>{ if(paused) return; hardDrop(); },
     mPause:()=>{ if(running){ setPaused(!paused); } },
     mStart:()=>{ reset(); update(); }
   };
@@ -419,7 +422,7 @@ export function initGame(){
     if(!el) return;
     let t=null, iv=null;
     const clear=()=>{ if(t){clearTimeout(t); t=null;} if(iv){clearInterval(iv); iv=null;} };
-    const start=(e)=>{ e.preventDefault(); fn(); t=setTimeout(()=>{ iv=setInterval(fn,80); },150); };
+    const start=(e)=>{ if(paused) return; e.preventDefault(); fn(); t=setTimeout(()=>{ iv=setInterval(fn,80); },150); };
     const end=()=>clear();
     ['touchstart','mousedown'].forEach(evt=>el.addEventListener(evt,start));
     ['touchend','mouseup','mouseleave','touchcancel'].forEach(evt=>el.addEventListener(evt,end));
@@ -431,8 +434,9 @@ export function initGame(){
   (function(){
     const el=document.querySelector('.board-wrap'); if(!el) return;
     let sx=0, sy=0, st=0, lx=0, moved=false;
-    el.addEventListener('touchstart', (e)=>{ const t=e.changedTouches[0]; sx=lx=t.clientX; sy=t.clientY; st=performance.now(); moved=false;});
+    el.addEventListener('touchstart', (e)=>{ if(paused) return; const t=e.changedTouches[0]; sx=lx=t.clientX; sy=t.clientY; st=performance.now(); moved=false;});
     el.addEventListener('touchmove', (e)=>{
+      if(paused) return;
       const t=e.changedTouches[0]; const dx=t.clientX-lx; const absX=Math.abs(dx); const MOVE_THRESH=12;
       if(absX>MOVE_THRESH){
         e.preventDefault();
@@ -441,6 +445,7 @@ export function initGame(){
       }
     }, {passive:false});
     el.addEventListener('touchend', (e)=>{
+      if(paused) return;
       const t=e.changedTouches[0]; const dx=t.clientX-sx; const dy=t.clientY-sy; const dt=performance.now()-st;
       const absX=Math.abs(dx), absY=Math.abs(dy);
       const THRESH=16; // Pixel
