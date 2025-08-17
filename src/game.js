@@ -1,8 +1,18 @@
+// Core game loop and rendering logic for the Tetris implementation
 import {
-  COLS, ROWS, SIZE, FALL_BASE_MS, LINES_PER_LEVEL, SCORE_LINE,
-  MODE_CLASSIC, MODE_ULTRA, MODE_CLASSIC_ONCE, ULTRA_SECONDS, PLAYER_KEY
+  COLS,
+  ROWS,
+  SIZE,
+  FALL_BASE_MS,
+  LINES_PER_LEVEL,
+  SCORE_LINE,
+  MODE_CLASSIC,
+  MODE_ULTRA,
+  MODE_CLASSIC_ONCE,
+  ULTRA_SECONDS,
+  PLAYER_KEY
 } from './constants.js';
-import { newPiece, refillBag } from './helpers.js';
+import { newPiece, refillBag } from './pieces.js';
 import { createSfx } from './audio.js';
 import { collides, clearLines as clearBoardLines, rotate, getDropY } from './logic.js';
 import { addHS, renderHS, sanitizeName, bestKey } from './highscores.js';

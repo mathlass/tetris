@@ -1,9 +1,16 @@
-export function createSfx(settings){
+// Simple WebAudio sound effects
+import { logError } from './logger.js';
+
+export function createSfx(settings) {
   let actx = null;
-  function ensureAudio(){
-    if(!settings.sound) return null;
-    if(!actx){
-      try{ actx = new (window.AudioContext||window.webkitAudioContext)(); }catch{}
+  function ensureAudio() {
+    if (!settings.sound) return null;
+    if (!actx) {
+      try {
+        actx = new (window.AudioContext || window.webkitAudioContext)();
+      } catch (e) {
+        logError('Failed to create AudioContext', e);
+      }
     }
     return actx;
   }
