@@ -1,79 +1,17 @@
 import {
   COLS, ROWS, SIZE, FALL_BASE_MS, LINES_PER_LEVEL, SCORE_LINE,
-  SETTINGS_KEY, MODE_CLASSIC, MODE_ULTRA, MODE_CLASSIC_ONCE, ULTRA_SECONDS, COLOR_SETS,
-  HS_KEY_BASE, BEST_KEY_BASE, PLAYER_KEY
+  MODE_CLASSIC, MODE_ULTRA, MODE_CLASSIC_ONCE, ULTRA_SECONDS, PLAYER_KEY
 } from './constants.js';
 import { newPiece, refillBag } from './helpers.js';
 import { createSfx } from './audio.js';
 import { collides, clearLines as clearBoardLines, rotate, getDropY } from './logic.js';
+import { addHS, renderHS, sanitizeName, bestKey } from './highscores.js';
+import { loadSettings, saveSettings, applyPalette } from './settings.js';
 
 export function initGame(){
-  // ==== Konfiguration
-  let COLORS = COLOR_SETS.standard;
-
-  // ==== Highscores (LocalStorage)
-  const hsKey = m => `${HS_KEY_BASE}_${m}`;
-  const bestKey = m => `${BEST_KEY_BASE}_${m}`;
-  function loadHS(m){ try{ return JSON.parse(localStorage.getItem(hsKey(m))) || []; }catch(e){ return []; } }
-  function saveHS(list,m){ localStorage.setItem(hsKey(m), JSON.stringify(list)); }
-  function sanitizeName(str){
-    return str.replace(/<[^>]*>/g, '').trim();
-  }
-  function sanitizeHS(list,m){
-    let changed=false;
-    const cleaned=list.map(e=>{
-      const name=sanitizeName(e.name||'');
-      if(name!==e.name) changed=true;
-      return {...e, name};
-    });
-    if(changed) saveHS(cleaned,m);
-    return cleaned;
-  }
-  function addHS(entry,m){
-    const list = sanitizeHS(loadHS(m),m);
-    list.push({...entry, name: sanitizeName(entry.name)});
-    list.sort((a,b)=>b.score - a.score || b.lines - a.lines);
-    const top10 = list.slice(0,10);
-    saveHS(top10,m);
-    return top10;
-  }
-  function renderHS(m=mode){
-    const tbody = document.querySelector('#hsTable tbody');
-    if(!tbody) return;
-    const list = sanitizeHS(loadHS(m),m);
-    while(tbody.firstChild) tbody.removeChild(tbody.firstChild);
-    list.forEach((e,i)=>{
-      const tr=document.createElement('tr');
-      const tdRank=document.createElement('td');
-      tdRank.textContent=String(i+1);
-      const tdName=document.createElement('td');
-      tdName.textContent=e.name;
-      const tdScore=document.createElement('td');
-      tdScore.textContent=String(e.score);
-      const tdLines=document.createElement('td');
-      tdLines.textContent=String(e.lines);
-      const tdDate=document.createElement('td');
-      tdDate.textContent=e.date;
-      tr.append(tdRank,tdName,tdScore,tdLines,tdDate);
-      tbody.appendChild(tr);
-    });
-    const label=document.getElementById('hsModeLabel');
-    if(label){
-      label.textContent =
-        m===MODE_ULTRA ? 'Ultra' :
-        m===MODE_CLASSIC_ONCE ? 'Classic – 1 Drehung' :
-        'Classic';
-    }
-  }
-
-  // ==== Settings (persist)
-  const defaultSettings = { sound:true, ghost:true, softDropPoints:true, palette:'standard' };
-  function loadSettings(){
-    try{ return Object.assign({}, defaultSettings, JSON.parse(localStorage.getItem(SETTINGS_KEY)||'{}')); }catch{ return {...defaultSettings}; }
-  }
-  function saveSettings(s){ localStorage.setItem(SETTINGS_KEY, JSON.stringify(s)); }
+  // ==== Settings
   let settings = loadSettings();
-  COLORS = COLOR_SETS[settings.palette] || COLOR_SETS.standard;
+  let COLORS = applyPalette(settings);
 
   // ==== Audio (WebAudio beeps)
   const sfx = createSfx(settings);
@@ -91,6 +29,10 @@ export function initGame(){
   // ==== State
   const canvas = document.getElementById('game');
   const ctx = canvas.getContext('2d');
+  const nextCtx = [1,2,3].map(n => {
+    const c = document.getElementById(`next${n}`);
+    return c ? c.getContext('2d') : null;
+  });
 
   let board, cur, bag=[], queue=[];
   let score=0, lines=0, level=1, best=0;
@@ -123,7 +65,8 @@ export function initGame(){
     board = emptyBoard();
     score=0; lines=0; level=1; dropInterval = FALL_BASE_MS; dropTimer=0; lastTime = performance.now();
     bag=[]; queue = [pullNext(), pullNext(), pullNext()];
-    cur = pullNext();
+    cur = queue.shift();
+    queue.push(pullNext());
     running=true; setPaused(false);
     // Mode & Timer
     const sel = document.getElementById('modeSelect');
@@ -234,7 +177,7 @@ export function initGame(){
     if(scoreTop) scoreTop.textContent = `Score: ${score}`;
     const bestTop = document.getElementById('topBest');
     if(bestTop) bestTop.textContent = `Best: ${best}`;
-    
+
     const comboEl = document.getElementById('comboTag');
     if(comboEl){
       let t = '';
@@ -242,6 +185,8 @@ export function initGame(){
       if(backToBack) t += (t?' • ':'')+`Back‑to‑Back`;
       comboEl.textContent = t;
     }
+
+    nextCtx.forEach((c,i)=> c && drawMini(c, queue[i]));
   }
 
   // ==== Logik
@@ -509,7 +454,7 @@ export function initGame(){
     selPalette.value = settings.palette || 'standard';
     selPalette.addEventListener('change', ()=>{
       settings.palette = selPalette.value;
-      COLORS = COLOR_SETS[settings.palette] || COLOR_SETS.standard;
+      COLORS = applyPalette(settings);
       saveSettings(settings);
       drawBoard();
       updateSide();
