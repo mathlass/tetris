@@ -6,7 +6,7 @@ import { logError } from './logger.js';
 
 initUI();
 initGame();
-initSnake();
+const snakeGame = initSnake();
 
 const gameSelect = document.getElementById('gameSelect');
 const tetrisWrap = document.getElementById('tetrisWrap');
@@ -18,10 +18,12 @@ function switchGame(){
     tetrisWrap.style.display = 'none';
     snakeWrap.style.display = 'block';
     document.title = 'Snake';
+    snakeGame.start();
   }else{
     tetrisWrap.style.display = 'block';
     snakeWrap.style.display = 'none';
     document.title = 'Tetris – Vanilla JS (Einzeldatei) + Scoreboard';
+    snakeGame.stop();
   }
 }
 
