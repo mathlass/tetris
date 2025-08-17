@@ -164,13 +164,18 @@
       <div>
         <h1>🐍 Snake</h1>
         <div class="controls top-controls">
+          <button id="btnMenu"><span class="material-icons">menu</span> Menü</button>
+          <button id="btnPlayer"><span class="material-icons">person</span> Spieler</button>
+          <button id="themeToggle"><span class="material-icons" id="themeIcon">brightness_6</span> Theme</button>
           <button id="snakeStart"><span class="material-icons">play_arrow</span> Start/Neu</button>
+          <button id="snakePause"><span class="material-icons">pause</span> Pause</button>
         </div>
         <div class="panel" style="margin-top:16px;text-align:center">
-          <canvas id="snakeCanvas" width="300" height="300" aria-label="Snake Board"></canvas>
-          <div class="controls" style="justify-content:center;margin-top:8px">
-            <span class="timer" id="snakeScoreLabel">Score: <span id="snakeScore">0</span></span>
+          <div class="controls" style="justify-content:center;margin:0 0 8px">
+            <span class="timer" id="snakeTopScore">Score: 0</span>
+            <span class="timer" id="snakeTopBest">Best: 0</span>
           </div>
+          <canvas id="snakeCanvas" width="300" height="300" aria-label="Snake Board"></canvas>
         </div>
         <div class="panel">
           <h3>Steuerung</h3>

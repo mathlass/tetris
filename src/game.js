@@ -359,8 +359,7 @@ export function initGame(){
       setPaused(menuPrevPaused);
     }
   }
-  const btnMenu = document.getElementById('btnMenu');
-  if(btnMenu){ btnMenu.addEventListener('click', toggleMenu); }
+  document.querySelectorAll('#btnMenu').forEach(btn => btn.addEventListener('click', toggleMenu));
   const btnMenuClose = document.getElementById('btnMenuClose');
   if(btnMenuClose){ btnMenuClose.addEventListener('click', toggleMenu); }
   const tabScore = document.getElementById('tabScore');
