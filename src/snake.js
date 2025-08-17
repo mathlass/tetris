@@ -2,6 +2,10 @@
 export function initSnake(){
   const canvas = document.getElementById('snakeCanvas');
   const btnStart = document.getElementById('snakeStart');
+  const btnPause = document.getElementById('snakePause');
+  const topScoreEl = document.getElementById('snakeTopScore');
+  const topBestEl = document.getElementById('snakeTopBest');
+  const menuOverlay = document.getElementById('menuOverlay');
   if(!canvas || !btnStart){
     return {
       start: () => {},
@@ -16,10 +20,14 @@ export function initSnake(){
   let food = {x:0, y:0};
   let timer = null;
   let score = 0;
+  let best = Number(localStorage.getItem('snakeBest')) || 0;
+  let running = false;
+  let paused = false;
+  let menuPrevPaused = false;
 
   function updateScore(){
-    const el = document.getElementById('snakeScore');
-    if(el) el.textContent = String(score);
+    if(topScoreEl) topScoreEl.textContent = `Score: ${score}`;
+    if(topBestEl) topBestEl.textContent = `Best: ${best}`;
   }
 
   function reset(){
@@ -56,6 +64,10 @@ export function initSnake(){
     snake.unshift(head);
     if(head.x===food.x && head.y===food.y){
       score++;
+      if(score>best){
+        best = score;
+        localStorage.setItem('snakeBest', String(best));
+      }
       updateScore();
       placeFood();
     }else{
@@ -66,6 +78,8 @@ export function initSnake(){
 
   function start(){
     stop();
+    running = true;
+    paused = false;
     reset();
     timer = setInterval(step, 100);
   }
@@ -75,6 +89,26 @@ export function initSnake(){
       clearInterval(timer);
       timer = null;
     }
+    running = false;
+    paused = false;
+  }
+
+  function pause(){
+    if(running && !paused){
+      if(timer){ clearInterval(timer); timer = null; }
+      paused = true;
+    }
+  }
+
+  function resume(){
+    if(running && paused){
+      timer = setInterval(step, 100);
+      paused = false;
+    }
+  }
+
+  function togglePause(){
+    paused ? resume() : pause();
   }
 
   function handleKey(e){
@@ -83,13 +117,36 @@ export function initSnake(){
       case 'ArrowRight': if(dir.x!==-1) dir={x:1,y:0}; break;
       case 'ArrowUp': if(dir.y!==1) dir={x:0,y:-1}; break;
       case 'ArrowDown': if(dir.y!==-1) dir={x:0,y:1}; break;
+      case 'KeyP': togglePause(); break;
       default: return;
     }
     e.preventDefault();
   }
 
   btnStart.addEventListener('click', start);
+  if(btnPause) btnPause.addEventListener('click', togglePause);
   document.addEventListener('keydown', handleKey);
+
+  document.querySelectorAll('#btnMenu').forEach(btn =>
+    btn.addEventListener('click', () => { menuPrevPaused = paused; pause(); })
+  );
+  const btnMenuClose = document.getElementById('btnMenuClose');
+  if(btnMenuClose){
+    btnMenuClose.addEventListener('click', () => {
+      if(running && !menuPrevPaused) resume();
+    });
+  }
+
+  document.addEventListener('keydown', e => {
+    if(e.code === 'Escape' && menuOverlay){
+      if(menuOverlay.classList.contains('show')){
+        if(running && !menuPrevPaused) resume();
+      } else {
+        menuPrevPaused = paused;
+        pause();
+      }
+    }
+  });
 
   return { start, stop };
 }

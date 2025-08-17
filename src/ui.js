@@ -7,15 +7,16 @@ export function initUI(){
     document.body.classList.add('theme-light');
   }
 
-  const btnTheme = document.getElementById('themeToggle');
-  const themeIcon = document.getElementById('themeIcon');
+  const btnThemes = document.querySelectorAll('#themeToggle');
+  const themeIcons = document.querySelectorAll('#themeIcon');
   function updateThemeIcon(){
-    if (!themeIcon) return;
-    themeIcon.textContent = document.body.classList.contains('theme-light') ? 'dark_mode' : 'light_mode';
+    themeIcons.forEach(icon => {
+      icon.textContent = document.body.classList.contains('theme-light') ? 'dark_mode' : 'light_mode';
+    });
   }
   updateThemeIcon();
-  if (btnTheme) {
-    btnTheme.addEventListener('click', () => {
+  btnThemes.forEach(btn => {
+    btn.addEventListener('click', () => {
       document.body.classList.toggle('theme-light');
       localStorage.setItem(
         THEME_KEY,
@@ -23,7 +24,7 @@ export function initUI(){
       );
       updateThemeIcon();
     });
-  }
+  });
 
   let playerName = localStorage.getItem(PLAYER_KEY) || 'Player';
   const dlgPlayer = document.getElementById('playerDialog');
@@ -54,10 +55,8 @@ export function initUI(){
       dlgPlayer.close();
     });
   }
-  const btnPlayer = document.getElementById('btnPlayer');
-  if (btnPlayer) {
-    btnPlayer.addEventListener('click', openPlayerDialog);
-  }
+  const btnPlayers = document.querySelectorAll('#btnPlayer');
+  btnPlayers.forEach(btn => btn.addEventListener('click', openPlayerDialog));
 
   document.addEventListener('contextmenu', e => e.preventDefault());
 }
