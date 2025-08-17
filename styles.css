@@ -31,11 +31,10 @@ html,body{height:100%;margin:0;background-color:var(--bg);background-image:linea
 h1{font-size:28px;letter-spacing:1px;margin:0 0 8px;font-family:'Press Start 2P',monospace}
 p{color:var(--muted);margin:0 0 12px}
 .grid{display:grid;grid-template-columns:320px 160px 160px;gap:16px;align-items:start}
-.game-area{display:flex;gap:16px;align-items:flex-start}
+.game-area{display:flex;flex-direction:column;gap:8px;align-items:center}
 @media (max-width:720px){
   .wrap{grid-template-columns:1fr}
   .grid{grid-template-columns:1fr}
-  .game-area{flex-direction:column;align-items:center}
   .board-wrap{max-width:90vw}
   .mobile-controls{display:grid;position:fixed;left:50%;transform:translateX(-50%);bottom:10px;width:100%;max-width:480px;background:var(--panel-bg);border:1px solid var(--panel-border);padding:8px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.3);z-index:1000}
   body{padding-bottom:120px}
