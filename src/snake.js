@@ -3,6 +3,12 @@ export function initSnake(){
   const canvas = document.getElementById('snakeCanvas');
   const btnStart = document.getElementById('snakeStart');
   const btnPause = document.getElementById('snakePause');
+  const btnMobileStart = document.getElementById('sStart');
+  const btnMobilePause = document.getElementById('sPause');
+  const btnLeft = document.getElementById('sLeft');
+  const btnRight = document.getElementById('sRight');
+  const btnUp = document.getElementById('sUp');
+  const btnDown = document.getElementById('sDown');
   const topScoreEl = document.getElementById('snakeTopScore');
   const topBestEl = document.getElementById('snakeTopBest');
   const menuOverlay = document.getElementById('menuOverlay');
@@ -125,6 +131,12 @@ export function initSnake(){
 
   btnStart.addEventListener('click', start);
   if(btnPause) btnPause.addEventListener('click', togglePause);
+  if(btnMobileStart) btnMobileStart.addEventListener('click', start);
+  if(btnMobilePause) btnMobilePause.addEventListener('click', togglePause);
+  if(btnLeft) btnLeft.addEventListener('click', () => { if(dir.x!==1) dir={x:-1,y:0}; });
+  if(btnRight) btnRight.addEventListener('click', () => { if(dir.x!==-1) dir={x:1,y:0}; });
+  if(btnUp) btnUp.addEventListener('click', () => { if(dir.y!==1) dir={x:0,y:-1}; });
+  if(btnDown) btnDown.addEventListener('click', () => { if(dir.y!==-1) dir={x:0,y:1}; });
   document.addEventListener('keydown', handleKey);
 
   document.querySelectorAll('#btnMenu').forEach(btn =>

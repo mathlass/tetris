@@ -3,7 +3,8 @@ Erstellt: 2025-08-15
 
 **Neu:** Neben Tetris gibt es jetzt auch ein einfaches Snake-Spiel. Über den
 Auswahlregler auf der Startseite kann zwischen beiden Spielen gewechselt
-werden.
+werden. Auf Mobilgeräten steht für Snake nun eine eigene Touch-Steuerung zur
+Verfügung.
 
 ## GitHub Pages (empfohlen)
 1) Neues Repo erstellen (z. B. `tetris`).
