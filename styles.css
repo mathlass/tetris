@@ -30,7 +30,7 @@ html,body{height:100%;margin:0;background-color:var(--bg);background-image:linea
 .wrap{max-width:980px;margin:24px auto;padding:0 16px;display:grid;grid-template-columns:1fr auto;gap:24px}
 h1{font-size:28px;letter-spacing:1px;margin:0 0 8px;font-family:'Press Start 2P',monospace}
 p{color:var(--muted);margin:0 0 12px}
-.grid{display:grid;grid-template-columns:320px 160px;gap:16px;align-items:start}
+.grid{display:grid;grid-template-columns:320px 160px 160px;gap:16px;align-items:start}
 .game-area{display:flex;gap:16px;align-items:flex-start}
 @media (max-width:720px){
   .wrap{grid-template-columns:1fr}
