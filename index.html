@@ -160,20 +160,24 @@
     </dialog>
   </div>
 
-  <div id="snakeWrap" class="wrap" style="display:none">
-    <div>
-      <h1>🐍 Snake</h1>
-      <div class="controls top-controls">
-        <button id="snakeStart"><span class="material-icons">play_arrow</span> Start/Neu</button>
-      </div>
-      <div class="panel" style="margin-top:16px;text-align:center">
-        <canvas id="snakeCanvas" width="300" height="300" aria-label="Snake Board"></canvas>
-        <div class="controls" style="justify-content:center;margin-top:8px">
-          <span class="timer" id="snakeScoreLabel">Score: <span id="snakeScore">0</span></span>
+    <div id="snakeWrap" class="wrap" style="display:none">
+      <div>
+        <h1>🐍 Snake</h1>
+        <div class="controls top-controls">
+          <button id="snakeStart"><span class="material-icons">play_arrow</span> Start/Neu</button>
+        </div>
+        <div class="panel" style="margin-top:16px;text-align:center">
+          <canvas id="snakeCanvas" width="300" height="300" aria-label="Snake Board"></canvas>
+          <div class="controls" style="justify-content:center;margin-top:8px">
+            <span class="timer" id="snakeScoreLabel">Score: <span id="snakeScore">0</span></span>
+          </div>
+        </div>
+        <div class="panel">
+          <h3>Steuerung</h3>
+          <p>Bewege die Schlange mit den Pfeiltasten. Iss die roten Häppchen und vermeide Kollisionen mit Wänden oder dir selbst.</p>
         </div>
       </div>
     </div>
-  </div>
 
   <script type="module" src="src/main.js"></script>
 </body>

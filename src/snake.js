@@ -2,7 +2,12 @@
 export function initSnake(){
   const canvas = document.getElementById('snakeCanvas');
   const btnStart = document.getElementById('snakeStart');
-  if(!canvas || !btnStart) return;
+  if(!canvas || !btnStart){
+    return {
+      start: () => {},
+      stop: () => {}
+    };
+  }
   const ctx = canvas.getContext('2d');
   const size = 15;
   const cells = Math.floor(canvas.width / size);
@@ -86,5 +91,5 @@ export function initSnake(){
   btnStart.addEventListener('click', start);
   document.addEventListener('keydown', handleKey);
 
-  // no return value
+  return { start, stop };
 }
