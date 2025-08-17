@@ -23,3 +23,8 @@ Um Highscores geräteübergreifend zu teilen, kann ein kleiner Node-Server genut
 3) Das Spiel ruft die Endpunkte `/scores/<mode>` (GET/POST) auf.
 
 Viel Spaß!
+
+## Lokale Entwicklung
+1) Optional: `npm install` (keine externen Abhängigkeiten erforderlich).
+2) Server starten: `npm start` → `http://localhost:3000`.
+3) Tests ausführen: `npm test` (Node.js Test Runner).
