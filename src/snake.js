@@ -17,6 +17,7 @@ export function initSnake(){
   const cells = Math.floor(canvas.width / size);
   let snake = [];
   let dir = {x:1, y:0};
+  let dirQueue = [];
   let food = {x:0, y:0};
   let timer = null;
   let score = 0;
@@ -33,6 +34,7 @@ export function initSnake(){
   function reset(){
     snake = [{x:Math.floor(cells/2), y:Math.floor(cells/2)}];
     dir = {x:1, y:0};
+    dirQueue = [];
     score = 0;
     updateScore();
     placeFood();
@@ -56,6 +58,7 @@ export function initSnake(){
   }
 
   function step(){
+    if(dirQueue.length) dir = dirQueue.shift();
     const head = {x:snake[0].x + dir.x, y:snake[0].y + dir.y};
     if(head.x<0 || head.y<0 || head.x>=cells || head.y>=cells || snake.some(p=>p.x===head.x && p.y===head.y)){
       stop();
@@ -112,23 +115,30 @@ export function initSnake(){
   }
 
   function handleKey(e){
+    let newDir;
     switch(e.key){
-      case 'ArrowLeft': if(dir.x!==1) dir={x:-1,y:0}; break;
-      case 'ArrowRight': if(dir.x!==-1) dir={x:1,y:0}; break;
-      case 'ArrowUp': if(dir.y!==1) dir={x:0,y:-1}; break;
-      case 'ArrowDown': if(dir.y!==-1) dir={x:0,y:1}; break;
-      case 'KeyP': togglePause(); break;
+      case 'ArrowLeft': newDir = {x:-1,y:0}; break;
+      case 'ArrowRight': newDir = {x:1,y:0}; break;
+      case 'ArrowUp': newDir = {x:0,y:-1}; break;
+      case 'ArrowDown': newDir = {x:0,y:1}; break;
+      case 'KeyP': togglePause(); return;
       default: return;
     }
+    const lastDir = dirQueue[dirQueue.length-1] || dir;
+    if(newDir.x === lastDir.x && newDir.y === lastDir.y) return;
+    if(newDir.x === -lastDir.x && newDir.y === -lastDir.y) return;
+    dirQueue.push(newDir);
     e.preventDefault();
   }
 
   function rotateLeft(){
-    dir = {x: dir.y, y: -dir.x};
+    const current = dirQueue[dirQueue.length-1] || dir;
+    dirQueue.push({x: current.y, y: -current.x});
   }
 
   function rotateRight(){
-    dir = {x: -dir.y, y: dir.x};
+    const current = dirQueue[dirQueue.length-1] || dir;
+    dirQueue.push({x: -current.y, y: current.x});
   }
 
   function handleTouch(e){
