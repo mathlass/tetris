@@ -70,27 +70,6 @@ select.input option{background:var(--input-bg);color:var(--fg)}
 #game{width:100%;height:auto}
 #pauseOverlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:48px;letter-spacing:2px;color:var(--fg);background:rgba(0,0,0,.35);opacity:0;pointer-events:none;transition:opacity .2s ease;border-radius:12px}
 #pauseOverlay.show{opacity:1}
-/* Mobile touch controls */
-.mobile-controls{display:none;grid-template-columns:repeat(4,1fr);gap:8px}
-@media (max-width:720px){
-  .mobile-controls{
-    display:grid;
-    position:fixed;
-    left:50%;
-    transform:translateX(-50%);
-    bottom:10px;
-    width:100%;
-    max-width:480px;
-    background:var(--panel-bg);
-    border:1px solid var(--panel-border);
-    padding:8px;
-    border-radius:12px;
-    box-shadow:0 4px 12px rgba(0,0,0,.3);
-    z-index:1000;
-  }
-  body{padding-bottom:120px}
-}
-.mobile-controls button{padding:16px;font-size:24px;border-radius:12px;display:flex;align-items:center;justify-content:center}
 .hidden{display:none!important}
 .timer{font-weight:700; font-size:18px; color:var(--accent)}
 [aria-label]::before,[aria-label]::after{display:none;content:none}

@@ -3,8 +3,6 @@ export function initSnake(){
   const canvas = document.getElementById('snakeCanvas');
   const btnStart = document.getElementById('snakeStart');
   const btnPause = document.getElementById('snakePause');
-  const btnMobileStart = document.getElementById('sStart');
-  const btnMobilePause = document.getElementById('sPause');
   const topScoreEl = document.getElementById('snakeTopScore');
   const topBestEl = document.getElementById('snakeTopBest');
   const menuOverlay = document.getElementById('menuOverlay');
@@ -146,8 +144,6 @@ export function initSnake(){
 
   btnStart.addEventListener('click', start);
   if(btnPause) btnPause.addEventListener('click', togglePause);
-  if(btnMobileStart) btnMobileStart.addEventListener('click', start);
-  if(btnMobilePause) btnMobilePause.addEventListener('click', togglePause);
   canvas.addEventListener('touchstart', handleTouch, {passive:false});
   canvas.addEventListener('mousedown', handleTouch);
   document.addEventListener('keydown', handleKey);
