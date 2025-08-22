@@ -1,5 +1,29 @@
 import { COLS, ROWS } from './constants.js';
 
+// Kick tables according to the Super Rotation System (SRS)
+// Separate tables for I-piece and all other pieces
+const JLSTZ_KICKS = [
+  // 0 -> 1
+  [ [0,0], [-1,0], [-1,1], [0,-2], [-1,-2] ],
+  // 1 -> 2
+  [ [0,0], [1,0], [1,-1], [0,2], [1,2] ],
+  // 2 -> 3
+  [ [0,0], [1,0], [1,1], [0,-2], [1,-2] ],
+  // 3 -> 0
+  [ [0,0], [-1,0], [-1,-1], [0,2], [-1,2] ]
+];
+
+const I_KICKS = [
+  // 0 -> 1
+  [ [0,0], [-2,0], [1,0], [-2,-1], [1,2] ],
+  // 1 -> 2
+  [ [0,0], [-1,0], [2,0], [-1,2], [2,-1] ],
+  // 2 -> 3
+  [ [0,0], [2,0], [-1,0], [2,1], [-1,-2] ],
+  // 3 -> 0
+  [ [0,0], [1,0], [-2,0], [1,-2], [-2,1] ]
+];
+
 export function collides(board, p) {
   const m = p.shape[p.rot];
   for (let y = 0; y < m.length; y++) {
@@ -15,11 +39,11 @@ export function collides(board, p) {
 }
 
 export function rotate(board, p) {
-  const test = { ...p, rot: (p.rot + 1) % p.shape.length };
-  if (!collides(board, test)) return test;
-  for (const dx of [-1, 1, -2, 2]) {
-    const kicked = { ...test, x: test.x + dx };
-    if (!collides(board, kicked)) return kicked;
+  const rot = (p.rot + 1) % p.shape.length;
+  const kicks = (p.type === 'I' ? I_KICKS : JLSTZ_KICKS)[p.rot];
+  for (const [dx, dy] of kicks) {
+    const test = { ...p, rot, x: p.x + dx, y: p.y + dy };
+    if (!collides(board, test)) return test;
   }
   return p;
 }

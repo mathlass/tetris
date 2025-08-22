@@ -36,6 +36,24 @@ test('rotate fails when no space available', () => {
   assert.equal(rotated.x, 4);
 });
 
+test('T piece near floor uses SRS kick to rotate', () => {
+  const board = emptyBoard();
+  let piece = { type: 'T', rot: 0, x: 4, y: 18, shape: SHAPES.T };
+  piece = rotate(board, piece);
+  assert.equal(piece.rot, 1);
+  assert.equal(piece.x, 4);
+  assert.equal(piece.y, 16);
+});
+
+test('I piece at wall rotates using I-kick table', () => {
+  const board = emptyBoard();
+  let piece = { type: 'I', rot: 1, x: -2, y: 0, shape: SHAPES.I };
+  piece = rotate(board, piece);
+  assert.equal(piece.rot, 2);
+  assert.equal(piece.x, 0);
+  assert.equal(piece.y, 0);
+});
+
 // clearLines tests
 
 test('clearLines removes multiple full rows', () => {
