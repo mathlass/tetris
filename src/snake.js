@@ -1,4 +1,7 @@
 // Simple Snake game implementation
+import { PLAYER_KEY } from './constants.js';
+import { addHS, renderHS, clearHS } from './snakeHighscores.js';
+
 export function initSnake(){
   const canvas = document.getElementById('snakeCanvas');
   const btnStart = document.getElementById('snakeStart');
@@ -11,6 +14,7 @@ export function initSnake(){
   const ovBestEl = document.getElementById('snakeOvBest');
   const btnRestart = document.getElementById('snakeBtnRestart');
   const btnClose = document.getElementById('snakeBtnClose');
+  const btnResetHS = document.getElementById('snakeBtnResetHS');
   if(!canvas || !btnStart){
     return {
       start: () => {},
@@ -40,6 +44,7 @@ export function initSnake(){
     if(!ov) return;
     if(ovScoreEl) ovScoreEl.textContent = String(score);
     if(ovBestEl) ovBestEl.textContent = String(best);
+    renderHS();
     ov.classList.add('show');
   }
 
@@ -99,6 +104,8 @@ export function initSnake(){
 
   function gameOver(){
     stop(false);
+    const name = localStorage.getItem(PLAYER_KEY) || 'Player';
+    addHS({ name, score, date: new Date().toLocaleDateString() });
     showOverlay();
   }
 
@@ -183,6 +190,15 @@ export function initSnake(){
   document.addEventListener('keydown', handleKey);
   if(btnRestart) btnRestart.addEventListener('click', start);
   if(btnClose) btnClose.addEventListener('click', hideOverlay);
+  if(btnResetHS){
+    btnResetHS.addEventListener('click', () => {
+      clearHS();
+      localStorage.removeItem('snakeBest');
+      best = 0;
+      updateScore();
+      renderHS();
+    });
+  }
 
   function toggleMenu(){
     if(!menuOverlay) return;
