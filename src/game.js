@@ -391,7 +391,7 @@ export function initGame(){
   const btnClose = document.getElementById('btnClose');
   if(btnClose){ btnClose.addEventListener('click', ()=> hideOverlay()); }
 
-  // Touch Buttons
+  // Touch actions for swipe gestures
   const touchMap = {
     mLeft:()=>{ if(paused) return; const p={...cur,x:cur.x-1}; if(!collides(board, p)) {cur.x--; sfx.move();}},
     mRight:()=>{ if(paused) return; const p={...cur,x:cur.x+1}; if(!collides(board, p)) {cur.x++; sfx.move();}},
@@ -404,30 +404,8 @@ export function initGame(){
         sfx.rotate();
       }
     },
-    mSoft:()=>{ if(paused) return; softDrop(); },
-    mHard:()=>{ if(paused) return; hardDrop(); },
-    mPause:()=>{ if(running){ setPaused(!paused); } },
-    mStart:()=>{ reset(); update(); }
+    mHard:()=>{ if(paused) return; hardDrop(); }
   };
-  Object.keys(touchMap).forEach(id=>{
-    const el=document.getElementById(id);
-    if(!el) return;
-    if(id==='mLeft' || id==='mRight') return;
-    el.addEventListener('click', touchMap[id]);
-  });
-
-  function addHoldRepeat(id, fn){
-    const el=document.getElementById(id);
-    if(!el) return;
-    let t=null, iv=null;
-    const clear=()=>{ if(t){clearTimeout(t); t=null;} if(iv){clearInterval(iv); iv=null;} };
-    const start=(e)=>{ if(paused) return; e.preventDefault(); fn(); t=setTimeout(()=>{ iv=setInterval(fn,80); },150); };
-    const end=()=>clear();
-    ['touchstart','mousedown'].forEach(evt=>el.addEventListener(evt,start));
-    ['touchend','mouseup','mouseleave','touchcancel'].forEach(evt=>el.addEventListener(evt,end));
-  }
-  addHoldRepeat('mLeft', touchMap.mLeft);
-  addHoldRepeat('mRight', touchMap.mRight);
 
   // Swipe Gestures auf dem Board
   (function(){
