@@ -15,6 +15,7 @@ export function initSnake(){
   const btnRestart = document.getElementById('snakeBtnRestart');
   const btnClose = document.getElementById('snakeBtnClose');
   const btnResetHS = document.getElementById('snakeBtnResetHS');
+  const chkWrap = document.getElementById('optSnakeWrap');
   if(!canvas || !btnStart){
     return {
       start: () => {},
@@ -34,6 +35,14 @@ export function initSnake(){
   let running = false;
   let paused = false;
   let menuPrevPaused = false;
+  let wrap = localStorage.getItem('snakeWrap') === '1';
+  if(chkWrap){
+    chkWrap.checked = wrap;
+    chkWrap.addEventListener('change', () => {
+      wrap = chkWrap.checked;
+      localStorage.setItem('snakeWrap', wrap ? '1' : '0');
+    });
+  }
 
   function updateScore(){
     if(topScoreEl) topScoreEl.textContent = `Score: ${score}`;
@@ -83,7 +92,14 @@ export function initSnake(){
   function step(){
     if(dirQueue.length) dir = dirQueue.shift();
     const head = {x:snake[0].x + dir.x, y:snake[0].y + dir.y};
-    if(head.x<0 || head.y<0 || head.x>=cells || head.y>=cells || snake.some(p=>p.x===head.x && p.y===head.y)){
+    if(wrap){
+      head.x = (head.x + cells) % cells;
+      head.y = (head.y + cells) % cells;
+    }else if(head.x<0 || head.y<0 || head.x>=cells || head.y>=cells){
+      gameOver();
+      return;
+    }
+    if(snake.some(p=>p.x===head.x && p.y===head.y)){
       gameOver();
       return;
     }
