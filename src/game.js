@@ -349,6 +349,8 @@ export function initGame(){
   const menuOverlay = document.getElementById('menuOverlay');
   let menuPrevPaused = false;
   function toggleMenu(){
+    const wrap = document.getElementById('tetrisWrap');
+    if(wrap && wrap.classList.contains('hidden')) return;
     const show = !menuOverlay.classList.contains('show');
     menuOverlay.classList.toggle('show', show);
     menuOverlay.setAttribute('aria-hidden', String(!show));
