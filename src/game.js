@@ -348,9 +348,6 @@ export function initGame(){
 
   // ==== UI Buttons
   let menuPrevPaused = false;
-  document.querySelectorAll('#btnMenu').forEach(btn => btn.addEventListener('click', () => {
-    toggleMenuOverlay();
-  }));
   document.addEventListener('menuToggle', e => {
     const show = e.detail.show;
     if(show){

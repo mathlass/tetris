@@ -240,10 +240,6 @@ export function initSnake(){
     });
   }
 
-  const btnMenu = document.getElementById('snakeBtnMenu');
-  if(btnMenu){
-    btnMenu.addEventListener('click', () => toggleMenuOverlay());
-  }
   let menuPrevPaused = false;
   document.addEventListener('menuToggle', e => {
     const show = e.detail.show;
