@@ -213,9 +213,10 @@ export function initSnake(){
     }
   }
 
-  document.querySelectorAll('#btnMenu').forEach(btn =>
-    btn.addEventListener('click', toggleMenu)
-  );
+  const btnMenu = document.getElementById('snakeBtnMenu');
+  if(btnMenu){
+    btnMenu.addEventListener('click', toggleMenu);
+  }
   const btnMenuClose = document.getElementById('btnMenuClose');
   if(btnMenuClose){
     btnMenuClose.addEventListener('click', toggleMenu);
