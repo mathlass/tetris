@@ -59,6 +59,7 @@ select.input option{background:var(--input-bg);color:var(--fg)}
 /* Menu Overlay */
 #menuOverlay{position:fixed;inset:0;overflow-y:auto;background:rgba(0,0,0,.6);padding:24px 16px;opacity:0;pointer-events:none;transition:opacity .25s ease;z-index:9998}
 #menuOverlay.show{opacity:1;pointer-events:auto}
+#menuOverlay [role="tablist"] button.active{background:var(--button-hover-bg)}
 /* Overlay Game Over */
 #overlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s ease;background:rgba(0,0,0,.45);backdrop-filter:blur(2px) saturate(1.1);z-index:9999}
 #overlay.show{opacity:1;pointer-events:auto}

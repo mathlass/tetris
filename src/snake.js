@@ -2,6 +2,7 @@
 import { PLAYER_KEY } from './constants.js';
 import { addHS, renderHS, clearHS } from './snakeHighscores.js';
 import { loadSettings, saveSettings } from './settings.js';
+import { toggleMenuOverlay } from './menu.js';
 
 export function initSnake(){
   const canvas = document.getElementById('snakeCanvas');
@@ -9,7 +10,6 @@ export function initSnake(){
   const btnPause = document.getElementById('snakePause');
   const topScoreEl = document.getElementById('snakeTopScore');
   const topBestEl = document.getElementById('snakeTopBest');
-  const menuOverlay = document.getElementById('menuOverlay');
   const ov = document.getElementById('snakeOverlay');
   const ovScoreEl = document.getElementById('snakeOvScore');
   const ovBestEl = document.getElementById('snakeOvBest');
@@ -240,32 +240,22 @@ export function initSnake(){
     });
   }
 
-  function toggleMenu(){
-    if(!menuOverlay) return;
-    const wrap = document.getElementById('snakeWrap');
-    if(wrap && wrap.classList.contains('hidden')) return;
-    const show = !menuOverlay.classList.contains('show');
-    menuOverlay.classList.toggle('show', show);
-    menuOverlay.setAttribute('aria-hidden', String(!show));
+  const btnMenu = document.getElementById('snakeBtnMenu');
+  if(btnMenu){
+    btnMenu.addEventListener('click', () => toggleMenuOverlay());
+  }
+  let menuPrevPaused = false;
+  document.addEventListener('menuToggle', e => {
+    const show = e.detail.show;
     if(show){
       menuPrevPaused = paused;
       pause();
-    } else {
-      if(running && !menuPrevPaused) resume();
+    } else if(running && !menuPrevPaused){
+      resume();
     }
-  }
-
-  const btnMenu = document.getElementById('snakeBtnMenu');
-  if(btnMenu){
-    btnMenu.addEventListener('click', toggleMenu);
-  }
-  const btnMenuClose = document.getElementById('btnMenuClose');
-  if(btnMenuClose){
-    btnMenuClose.addEventListener('click', toggleMenu);
-  }
-
+  });
   document.addEventListener('keydown', e => {
-    if(e.code === 'Escape') toggleMenu();
+    if(e.code === 'Escape') toggleMenuOverlay();
   });
 
   return { start, stop };

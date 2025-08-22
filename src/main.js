@@ -2,9 +2,11 @@
 import { initUI } from './ui.js';
 import { initGame } from './game.js';
 import { initSnake } from './snake.js';
+import { initMenu, toggleMenuOverlay } from './menu.js';
 import { logError } from './logger.js';
 
 initUI();
+initMenu();
 initGame();
 const snakeGame = initSnake();
 
@@ -15,9 +17,8 @@ const menuOverlay = document.getElementById('menuOverlay');
 
 function switchGame(){
   if(!gameSelect || !tetrisWrap || !snakeWrap) return;
-  if(menuOverlay){
-    menuOverlay.classList.remove('show');
-    menuOverlay.setAttribute('aria-hidden', 'true');
+  if(menuOverlay && menuOverlay.classList.contains('show')){
+    toggleMenuOverlay();
   }
   if(gameSelect.value === 'snake'){
     tetrisWrap.classList.add('hidden');
