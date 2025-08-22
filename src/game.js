@@ -17,6 +17,7 @@ import { createSfx } from './audio.js';
 import { collides, clearLines as clearBoardLines, rotate, getDropY } from './logic.js';
 import { addHS, renderHS, sanitizeName, bestKey } from './highscores.js';
 import { loadSettings, saveSettings, applyPalette } from './settings.js';
+import { toggleMenuOverlay } from './menu.js';
 
 export function initGame(){
   // ==== Settings
@@ -311,7 +312,7 @@ export function initGame(){
 
     const mOverlay = document.getElementById('menuOverlay');
     if(mOverlay && mOverlay.classList.contains('show')){
-      if(e.code==='Escape'){ e.preventDefault(); toggleMenu(); }
+      if(e.code==='Escape'){ e.preventDefault(); toggleMenuOverlay(); }
       return;
     }
 
@@ -346,32 +347,19 @@ export function initGame(){
   }, {passive:false});
 
   // ==== UI Buttons
-  const menuOverlay = document.getElementById('menuOverlay');
   let menuPrevPaused = false;
-  function toggleMenu(){
-    const wrap = document.getElementById('tetrisWrap');
-    if(wrap && wrap.classList.contains('hidden')) return;
-    const show = !menuOverlay.classList.contains('show');
-    menuOverlay.classList.toggle('show', show);
-    menuOverlay.setAttribute('aria-hidden', String(!show));
+  document.querySelectorAll('#btnMenu').forEach(btn => btn.addEventListener('click', () => {
+    toggleMenuOverlay();
+  }));
+  document.addEventListener('menuToggle', e => {
+    const show = e.detail.show;
     if(show){
       menuPrevPaused = paused;
       setPaused(true);
     } else {
       setPaused(menuPrevPaused);
     }
-  }
-  document.querySelectorAll('#btnMenu').forEach(btn => btn.addEventListener('click', toggleMenu));
-  const btnMenuClose = document.getElementById('btnMenuClose');
-  if(btnMenuClose){ btnMenuClose.addEventListener('click', toggleMenu); }
-  const tabScore = document.getElementById('tabScore');
-  const tabSettings = document.getElementById('tabSettings');
-  const scorePanel = document.getElementById('scorePanel');
-  const settingsPanel = document.getElementById('settingsPanel');
-  if(tabScore && tabSettings){
-    tabScore.addEventListener('click', ()=>{ scorePanel.style.display='block'; settingsPanel.style.display='none'; });
-    tabSettings.addEventListener('click', ()=>{ scorePanel.style.display='none'; settingsPanel.style.display='block'; });
-  }
+  });
   const btnStart = document.getElementById('btnStart');
   if(btnStart){ btnStart.addEventListener('click', e=>{ e.preventDefault(); reset(); update(); }); }
   const modeSelect = document.getElementById('modeSelect');

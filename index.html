@@ -115,11 +115,11 @@
         </div>
       </div>
   </div>
-  <div id="menuOverlay" aria-hidden="true">
+  <div id="menuOverlay" aria-hidden="true" role="dialog" aria-modal="true">
     <button id="btnMenuClose" style="position:absolute;top:16px;right:16px">Schließen</button>
-    <div class="buttons" style="justify-content:center;margin:24px 0;">
-      <button id="tabScore">Scoreboard</button>
-      <button id="tabSettings">Einstellungen</button>
+    <div class="buttons" role="tablist" style="justify-content:center;margin:24px 0;">
+      <button id="tabScore" role="tab" aria-controls="scorePanel">Scoreboard</button>
+      <button id="tabSettings" role="tab" aria-controls="settingsPanel">Einstellungen</button>
     </div>
     <div class="panel" id="scorePanel" style="margin-top:16px;">
       <h3>Scoreboard – <span id="hsModeLabel">Classic</span></h3>
