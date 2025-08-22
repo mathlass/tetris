@@ -6,6 +6,11 @@ export function initSnake(){
   const topScoreEl = document.getElementById('snakeTopScore');
   const topBestEl = document.getElementById('snakeTopBest');
   const menuOverlay = document.getElementById('menuOverlay');
+  const ov = document.getElementById('snakeOverlay');
+  const ovScoreEl = document.getElementById('snakeOvScore');
+  const ovBestEl = document.getElementById('snakeOvBest');
+  const btnRestart = document.getElementById('snakeBtnRestart');
+  const btnClose = document.getElementById('snakeBtnClose');
   if(!canvas || !btnStart){
     return {
       start: () => {},
@@ -29,6 +34,17 @@ export function initSnake(){
   function updateScore(){
     if(topScoreEl) topScoreEl.textContent = `Score: ${score}`;
     if(topBestEl) topBestEl.textContent = `Best: ${best}`;
+  }
+
+  function showOverlay(){
+    if(!ov) return;
+    if(ovScoreEl) ovScoreEl.textContent = String(score);
+    if(ovBestEl) ovBestEl.textContent = String(best);
+    ov.classList.add('show');
+  }
+
+  function hideOverlay(){
+    if(ov) ov.classList.remove('show');
   }
 
   function reset(){
@@ -61,7 +77,7 @@ export function initSnake(){
     if(dirQueue.length) dir = dirQueue.shift();
     const head = {x:snake[0].x + dir.x, y:snake[0].y + dir.y};
     if(head.x<0 || head.y<0 || head.x>=cells || head.y>=cells || snake.some(p=>p.x===head.x && p.y===head.y)){
-      stop();
+      gameOver();
       return;
     }
     snake.unshift(head);
@@ -79,6 +95,11 @@ export function initSnake(){
     draw();
   }
 
+  function gameOver(){
+    stop(false);
+    showOverlay();
+  }
+
   function start(){
     stop();
     running = true;
@@ -87,13 +108,14 @@ export function initSnake(){
     timer = setInterval(step, 100);
   }
 
-  function stop(){
+  function stop(hide=true){
     if(timer){
       clearInterval(timer);
       timer = null;
     }
     running = false;
     paused = false;
+    if(hide) hideOverlay();
   }
 
   function pause(){
@@ -157,6 +179,8 @@ export function initSnake(){
   canvas.addEventListener('touchstart', handleTouch, {passive:false});
   canvas.addEventListener('mousedown', handleTouch);
   document.addEventListener('keydown', handleKey);
+  if(btnRestart) btnRestart.addEventListener('click', start);
+  if(btnClose) btnClose.addEventListener('click', hideOverlay);
 
   function toggleMenu(){
     if(!menuOverlay) return;
