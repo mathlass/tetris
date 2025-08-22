@@ -16,6 +16,11 @@ export function initMenu(){
     settings: document.getElementById('settingsPanel')
   };
 
+  // Open buttons
+  [document.getElementById('btnMenu'), document.getElementById('snakeBtnMenu')]
+    .filter(Boolean)
+    .forEach(btn => btn.addEventListener('click', toggleMenuOverlay));
+
   // Restore last active tab
   const saved = localStorage.getItem(TAB_KEY);
   const defaultTab = saved === 'settings' ? tabButtons[1] : tabButtons[0];
