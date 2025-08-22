@@ -5,10 +5,6 @@ export function initSnake(){
   const btnPause = document.getElementById('snakePause');
   const btnMobileStart = document.getElementById('sStart');
   const btnMobilePause = document.getElementById('sPause');
-  const btnLeft = document.getElementById('sLeft');
-  const btnRight = document.getElementById('sRight');
-  const btnUp = document.getElementById('sUp');
-  const btnDown = document.getElementById('sDown');
   const topScoreEl = document.getElementById('snakeTopScore');
   const topBestEl = document.getElementById('snakeTopBest');
   const menuOverlay = document.getElementById('menuOverlay');
@@ -129,14 +125,31 @@ export function initSnake(){
     e.preventDefault();
   }
 
+  function rotateLeft(){
+    dir = {x: dir.y, y: -dir.x};
+  }
+
+  function rotateRight(){
+    dir = {x: -dir.y, y: dir.x};
+  }
+
+  function handleTouch(e){
+    const rect = canvas.getBoundingClientRect();
+    const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+    if(x < rect.width / 2){
+      rotateLeft();
+    }else{
+      rotateRight();
+    }
+    e.preventDefault();
+  }
+
   btnStart.addEventListener('click', start);
   if(btnPause) btnPause.addEventListener('click', togglePause);
   if(btnMobileStart) btnMobileStart.addEventListener('click', start);
   if(btnMobilePause) btnMobilePause.addEventListener('click', togglePause);
-  if(btnLeft) btnLeft.addEventListener('click', () => { if(dir.x!==1) dir={x:-1,y:0}; });
-  if(btnRight) btnRight.addEventListener('click', () => { if(dir.x!==-1) dir={x:1,y:0}; });
-  if(btnUp) btnUp.addEventListener('click', () => { if(dir.y!==1) dir={x:0,y:-1}; });
-  if(btnDown) btnDown.addEventListener('click', () => { if(dir.y!==-1) dir={x:0,y:1}; });
+  canvas.addEventListener('touchstart', handleTouch, {passive:false});
+  canvas.addEventListener('mousedown', handleTouch);
   document.addEventListener('keydown', handleKey);
 
   function toggleMenu(){
