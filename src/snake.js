@@ -58,10 +58,12 @@ export function initSnake(){
   }
 
   function placeFood(){
-    food = {
-      x: Math.floor(Math.random() * cells),
-      y: Math.floor(Math.random() * cells)
-    };
+    let x, y;
+    do {
+      x = Math.floor(Math.random() * cells);
+      y = Math.floor(Math.random() * cells);
+    } while(snake.some(p => p.x===x && p.y===y));
+    food = {x, y};
   }
 
   function draw(){
