@@ -20,13 +20,13 @@ function switchGame(){
     menuOverlay.setAttribute('aria-hidden', 'true');
   }
   if(gameSelect.value === 'snake'){
-    tetrisWrap.style.display = 'none';
-    snakeWrap.style.display = 'block';
+    tetrisWrap.classList.add('hidden');
+    snakeWrap.classList.remove('hidden');
     document.title = 'Snake';
     snakeGame.start();
   }else{
-    tetrisWrap.style.display = 'block';
-    snakeWrap.style.display = 'none';
+    tetrisWrap.classList.remove('hidden');
+    snakeWrap.classList.add('hidden');
     document.title = 'Tetris – Vanilla JS (Einzeldatei) + Scoreboard';
     snakeGame.stop();
   }

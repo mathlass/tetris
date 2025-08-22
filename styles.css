@@ -91,6 +91,7 @@ select.input option{background:var(--input-bg);color:var(--fg)}
   body{padding-bottom:120px}
 }
 .mobile-controls button{padding:16px;font-size:24px;border-radius:12px;display:flex;align-items:center;justify-content:center}
+.hidden{display:none!important}
 .timer{font-weight:700; font-size:18px; color:var(--accent)}
 [aria-label]::before,[aria-label]::after{display:none;content:none}
 dialog{border:1px solid var(--panel-border);background:var(--panel-bg);color:var(--fg);border-radius:12px;padding:16px}
