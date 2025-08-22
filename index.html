@@ -166,6 +166,21 @@
     </div>
   </div>
 
+  <!-- Snake Game Over Overlay -->
+  <div id="snakeOverlay" aria-hidden="true">
+    <div class="overlay-card" role="dialog" aria-modal="true" aria-labelledby="snakeOvTitle">
+      <h2 id="snakeOvTitle">Game Over</h2>
+      <div class="stats" style="margin-top:8px">
+        <div class="stat">Score<b id="snakeOvScore">0</b></div>
+        <div class="stat">Best<b id="snakeOvBest">0</b></div>
+      </div>
+      <div class="buttons" style="justify-content:center;margin-top:14px">
+        <button id="snakeBtnRestart">Neu starten</button>
+        <button id="snakeBtnClose">Schließen</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Spielername Dialog -->
   <dialog id="playerDialog">
     <form method="dialog">
