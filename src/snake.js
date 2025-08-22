@@ -242,6 +242,8 @@ export function initSnake(){
 
   function toggleMenu(){
     if(!menuOverlay) return;
+    const wrap = document.getElementById('snakeWrap');
+    if(wrap && wrap.classList.contains('hidden')) return;
     const show = !menuOverlay.classList.contains('show');
     menuOverlay.classList.toggle('show', show);
     menuOverlay.setAttribute('aria-hidden', String(!show));
