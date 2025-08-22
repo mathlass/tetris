@@ -1,6 +1,7 @@
 // Simple Snake game implementation
 import { PLAYER_KEY } from './constants.js';
 import { addHS, renderHS, clearHS } from './snakeHighscores.js';
+import { loadSettings, saveSettings } from './settings.js';
 
 export function initSnake(){
   const canvas = document.getElementById('snakeCanvas');
@@ -28,12 +29,14 @@ export function initSnake(){
   let dir = {x:1, y:0};
   let dirQueue = [];
   let food = {x:0, y:0};
+  let obstacles = [];
   let timer = null;
   let score = 0;
   let best = Number(localStorage.getItem('snakeBest')) || 0;
   let running = false;
   let paused = false;
   let menuPrevPaused = false;
+  let settings = loadSettings();
 
   function updateScore(){
     if(topScoreEl) topScoreEl.textContent = `Score: ${score}`;
@@ -57,7 +60,9 @@ export function initSnake(){
     dir = {x:1, y:0};
     dirQueue = [];
     score = 0;
+    obstacles = [];
     updateScore();
+    if(settings.snakeObstacles) placeObstacles();
     placeFood();
     draw();
   }
@@ -67,13 +72,34 @@ export function initSnake(){
     do {
       x = Math.floor(Math.random() * cells);
       y = Math.floor(Math.random() * cells);
-    } while(snake.some(p => p.x===x && p.y===y));
+    } while(
+      snake.some(p => p.x===x && p.y===y) ||
+      obstacles.some(o => o.x===x && o.y===y)
+    );
     food = {x, y};
+  }
+
+  function placeObstacles(){
+    const count = 5;
+    obstacles = [];
+    for(let i=0;i<count;i++){
+      let x, y;
+      do {
+        x = Math.floor(Math.random() * cells);
+        y = Math.floor(Math.random() * cells);
+      } while(
+        snake.some(p => p.x===x && p.y===y) ||
+        obstacles.some(o => o.x===x && o.y===y)
+      );
+      obstacles.push({x, y});
+    }
   }
 
   function draw(){
     ctx.fillStyle = '#000';
     ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle = '#888';
+    obstacles.forEach(o => ctx.fillRect(o.x*size, o.y*size, size-1, size-1));
     ctx.fillStyle = '#0f0';
     snake.forEach(s => ctx.fillRect(s.x*size, s.y*size, size-1, size-1));
     ctx.fillStyle = '#f00';
@@ -83,7 +109,11 @@ export function initSnake(){
   function step(){
     if(dirQueue.length) dir = dirQueue.shift();
     const head = {x:snake[0].x + dir.x, y:snake[0].y + dir.y};
-    if(head.x<0 || head.y<0 || head.x>=cells || head.y>=cells || snake.some(p=>p.x===head.x && p.y===head.y)){
+    if(
+      head.x<0 || head.y<0 || head.x>=cells || head.y>=cells ||
+      snake.some(p=>p.x===head.x && p.y===head.y) ||
+      obstacles.some(o=>o.x===head.x && o.y===head.y)
+    ){
       gameOver();
       return;
     }
@@ -197,6 +227,16 @@ export function initSnake(){
       best = 0;
       updateScore();
       renderHS();
+    });
+  }
+
+  const chkObstacles = document.getElementById('optSnakeObstacles');
+  if(chkObstacles){
+    chkObstacles.checked = !!settings.snakeObstacles;
+    chkObstacles.addEventListener('change', () => {
+      settings.snakeObstacles = chkObstacles.checked;
+      saveSettings(settings);
+      reset();
     });
   }
 
