@@ -240,7 +240,6 @@ export function initSnake(){
     });
   }
 
-  let menuPrevPaused = false;
   document.addEventListener('menuToggle', e => {
     const show = e.detail.show;
     if(show){
