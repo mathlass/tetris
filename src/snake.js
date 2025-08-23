@@ -1,7 +1,6 @@
 // Simple Snake game implementation
 import { PLAYER_KEY } from './constants.js';
 import { addHS, renderHS, clearHS } from './snakeHighscores.js';
-import { loadSettings, saveSettings } from './settings.js';
 import { toggleMenuOverlay } from './menu.js';
 
 export function initSnake(){
@@ -16,6 +15,7 @@ export function initSnake(){
   const btnRestart = document.getElementById('snakeBtnRestart');
   const btnClose = document.getElementById('snakeBtnClose');
   const btnResetHS = document.getElementById('snakeBtnResetHS');
+  const modeSelect = document.getElementById('snakeModeSelect');
   if(!canvas || !btnStart){
     return {
       start: () => {},
@@ -36,7 +36,7 @@ export function initSnake(){
   let running = false;
   let paused = false;
   let menuPrevPaused = false;
-  let settings = loadSettings();
+  let mode = 'classic';
 
   function updateScore(){
     if(topScoreEl) topScoreEl.textContent = `Score: ${score}`;
@@ -62,7 +62,7 @@ export function initSnake(){
     score = 0;
     obstacles = [];
     updateScore();
-    if(settings.snakeObstacles) placeObstacles();
+    if(mode === 'obstacles') placeObstacles();
     placeFood();
     draw();
   }
@@ -230,12 +230,10 @@ export function initSnake(){
     });
   }
 
-  const chkObstacles = document.getElementById('optSnakeObstacles');
-  if(chkObstacles){
-    chkObstacles.checked = !!settings.snakeObstacles;
-    chkObstacles.addEventListener('change', () => {
-      settings.snakeObstacles = chkObstacles.checked;
-      saveSettings(settings);
+  if(modeSelect){
+    mode = modeSelect.value;
+    modeSelect.addEventListener('change', () => {
+      mode = modeSelect.value;
       reset();
     });
   }
