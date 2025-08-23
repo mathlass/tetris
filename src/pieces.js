@@ -20,11 +20,12 @@ export function newPiece(type) {
 /**
  * Refill the piece bag with a shuffled set of all piece types
  * @param {string[]} bag Mutable array representing the current bag
+ * @param {() => number} [randomFn=Math.random] RNG function for shuffling
  */
-export function refillBag(bag) {
+export function refillBag(bag, randomFn = Math.random) {
   const types = ['I', 'J', 'L', 'O', 'S', 'T', 'Z'];
   for (let i = types.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
+    const j = Math.floor(randomFn() * (i + 1));
     [types[i], types[j]] = [types[j], types[i]];
   }
   bag.push(...types);

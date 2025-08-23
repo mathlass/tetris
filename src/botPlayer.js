@@ -33,7 +33,7 @@ export class BotPlayer {
   }
 
   playPiece() {
-    if (this.bag.length === 0) refillBag(this.bag);
+    if (this.bag.length === 0) refillBag(this.bag, this.random);
     const type = this.bag.shift();
     let piece = newPiece(type);
     this.pieces++;
@@ -105,7 +105,7 @@ export class BotPlayer {
   }
 }
 
-export function runBot(count = 100) {
-  const bot = new BotPlayer();
+export function runBot(count = 100, random = Math.random) {
+  const bot = new BotPlayer(random);
   return bot.play(count);
 }
