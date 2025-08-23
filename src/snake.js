@@ -202,21 +202,28 @@ export function initSnake(){
     dirQueue.push({x: -current.y, y: current.x});
   }
 
-  function handleTouch(e){
-    const rect = canvas.getBoundingClientRect();
-    const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
-    if(x < rect.width / 2){
-      rotateLeft();
+  function handlePointer(e){
+    if(e.pointerType === 'mouse'){
+      if(e.button === 2){
+        rotateRight();
+      }else{
+        rotateLeft();
+      }
     }else{
-      rotateRight();
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      if(x < rect.width / 2){
+        rotateLeft();
+      }else{
+        rotateRight();
+      }
     }
     e.preventDefault();
   }
 
   btnStart.addEventListener('click', start);
   if(btnPause) btnPause.addEventListener('click', togglePause);
-  canvas.addEventListener('touchstart', handleTouch, {passive:false});
-  canvas.addEventListener('mousedown', handleTouch);
+  canvas.addEventListener('pointerdown', handlePointer, {passive:false});
   document.addEventListener('keydown', handleKey);
   if(btnRestart) btnRestart.addEventListener('click', start);
   if(btnClose) btnClose.addEventListener('click', hideOverlay);
