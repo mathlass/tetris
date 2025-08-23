@@ -7,7 +7,7 @@ import { logError } from './logger.js';
 
 initUI();
 initMenu();
-initGame();
+const tetrisGame = initGame();
 const snakeGame = initSnake();
 
 const gameSelect = document.getElementById('gameSelect');
@@ -21,11 +21,13 @@ function switchGame(){
     toggleMenuOverlay();
   }
   if(gameSelect.value === 'snake'){
+    tetrisGame.pause();
     tetrisWrap.classList.add('hidden');
     snakeWrap.classList.remove('hidden');
     document.title = 'Snake';
     snakeGame.stop();
   }else{
+    tetrisGame.resume();
     tetrisWrap.classList.remove('hidden');
     snakeWrap.classList.add('hidden');
     document.title = 'Tetris – Vanilla JS (Einzeldatei) + Scoreboard';
