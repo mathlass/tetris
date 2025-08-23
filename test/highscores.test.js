@@ -41,7 +41,7 @@ if (!JSDOM) {
     dom.window.localStorage.setItem(hsKey('classic'), JSON.stringify(existing));
     const fetchCalls = [];
     global.fetch = async (url, opts) => { fetchCalls.push({ url, opts }); return { ok: true }; };
-    const top = addHS({ name: '<i>Zed</i>', score: 50, lines: 5, date: 'now' }, 'classic');
+    const top = await addHS({ name: '<i>Zed</i>', score: 50, lines: 5, date: 'now' }, 'classic');
     assert.strictEqual(top.length, 10);
     assert.strictEqual(top[0].score, 100);
     assert.strictEqual(top[9].name, 'Zed');
