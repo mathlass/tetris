@@ -37,38 +37,43 @@ const html = `
 <div id="topScore"></div>
 <select id="modeSelect"><option value="classic"></option></select>`;
 
-const dom = new JSDOM(`<!DOCTYPE html><body>${html}</body>`, { url: 'http://localhost' });
-const { window } = dom;
-const { document } = window;
-
-global.window = window;
-global.document = document;
-global.localStorage = window.localStorage;
-
-global.requestAnimationFrame = cb => { global.__raf = cb; };
-
-function attachCtx(id) {
+function attachCtx(id, document) {
   const canvas = document.getElementById(id);
   const ctx = createCtx();
   canvas.getContext = () => ctx;
   return ctx;
 }
 
-attachCtx('next1');
-attachCtx('next2');
-attachCtx('next3');
-const gameCtx = attachCtx('game');
+function setupGame() {
+  const dom = new JSDOM(`<!DOCTYPE html><body>${html}</body>`, { url: 'http://localhost' });
+  const { window } = dom;
+  const { document } = window;
 
-const topScore = document.getElementById('topScore');
-const modeSelect = document.getElementById('modeSelect');
-modeSelect.value = 'classic';
+  global.window = window;
+  global.document = document;
+  global.localStorage = window.localStorage;
 
-document.body.classList.add('theme-dark');
+  global.requestAnimationFrame = cb => { global.__raf = cb; };
 
-localStorage.setItem('tetris_settings_v1', JSON.stringify({ ghost: false, softDropPoints: true, sound: false }));
+  attachCtx('next1', document);
+  attachCtx('next2', document);
+  attachCtx('next3', document);
+  const gameCtx = attachCtx('game', document);
+
+  const topScore = document.getElementById('topScore');
+  const modeSelect = document.getElementById('modeSelect');
+  modeSelect.value = 'classic';
+
+  document.body.classList.add('theme-dark');
+
+  localStorage.setItem('tetris_settings_v1', JSON.stringify({ ghost: false, softDropPoints: true, sound: false }));
+
+  return { gameCtx, topScore, window, document };
+}
 
 // ===== Test =====
 test('gameplay responds to key events and updates score', () => {
+  const { window, document, topScore, gameCtx } = setupGame();
   const keydown = code => window.dispatchEvent(new window.KeyboardEvent('keydown', { code, bubbles: true, cancelable: true }));
   const originalRandom = Math.random;
   Math.random = () => 0;
@@ -76,7 +81,7 @@ test('gameplay responds to key events and updates score', () => {
   document.getElementById('btnStart').dispatchEvent(new window.Event('click', { bubbles: true, cancelable: true }));
   Math.random = originalRandom;
 
-  const ctx = document.getElementById('game').getContext('2d');
+  const ctx = gameCtx;
   ctx.calls.length = 0;
 
   // bring piece into view
@@ -120,4 +125,32 @@ test('gameplay responds to key events and updates score', () => {
   const scoreText = topScore.textContent;
   assert.match(scoreText, /Score: \d+/);
   assert.notStrictEqual(scoreText, 'Score: 0');
+});
+
+test('game pauses and resumes', () => {
+  const { window, document, gameCtx } = setupGame();
+  const keydown = code => window.dispatchEvent(new window.KeyboardEvent('keydown', { code, bubbles: true, cancelable: true }));
+  initGame();
+  document.getElementById('btnStart').dispatchEvent(new window.Event('click', { bubbles: true, cancelable: true }));
+
+  // bring piece into view
+  keydown('ArrowDown');
+  global.__raf();
+  keydown('ArrowDown');
+  global.__raf();
+
+  const ctx = gameCtx;
+  ctx.calls.length = 0;
+  global.__raf();
+  const baseline = ctx.calls.length;
+
+  // Pause game
+  document.getElementById('btnPause').dispatchEvent(new window.Event('click', { bubbles: true, cancelable: true }));
+  global.__raf();
+  assert.strictEqual(ctx.calls.length, baseline);
+
+  // Resume game
+  document.getElementById('btnPause').dispatchEvent(new window.Event('click', { bubbles: true, cancelable: true }));
+  global.__raf();
+  assert.ok(ctx.calls.length > baseline);
 });
