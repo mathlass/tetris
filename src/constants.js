@@ -74,3 +74,4 @@ export const SHAPES = {
 
 export const HS_KEY_BASE = 'tetris_highscores_v1';
 export const BEST_KEY_BASE = 'tetris_best';
+export const HS_NAME_MAX_LENGTH = 20;
