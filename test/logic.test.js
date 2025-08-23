@@ -65,6 +65,27 @@ test('clearLines removes multiple full rows', () => {
   assert.deepEqual(board[ROWS - 1], Array(COLS).fill(0));
 });
 
+test('clearLines leaves board when row has a gap', () => {
+  const board = emptyBoard();
+  board[ROWS - 1].fill('X');
+  board[ROWS - 1][2] = 0; // create a gap
+  const before = board.map(row => row.slice());
+  const cleared = clearLines(board);
+  assert.equal(cleared, 0);
+  assert.deepEqual(board, before);
+});
+
+test('clearLines removes only the filled middle row', () => {
+  const board = emptyBoard();
+  const mid = Math.floor(ROWS / 2);
+  board[mid].fill('X');
+  board[mid - 1][0] = 'Y';
+  const cleared = clearLines(board);
+  assert.equal(cleared, 1);
+  assert.equal(board[mid][0], 'Y');
+  assert.equal(board[mid - 1][0], 0);
+});
+
 // getDropY tests
 
 test('getDropY finds bottom on empty board and above blocks', () => {
