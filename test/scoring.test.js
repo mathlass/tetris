@@ -24,6 +24,61 @@ test('single line clear awards correct score and combo', () => {
   assert.strictEqual(state.level, 1);
 });
 
+test('double line clear awards correct score and combo', () => {
+  let state = { score: 0, lines: 0, level: 1 };
+  let combo = -1;
+  let backToBack = false;
+
+  const board = emptyBoard();
+  board[ROWS - 1].fill('X');
+  board[ROWS - 2].fill('X');
+  const cleared = clearLines(board);
+  ({ score: state.score, lines: state.lines, level: state.level, combo, backToBack } =
+    updateScore(state, cleared, combo, backToBack));
+
+  assert.strictEqual(cleared, 2);
+  assert.strictEqual(state.score, SCORE_LINE[2]);
+  assert.strictEqual(combo, 0);
+  assert.strictEqual(backToBack, false);
+  assert.strictEqual(state.level, 1);
+});
+
+test('triple line clear awards correct score and combo', () => {
+  let state = { score: 0, lines: 0, level: 1 };
+  let combo = -1;
+  let backToBack = false;
+
+  const board = emptyBoard();
+  for (let y = ROWS - 3; y < ROWS; y++) board[y].fill('X');
+  const cleared = clearLines(board);
+  ({ score: state.score, lines: state.lines, level: state.level, combo, backToBack } =
+    updateScore(state, cleared, combo, backToBack));
+
+  assert.strictEqual(cleared, 3);
+  assert.strictEqual(state.score, SCORE_LINE[3]);
+  assert.strictEqual(combo, 0);
+  assert.strictEqual(backToBack, false);
+  assert.strictEqual(state.level, 1);
+});
+
+test('no line clear resets combo', () => {
+  let state = { score: 0, lines: 0, level: 1 };
+  let combo = 2;
+  let backToBack = true;
+
+  const board = emptyBoard();
+  const cleared = clearLines(board);
+  ({ score: state.score, lines: state.lines, level: state.level, combo, backToBack } =
+    updateScore(state, cleared, combo, backToBack));
+
+  assert.strictEqual(cleared, 0);
+  assert.strictEqual(combo, -1);
+  assert.strictEqual(state.score, 0);
+  assert.strictEqual(state.lines, 0);
+  assert.strictEqual(state.level, 1);
+  assert.strictEqual(backToBack, true);
+});
+
 test('level increases after clearing enough lines', () => {
   let state = { score: 0, lines: 0, level: 1 };
   let combo = -1;
