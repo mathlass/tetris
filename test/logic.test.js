@@ -17,6 +17,24 @@ test('collides detects boundaries and filled cells', () => {
   assert.equal(collides(board, piece), true);
 });
 
+test('collides detects piece beyond right boundary', () => {
+  const board = emptyBoard();
+  const piece = { type: 'O', rot: 0, x: COLS - 1, y: 0, shape: SHAPES.O };
+  assert.equal(collides(board, piece), true);
+});
+
+test('collides detects piece below bottom boundary', () => {
+  const board = emptyBoard();
+  const piece = { type: 'O', rot: 0, x: 0, y: ROWS, shape: SHAPES.O };
+  assert.equal(collides(board, piece), true);
+});
+
+test('collides allows piece partially above board', () => {
+  const board = emptyBoard();
+  const piece = { type: 'O', rot: 0, x: 4, y: -1, shape: SHAPES.O };
+  assert.equal(collides(board, piece), false);
+});
+
 // rotate tests
 
 test('rotate changes rotation when space is free', () => {
