@@ -19,6 +19,27 @@ import { addHS, renderHS, sanitizeName, bestKey } from './highscores.js';
 import { loadSettings, saveSettings, applyPalette } from './settings.js';
 import { toggleMenuOverlay } from './menu.js';
 
+// ==== Scoring helper (exported for tests)
+export function updateScore(state, linesCleared, combo, backToBack) {
+  let { score, lines, level } = state;
+  if (linesCleared > 0) {
+    score += SCORE_LINE[linesCleared];
+    combo = (combo < 0 ? 0 : combo + 1);
+    score += Math.max(0, combo) * 50;
+    if (linesCleared === 4) {
+      if (backToBack) score += 200;
+      backToBack = true;
+    } else {
+      backToBack = false;
+    }
+    lines += linesCleared;
+    level = Math.floor(lines / LINES_PER_LEVEL) + 1;
+  } else {
+    combo = -1;
+  }
+  return { score, lines, level, combo, backToBack };
+}
+
 export function initGame(){
   // ==== Settings
   let settings = loadSettings();
@@ -245,17 +266,14 @@ export function initGame(){
     sfx.lock();
     merge();
     const cleared = clearBoardLines(board);
+    const prevLevel = level;
+    ({ score, lines, level, combo, backToBack } = updateScore({ score, lines, level }, cleared, combo, backToBack));
     if(cleared>0){
-      score += SCORE_LINE[cleared];
-      combo = (combo<0?0:combo+1);
-      score += Math.max(0, combo) * 50;
-      if(cleared===4){ if(backToBack) score += 200; backToBack=true; } else backToBack=false;
-      lines += cleared;
-      const newLevel = Math.floor(lines / LINES_PER_LEVEL) + 1;
-      if(newLevel>level){ level = newLevel; dropInterval = Math.max(80, FALL_BASE_MS * Math.pow(0.85, level-1)); sfx.level(); }
+      if(level>prevLevel){
+        dropInterval = Math.max(80, FALL_BASE_MS * Math.pow(0.85, level-1));
+        sfx.level();
+      }
       sfx.clear();
-    } else {
-      combo = -1;
     }
     cur = queue.shift();
     queue.push(pullNext());
