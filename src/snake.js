@@ -251,5 +251,5 @@ export function initSnake(){
     if(e.code === 'Escape') toggleMenuOverlay();
   });
 
-  return { start, stop };
+  return { start, stop, pause, resume, hideOverlay };
 }
