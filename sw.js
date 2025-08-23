@@ -1,11 +1,22 @@
-const CACHE = 'tetris-cache-v3';
+const CACHE = 'tetris-cache-v4';
 const ASSETS = [
   './',
   './index.html',
   './manifest.json',
-  './tetris.js',
   './styles.css',
-  './fonts/PressStart2P.woff2',
+  './src/audio.js',
+  './src/constants.js',
+  './src/game.js',
+  './src/highscores.js',
+  './src/logger.js',
+  './src/logic.js',
+  './src/main.js',
+  './src/menu.js',
+  './src/pieces.js',
+  './src/settings.js',
+  './src/snake.js',
+  './src/snakeHighscores.js',
+  './src/ui.js',
   './icons/icon-180.png',
   './icons/icon-192.png',
   './icons/icon-512.png'
