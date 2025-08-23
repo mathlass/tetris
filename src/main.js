@@ -24,7 +24,7 @@ function switchGame(){
     tetrisWrap.classList.add('hidden');
     snakeWrap.classList.remove('hidden');
     document.title = 'Snake';
-    snakeGame.start();
+    snakeGame.stop();
   }else{
     tetrisWrap.classList.remove('hidden');
     snakeWrap.classList.add('hidden');

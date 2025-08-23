@@ -100,6 +100,12 @@
             <button id="themeToggle"><span class="material-icons" id="themeIcon">brightness_6</span> Theme</button>
             <button id="snakeStart"><span class="material-icons">play_arrow</span> Start/Neu</button>
             <button id="snakePause"><span class="material-icons">pause</span> Pause</button>
+            <label>Modus:
+              <select id="snakeModeSelect" class="input">
+                <option value="classic">Classic</option>
+                <option value="obstacles">Mit Hindernissen</option>
+              </select>
+            </label>
           </div>
           <div class="panel" style="margin-top:16px">
             <div class="controls" style="margin:0 0 8px">
@@ -140,7 +146,6 @@
         <label><input type="checkbox" id="optSound" checked> Sound</label>
         <label><input type="checkbox" id="optGhost" checked> Ghost Piece</label>
         <label><input type="checkbox" id="optSoftDropPoints" checked> Soft‑Drop Punkte</label>
-        <label><input type="checkbox" id="optSnakeObstacles"> Snake‑Hindernisse</label>
         <label>Farben:
           <select id="optPalette">
             <option value="standard">Standard</option>

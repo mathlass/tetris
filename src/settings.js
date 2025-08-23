@@ -6,8 +6,7 @@ const defaultSettings = {
   sound: true,
   ghost: true,
   softDropPoints: true,
-  palette: 'standard',
-  snakeObstacles: false
+  palette: 'standard'
 };
 
 export function loadSettings() {
