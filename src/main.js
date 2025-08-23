@@ -24,12 +24,13 @@ function switchGame(){
     tetrisWrap.classList.add('hidden');
     snakeWrap.classList.remove('hidden');
     document.title = 'Snake';
-    snakeGame.stop();
+    snakeGame.resume();
   }else{
     tetrisWrap.classList.remove('hidden');
     snakeWrap.classList.add('hidden');
     document.title = 'Tetris – Vanilla JS (Einzeldatei) + Scoreboard';
-    snakeGame.stop();
+    snakeGame.pause();
+    snakeGame.hideOverlay();
   }
 }
 
