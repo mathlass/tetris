@@ -176,19 +176,23 @@ export function initSnake(){
   }
 
   function handleKey(e){
+    if(!running) return;
     let newDir;
     switch(e.key){
       case 'ArrowLeft': newDir = {x:-1,y:0}; break;
       case 'ArrowRight': newDir = {x:1,y:0}; break;
       case 'ArrowUp': newDir = {x:0,y:-1}; break;
       case 'ArrowDown': newDir = {x:0,y:1}; break;
-      case 'KeyP': togglePause(); return;
+      case 'KeyP':
+        e.preventDefault();
+        togglePause();
+        return;
       default: return;
     }
-    e.preventDefault();
     const lastDir = dirQueue[dirQueue.length-1] || dir;
     if(newDir.x === lastDir.x && newDir.y === lastDir.y) return;
     if(newDir.x === -lastDir.x && newDir.y === -lastDir.y) return;
+    e.preventDefault();
     dirQueue.push(newDir);
   }
 
@@ -203,6 +207,7 @@ export function initSnake(){
   }
 
   function handlePointer(e){
+    if(!running) return;
     if(e.pointerType === 'mouse'){
       if(e.button === 2){
         rotateRight();
