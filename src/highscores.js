@@ -3,7 +3,8 @@ import {
   HS_KEY_BASE,
   BEST_KEY_BASE,
   MODE_ULTRA,
-  MODE_CLASSIC_ONCE
+  MODE_CLASSIC_ONCE,
+  HS_NAME_MAX_LENGTH
 } from './constants.js';
 import { logError } from './logger.js';
 
@@ -53,7 +54,7 @@ export function saveHS(list, m) {
 }
 
 export function sanitizeName(str){
-  return str.replace(/<[^>]*>/g, '').trim();
+  return str.replace(/<[^>]*>/g, '').trim().slice(0, HS_NAME_MAX_LENGTH);
 }
 
 export function sanitizeHS(list,m){

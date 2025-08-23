@@ -1,4 +1,5 @@
 // Highscore storage and rendering for Snake
+import { HS_NAME_MAX_LENGTH } from './constants.js';
 const HS_KEY = 'snake_hs';
 
 function load(){
@@ -22,7 +23,7 @@ export function clearHS(){
 }
 
 function sanitizeName(str){
-  return str.replace(/<[^>]*>/g, '').trim();
+  return str.replace(/<[^>]*>/g, '').trim().slice(0, HS_NAME_MAX_LENGTH);
 }
 
 export function addHS(entry){
