@@ -1,0 +1,2 @@
+# Ignore log files generated during tests
+test/**/*.log
