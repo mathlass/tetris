@@ -20,12 +20,19 @@ async function loadServerHS(m) {
   return null;
 }
 
-function sendServerHS(entry, m) {
-  fetch(`/scores/${m}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(entry)
-  }).catch(e => logError('Failed to send highscore to server', e));
+async function sendServerHS(entry, m) {
+  try {
+    const res = await fetch(`/scores/${m}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(entry)
+    });
+    if (!res.ok) {
+      logError(`Failed to send highscore to server: ${res.status} ${res.statusText}`);
+    }
+  } catch (e) {
+    logError('Failed to send highscore to server', e);
+  }
 }
 
 export function loadHS(m) {
@@ -60,14 +67,14 @@ export function sanitizeHS(list,m){
   return cleaned;
 }
 
-export function addHS(entry,m){
+export async function addHS(entry,m){
   const list = sanitizeHS(loadHS(m),m);
   const cleanEntry = {...entry, name: sanitizeName(entry.name)};
   list.push(cleanEntry);
   list.sort((a,b)=>b.score - a.score || b.lines - a.lines);
   const top10 = list.slice(0,10);
   saveHS(top10,m);
-  sendServerHS(cleanEntry,m);
+  await sendServerHS(cleanEntry,m);
   return top10;
 }
 
