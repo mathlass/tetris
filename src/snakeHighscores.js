@@ -1,10 +1,12 @@
 // Highscore storage and rendering for Snake
+import { logError } from './logger.js';
 const HS_KEY = 'snake_hs';
 
 function load(){
   try{
     return JSON.parse(localStorage.getItem(HS_KEY)) || [];
-  }catch{
+  }catch(e){
+    logError('Failed to load snake highscores', e);
     return [];
   }
 }
@@ -12,13 +14,17 @@ function load(){
 function save(list){
   try{
     localStorage.setItem(HS_KEY, JSON.stringify(list));
-  }catch{}
+  }catch(e){
+    logError('Failed to save snake highscores', e);
+  }
 }
 
 export function clearHS(){
   try{
     localStorage.removeItem(HS_KEY);
-  }catch{}
+  }catch(e){
+    logError('Failed to clear snake highscores', e);
+  }
 }
 
 function sanitizeName(str){
