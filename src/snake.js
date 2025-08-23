@@ -185,11 +185,11 @@ export function initSnake(){
       case 'KeyP': togglePause(); return;
       default: return;
     }
+    e.preventDefault();
     const lastDir = dirQueue[dirQueue.length-1] || dir;
     if(newDir.x === lastDir.x && newDir.y === lastDir.y) return;
     if(newDir.x === -lastDir.x && newDir.y === -lastDir.y) return;
     dirQueue.push(newDir);
-    e.preventDefault();
   }
 
   function rotateLeft(){
