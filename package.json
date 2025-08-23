@@ -5,5 +5,8 @@
   "scripts": {
     "test": "node --test",
     "start": "node server.js"
+  },
+  "devDependencies": {
+    "jsdom": "^23.0.0"
   }
 }
