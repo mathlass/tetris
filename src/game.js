@@ -443,4 +443,9 @@ export function initGame(){
   // Initiale Anzeige
   renderHS(mode);
   updateSide();
+
+  return {
+    pause: () => { if(running) setPaused(true); },
+    resume: () => { if(running) setPaused(false); }
+  };
 }
