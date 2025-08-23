@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "test": "node --test",
+    "coverage": "npx c8 node --test",
     "start": "node server.js"
   },
   "devDependencies": {
