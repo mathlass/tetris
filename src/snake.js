@@ -29,6 +29,8 @@ export function initSnake(){
   let dir = {x:1, y:0};
   let dirQueue = [];
   let food = {x:0, y:0};
+  // Pieces currently traveling through the snake after being eaten
+  let digesting = [];
   let obstacles = [];
   let timer = null;
   let score = 0;
@@ -61,6 +63,7 @@ export function initSnake(){
     dirQueue = [];
     score = 0;
     obstacles = [];
+    digesting = [];
     updateScore();
     if(mode === 'obstacles') placeObstacles();
     placeFood();
@@ -102,6 +105,15 @@ export function initSnake(){
     obstacles.forEach(o => ctx.fillRect(o.x*size, o.y*size, size-1, size-1));
     ctx.fillStyle = '#0f0';
     snake.forEach(s => ctx.fillRect(s.x*size, s.y*size, size-1, size-1));
+    // Draw digesting food as a smaller block inside the snake
+    ctx.fillStyle = '#ff0';
+    digesting.forEach(d => {
+      if(d.index < snake.length){
+        const seg = snake[d.index];
+        const off = size / 4;
+        ctx.fillRect(seg.x*size + off, seg.y*size + off, size/2 - 1, size/2 - 1);
+      }
+    });
     ctx.fillStyle = '#f00';
     ctx.fillRect(food.x*size, food.y*size, size-1, size-1);
   }
@@ -118,7 +130,10 @@ export function initSnake(){
       return;
     }
     snake.unshift(head);
-    if(head.x===food.x && head.y===food.y){
+    // move digesting pieces forward
+    digesting.forEach(d => d.index++);
+    let ate = head.x===food.x && head.y===food.y;
+    if(ate){
       score++;
       if(score>best){
         best = score;
@@ -126,8 +141,13 @@ export function initSnake(){
       }
       updateScore();
       placeFood();
-    }else{
+      digesting.push({index:0});
+    }
+    let grow = digesting.some(d => d.index === snake.length - 1);
+    if(!grow){
       snake.pop();
+    } else {
+      digesting = digesting.filter(d => d.index !== snake.length - 1);
     }
     draw();
   }
