@@ -65,7 +65,7 @@ export function initSnake(){
     obstacles = [];
     digesting = [];
     updateScore();
-    if(mode === 'obstacles') placeObstacles();
+    if(mode === 'obstacles' || mode === 'ultra') placeObstacles();
     placeFood();
     draw();
   }
@@ -92,7 +92,8 @@ export function initSnake(){
         y = Math.floor(Math.random() * cells);
       } while(
         snake.some(p => p.x===x && p.y===y) ||
-        obstacles.some(o => o.x===x && o.y===y)
+        obstacles.some(o => o.x===x && o.y===y) ||
+        (food.x === x && food.y === y)
       );
       obstacles.push({x, y});
     }
@@ -140,6 +141,9 @@ export function initSnake(){
         localStorage.setItem('snakeBest', String(best));
       }
       updateScore();
+      if(mode === 'ultra'){
+        placeObstacles();
+      }
       placeFood();
       digesting.push({index:0});
     }
