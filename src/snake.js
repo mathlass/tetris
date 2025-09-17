@@ -82,6 +82,10 @@ export function initSnake(){
     food = {x, y};
   }
 
+  function isAdjacentToSnake(x, y){
+    return snake.some(p => Math.abs(p.x - x) + Math.abs(p.y - y) === 1);
+  }
+
   function placeObstacles(){
     const count = 5;
     obstacles = [];
@@ -92,6 +96,7 @@ export function initSnake(){
         y = Math.floor(Math.random() * cells);
       } while(
         snake.some(p => p.x===x && p.y===y) ||
+        isAdjacentToSnake(x, y) ||
         obstacles.some(o => o.x===x && o.y===y) ||
         (food.x === x && food.y === y)
       );
