@@ -28,6 +28,7 @@ export function initSnake(){
   const boardRadius = 12;
   const boardPadding = Math.max(6, boardRadius - 4);
   const size = (canvas.width - boardPadding * 2) / cells;
+  const cellPaddingFactor = 0.08;
   let snake = [];
   let dir = {x:1, y:0};
   let dirQueue = [];
@@ -121,7 +122,7 @@ export function initSnake(){
   }
 
   function drawCell(x, y, color, inset){
-    const pad = inset ?? Math.max(1, size * 0.12);
+    const pad = inset ?? Math.max(1, size * cellPaddingFactor);
     const drawSize = size - pad * 2;
     ctx.fillStyle = color;
     ctx.fillRect(
@@ -142,7 +143,7 @@ export function initSnake(){
 
     ctx.fillStyle = '#000';
     ctx.fillRect(boardPadding, boardPadding, size * cells, size * cells);
-    const cellInset = Math.max(1, size * 0.12);
+    const cellInset = Math.max(1, size * cellPaddingFactor);
     obstacles.forEach(o => drawCell(o.x, o.y, '#888', cellInset));
     snake.forEach(s => drawCell(s.x, s.y, '#0f0', cellInset));
 
