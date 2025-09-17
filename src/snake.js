@@ -23,8 +23,11 @@ export function initSnake(){
     };
   }
   const ctx = canvas.getContext('2d');
-  const size = 15;
-  const cells = Math.floor(canvas.width / size);
+  const baseSize = 15;
+  const cells = Math.floor(canvas.width / baseSize);
+  const boardRadius = 12;
+  const boardPadding = Math.max(6, boardRadius - 4);
+  const size = (canvas.width - boardPadding * 2) / cells;
   let snake = [];
   let dir = {x:1, y:0};
   let dirQueue = [];
@@ -104,24 +107,62 @@ export function initSnake(){
     }
   }
 
+  function roundedRectPath(ctx, x, y, w, h, r){
+    const radius = Math.min(r, Math.min(w, h) / 2);
+    ctx.moveTo(x + radius, y);
+    ctx.lineTo(x + w - radius, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + radius);
+    ctx.lineTo(x + w, y + h - radius);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - radius, y + h);
+    ctx.lineTo(x + radius, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - radius);
+    ctx.lineTo(x, y + radius);
+    ctx.quadraticCurveTo(x, y, x + radius, y);
+  }
+
+  function drawCell(x, y, color, inset){
+    const pad = inset ?? Math.max(1, size * 0.12);
+    const drawSize = size - pad * 2;
+    ctx.fillStyle = color;
+    ctx.fillRect(
+      boardPadding + x * size + pad,
+      boardPadding + y * size + pad,
+      drawSize,
+      drawSize
+    );
+  }
+
   function draw(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.save();
+    ctx.beginPath();
+    roundedRectPath(ctx, 0, 0, canvas.width, canvas.height, boardRadius);
+    ctx.closePath();
+    ctx.clip();
+
     ctx.fillStyle = '#000';
-    ctx.fillRect(0,0,canvas.width,canvas.height);
-    ctx.fillStyle = '#888';
-    obstacles.forEach(o => ctx.fillRect(o.x*size, o.y*size, size-1, size-1));
-    ctx.fillStyle = '#0f0';
-    snake.forEach(s => ctx.fillRect(s.x*size, s.y*size, size-1, size-1));
+    ctx.fillRect(boardPadding, boardPadding, size * cells, size * cells);
+    const cellInset = Math.max(1, size * 0.12);
+    obstacles.forEach(o => drawCell(o.x, o.y, '#888', cellInset));
+    snake.forEach(s => drawCell(s.x, s.y, '#0f0', cellInset));
+
     // Draw digesting food as a smaller block inside the snake
     ctx.fillStyle = '#ff0';
+    const segmentSize = size - cellInset * 2;
     digesting.forEach(d => {
       if(d.index < snake.length){
         const seg = snake[d.index];
-        const off = size / 4;
-        ctx.fillRect(seg.x*size + off, seg.y*size + off, size/2 - 1, size/2 - 1);
+        const off = segmentSize / 4;
+        ctx.fillRect(
+          boardPadding + seg.x * size + cellInset + off,
+          boardPadding + seg.y * size + cellInset + off,
+          segmentSize / 2,
+          segmentSize / 2
+        );
       }
     });
-    ctx.fillStyle = '#f00';
-    ctx.fillRect(food.x*size, food.y*size, size-1, size-1);
+    drawCell(food.x, food.y, '#f00', cellInset);
+    ctx.restore();
   }
 
   function step(){
