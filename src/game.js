@@ -50,10 +50,9 @@ export function initGame(){
 
   // ==== Overlay helpers
   const overlay = () => document.getElementById('overlay');
-  function showOverlay({score, lines, best}){
+  function showOverlay({score, lines}){
     document.getElementById('ovScore').textContent = score;
     document.getElementById('ovLines').textContent = lines;
-    document.getElementById('ovBest').textContent = best;
     overlay().classList.add('show');
   }
   function hideOverlay(){ overlay().classList.remove('show'); }
@@ -290,7 +289,7 @@ export function initGame(){
     addHS({ name, score, lines, date: new Date().toISOString().slice(0,10) }, mode);
     renderHS(mode);
     updateSide();
-    showOverlay({score, lines, best});
+    showOverlay({score, lines});
     sfx.gameover();
   }
 
