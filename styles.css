@@ -80,3 +80,13 @@ select.input option{background:var(--input-bg);color:var(--fg)}
 [aria-label]::before,[aria-label]::after{display:none;content:none}
 dialog{border:1px solid var(--panel-border);background:var(--panel-bg);color:var(--fg);border-radius:12px;padding:16px}
 dialog::backdrop{background:rgba(0,0,0,.45)}
+#introScreen{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.55);backdrop-filter:blur(6px);z-index:10000;transition:opacity .3s ease,visibility .3s ease}
+#introScreen.hide{opacity:0;visibility:hidden;pointer-events:none}
+#introScreen .intro-card{background:color-mix(in srgb,var(--panel-bg),transparent 10%);border:1px solid var(--panel-border);border-radius:20px;padding:28px 32px;max-width:420px;margin:16px;box-shadow:0 18px 40px color-mix(in srgb,var(--bg),#000 40%);text-align:center}
+#introScreen h1{margin:0 0 8px;font-size:30px;letter-spacing:1px}
+#introScreen p{margin:0 0 20px;color:var(--muted)}
+.intro-form{display:flex;flex-direction:column;gap:16px}
+.intro-label{display:flex;flex-direction:column;gap:6px;text-align:left;font-weight:600}
+.intro-label .input{width:100%}
+.intro-submit{align-self:center;font-size:16px;padding:12px 20px}
+.intro-submit .material-icons{font-size:22px}
