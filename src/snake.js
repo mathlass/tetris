@@ -69,7 +69,7 @@ export function initSnake(){
     obstacles = [];
     digesting = [];
     updateScore();
-    if(mode === 'obstacles' || mode === 'ultra') placeObstacles();
+    if(mode === 'obstacles' || mode === 'ultra') placeObstacles(score, mode);
     placeFood();
     draw();
   }
@@ -90,10 +90,19 @@ export function initSnake(){
     return snake.some(p => Math.abs(p.x - x) + Math.abs(p.y - y) === 1);
   }
 
-  function placeObstacles(){
-    const count = 5;
+  function placeObstacles(currentScore = score, currentMode = mode){
+    if(currentMode !== 'obstacles' && currentMode !== 'ultra'){
+      obstacles = [];
+      return;
+    }
+    const baseCount = currentMode === 'ultra' ? 3 : 5;
+    const extraEvery = 5;
+    const extraPerThreshold = currentMode === 'ultra' ? 2 : 1;
+    const extraCount = Math.floor(currentScore / extraEvery) * extraPerThreshold;
+    const maxAvailable = Math.max(0, cells * cells - snake.length - 1);
+    const total = Math.min(baseCount + extraCount, maxAvailable);
     obstacles = [];
-    for(let i=0;i<count;i++){
+    for(let i=0;i<total;i++){
       let x, y;
       do {
         x = Math.floor(Math.random() * cells);
@@ -104,7 +113,8 @@ export function initSnake(){
         obstacles.some(o => o.x===x && o.y===y) ||
         (food.x === x && food.y === y)
       );
-      obstacles.push({x, y});
+      const type = i < baseCount ? 'block' : 'hazard';
+      obstacles.push({x, y, type});
     }
   }
 
@@ -144,7 +154,10 @@ export function initSnake(){
     ctx.fillStyle = '#000';
     ctx.fillRect(boardPadding, boardPadding, size * cells, size * cells);
     const cellInset = Math.max(1, size * cellPaddingFactor);
-    obstacles.forEach(o => drawCell(o.x, o.y, '#888', cellInset));
+    obstacles.forEach(o => {
+      const color = o.type === 'hazard' ? '#f80' : '#888';
+      drawCell(o.x, o.y, color, cellInset);
+    });
     snake.forEach(s => drawCell(s.x, s.y, '#0f0', cellInset));
 
     // Draw digesting food as a smaller block inside the snake
@@ -188,8 +201,8 @@ export function initSnake(){
         localStorage.setItem('snakeBest', String(best));
       }
       updateScore();
-      if(mode === 'ultra'){
-        placeObstacles();
+      if(mode === 'obstacles' || mode === 'ultra'){
+        placeObstacles(score, mode);
       }
       placeFood();
       digesting.push({index:0});
