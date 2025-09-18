@@ -15,7 +15,25 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <div class="controls top-controls" style="justify-content:center;margin-bottom:8px">
+  <div id="introScreen" role="dialog" aria-modal="true">
+    <div class="intro-card">
+      <h1>👋 Willkommen</h1>
+      <p>Bitte gib deinen Namen ein und wähle das Spiel, mit dem du starten möchtest.</p>
+      <form id="introForm" class="intro-form" novalidate>
+        <label class="intro-label">Spielername
+          <input id="introName" class="input" autocomplete="off" />
+        </label>
+        <label class="intro-label">Spiel
+          <select id="introGameSelect" class="input">
+            <option value="tetris">Tetris</option>
+            <option value="snake">Snake</option>
+          </select>
+        </label>
+        <button type="submit" class="intro-submit"><span class="material-icons">play_arrow</span> Los geht's</button>
+      </form>
+    </div>
+  </div>
+  <div id="globalControls" class="controls top-controls hidden" style="justify-content:center;margin-bottom:8px">
     <label>Spiel:
       <select id="gameSelect" class="input">
         <option value="tetris">Tetris</option>
@@ -23,7 +41,7 @@
       </select>
     </label>
   </div>
-  <div id="tetrisWrap">
+  <div id="tetrisWrap" class="hidden">
     <div class="wrap">
     <div>
       <h1>🧱 Tetris</h1>

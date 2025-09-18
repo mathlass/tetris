@@ -14,9 +14,11 @@ const gameSelect = document.getElementById('gameSelect');
 const tetrisWrap = document.getElementById('tetrisWrap');
 const snakeWrap = document.getElementById('snakeWrap');
 const menuOverlay = document.getElementById('menuOverlay');
+let introCompleted = false;
 
 function switchGame(){
   if(!gameSelect || !tetrisWrap || !snakeWrap) return;
+  if(!introCompleted) return;
   if(menuOverlay && menuOverlay.classList.contains('show')){
     toggleMenuOverlay();
   }
@@ -38,8 +40,20 @@ function switchGame(){
 
 if(gameSelect){
   gameSelect.addEventListener('change', switchGame);
-  switchGame();
 }
+
+document.addEventListener('intro-complete', event => {
+  introCompleted = true;
+  const selectedGame = event.detail?.game || 'tetris';
+  if(gameSelect){
+    gameSelect.value = selectedGame;
+  }
+  const introScreen = document.getElementById('introScreen');
+  if(introScreen){
+    introScreen.setAttribute('aria-hidden', 'true');
+  }
+  switchGame();
+});
 
 // Register external Service Worker (works on Netlify & GitHub Pages)
 if ('serviceWorker' in navigator) {
