@@ -2,9 +2,8 @@
 import {
   HS_KEY_BASE,
   BEST_KEY_BASE,
-  MODE_ULTRA,
-  MODE_CLASSIC_ONCE,
-  HS_NAME_MAX_LENGTH
+  HS_NAME_MAX_LENGTH,
+  MODE_LABELS
 } from './constants.js';
 import { logError } from './logger.js';
 
@@ -134,11 +133,17 @@ export async function addHS(entry,m){
   return top10;
 }
 
-export async function renderHS(m){
-  const tbody = document.querySelector('#hsTable tbody');
-  if(!tbody) return;
+export async function getHSList(m){
   let list = await loadServerHS(m);
-  list = list ? sanitizeHS(list,m) : sanitizeHS(loadHS(m),m);
+  return list ? sanitizeHS(list, m) : sanitizeHS(loadHS(m), m);
+}
+
+export async function renderHS(m, options = {}){
+  const { tableSelector = '#hsTable', labelSelector = '#hsModeLabel' } = options;
+  const table = document.querySelector(tableSelector);
+  const tbody = table ? table.querySelector('tbody') : null;
+  if(!tbody) return;
+  const list = await getHSList(m);
   while(tbody.firstChild) tbody.removeChild(tbody.firstChild);
   list.forEach((e,i)=>{
     const tr=document.createElement('tr');
@@ -155,11 +160,11 @@ export async function renderHS(m){
     tr.append(tdRank,tdName,tdScore,tdLines,tdDate);
     tbody.appendChild(tr);
   });
-  const label=document.getElementById('hsModeLabel');
-  if(label){
-    label.textContent =
-      m===MODE_ULTRA ? 'Ultra' :
-      m===MODE_CLASSIC_ONCE ? 'Classic – 1 Drehung' :
-      'Classic';
+  if(labelSelector){
+    const label = document.querySelector(labelSelector);
+    if(label){
+      const modeLabel = MODE_LABELS[m] || m;
+      label.textContent = `Tetris – ${modeLabel}`;
+    }
   }
 }

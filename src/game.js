@@ -379,16 +379,18 @@ export function initGame(){
   const modeSelect = document.getElementById('modeSelect');
   if(modeSelect){ modeSelect.addEventListener('change', ()=>{ reset(); update(); }); }
   document.getElementById('btnPause').addEventListener('click', ()=>{ if(running){ setPaused(!paused); }});
-  const btnResetHS = document.getElementById('btnResetHS');
-  if(btnResetHS){
-    btnResetHS.addEventListener('click', ()=>{
-      saveHS([], mode);
-      best = 0;
-      localStorage.removeItem(bestKey(mode));
-      updateSide();
-      renderHS(mode);
-    });
-  }
+  document.addEventListener('tetrisHsCleared', e => {
+    if(!e.detail) return;
+    const clearedMode = e.detail.mode;
+    if(typeof clearedMode === 'string'){
+      localStorage.removeItem(bestKey(clearedMode));
+      if(clearedMode === mode){
+        best = 0;
+        updateSide();
+        renderHS(mode);
+      }
+    }
+  });
   // Overlay Buttons
   const btnRestart = document.getElementById('btnRestart');
   if(btnRestart){ btnRestart.addEventListener('click', ()=>{ reset(); update(); }); }

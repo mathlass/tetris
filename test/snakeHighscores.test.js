@@ -10,13 +10,15 @@ if (!JSDOM) {
   test('jsdom not installed - skipping snake highscores tests', t => t.skip('jsdom not available'));
 } else {
   const { addHS, clearHS, renderHS } = await import('../src/snakeHighscores.js');
-  const HS_KEY = 'snake_hs';
+  const { SNAKE_HS_KEY_BASE } = await import('../src/constants.js');
+  const MODE = 'classic';
+  const HS_KEY = `${SNAKE_HS_KEY_BASE}_${MODE}`;
 
   test('addHS sanitizes stored name', () => {
     const dom = new JSDOM('', { url: 'http://localhost' });
     global.localStorage = dom.window.localStorage;
     global.fetch = async () => ({ ok: true });
-    const list = addHS({ name: '<b>Eve</b>', score: 1, date: 'now' });
+    const list = addHS({ name: '<b>Eve</b>', score: 1, date: 'now' }, MODE);
     assert.strictEqual(list[0].name, 'Eve');
     const saved = JSON.parse(dom.window.localStorage.getItem(HS_KEY));
     assert.strictEqual(saved[0].name, 'Eve');
@@ -28,7 +30,7 @@ if (!JSDOM) {
     const dom = new JSDOM('', { url: 'http://localhost' });
     global.localStorage = dom.window.localStorage;
     dom.window.localStorage.setItem(HS_KEY, '[]');
-    clearHS();
+    clearHS(MODE);
     assert.strictEqual(dom.window.localStorage.getItem(HS_KEY), null);
     delete global.localStorage;
   });
@@ -43,7 +45,7 @@ if (!JSDOM) {
       { name: 'Bob', score: 1, date: 'd2' }
     ];
     dom.window.localStorage.setItem(HS_KEY, JSON.stringify(entries));
-    await renderHS();
+    await renderHS(MODE);
     const rows = dom.window.document.querySelectorAll('#snakeHsTable tbody tr');
     assert.strictEqual(rows.length, 2);
     assert.strictEqual(rows[0].children[1].textContent, 'Ana');

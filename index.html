@@ -129,13 +129,32 @@
       <button id="tabSettings" role="tab" aria-controls="settingsPanel">Einstellungen</button>
     </div>
     <div class="panel" id="scorePanel" style="margin-top:16px;">
-      <h3>Scoreboard – <span id="hsModeLabel">Classic</span></h3>
-      <div class="controls">
+      <h3>Scoreboard – <span id="hsModeLabel">Tetris – Classic (endlos)</span></h3>
+      <div class="controls" style="flex-wrap:wrap;gap:8px;">
+        <label>Spiel:
+          <select id="scoreGameSelect" class="input">
+            <option value="tetris">Tetris</option>
+            <option value="snake">Snake</option>
+          </select>
+        </label>
+        <label>Modus:
+          <select id="scoreModeSelect" class="input">
+            <option value="classic">Classic (endlos)</option>
+            <option value="classic_once">Classic – 1 Drehung</option>
+            <option value="ultra">Ultra – 2 Minuten</option>
+          </select>
+        </label>
         <button id="btnResetHS">Highscores löschen</button>
       </div>
       <table class="table" id="hsTable">
         <thead>
           <tr><th>#</th><th>Name</th><th>Score</th><th>Lines</th><th>Datum</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <table class="table hidden" id="snakeScoreTable">
+        <thead>
+          <tr><th>#</th><th>Name</th><th>Score</th><th>Datum</th></tr>
         </thead>
         <tbody></tbody>
       </table>

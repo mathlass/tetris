@@ -1,7 +1,12 @@
 // Highscore storage and rendering for Snake
-import { HS_NAME_MAX_LENGTH } from './constants.js';
+import {
+  HS_NAME_MAX_LENGTH,
+  SNAKE_HS_KEY_BASE
+} from './constants.js';
 import { logError } from './logger.js';
-const HS_KEY = 'snake_hs';
+const SNAKE_MODE_PREFIX = 'snake_';
+const hsKey = mode => `${SNAKE_HS_KEY_BASE}_${mode}`;
+const LEGACY_HS_KEY = 'snake_hs';
 
 const SUPABASE_URL =
   globalThis.NEXT_PUBLIC_SUPABASE_URL ||
@@ -11,10 +16,11 @@ const SUPABASE_KEY =
   (typeof process !== 'undefined' ? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY : undefined);
 const useSupabase = SUPABASE_URL && SUPABASE_KEY;
 
-async function loadServerHS(){
+async function loadServerHS(mode){
   if(useSupabase){
     try{
-      const url = `${SUPABASE_URL}/rest/v1/scores?select=player,score,created_at&mode=eq.snake&order=score.desc&limit=10`;
+      const modeParam = `${SNAKE_MODE_PREFIX}${mode}`;
+      const url = `${SUPABASE_URL}/rest/v1/scores?select=player,score,created_at&mode=eq.${modeParam}&order=score.desc&limit=10`;
       const res = await fetch(url,{
         headers:{ apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` }
       });
@@ -27,8 +33,9 @@ async function loadServerHS(){
     }
     return null;
   }
+  const modeParam = `${SNAKE_MODE_PREFIX}${mode}`;
   try{
-    const res = await fetch('/scores/snake');
+    const res = await fetch(`/scores/${modeParam}`);
     if(res.ok) return await res.json();
   }catch(e){
     logError('Failed to load snake highscores from server', e);
@@ -36,7 +43,7 @@ async function loadServerHS(){
   return null;
 }
 
-async function sendServerHS(entry){
+async function sendServerHS(entry, mode){
   if(useSupabase){
     try{
       const res = await fetch(`${SUPABASE_URL}/rest/v1/scores`,{
@@ -46,7 +53,7 @@ async function sendServerHS(entry){
           apikey: SUPABASE_KEY,
           Authorization:`Bearer ${SUPABASE_KEY}`
         },
-        body:JSON.stringify({ player: entry.name, mode:'snake', score: entry.score })
+        body:JSON.stringify({ player: entry.name, mode:`${SNAKE_MODE_PREFIX}${mode}`, score: entry.score })
       });
       if(!res.ok){
         logError(`Failed to send snake highscore to server: ${res.status} ${res.statusText}`);
@@ -56,8 +63,9 @@ async function sendServerHS(entry){
     }
     return;
   }
+  const modeParam = `${SNAKE_MODE_PREFIX}${mode}`;
   try{
-    const res = await fetch('/scores/snake',{
+    const res = await fetch(`/scores/${modeParam}`,{
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({ ...entry, lines: entry.lines ?? 0 })
@@ -70,23 +78,32 @@ async function sendServerHS(entry){
   }
 }
 
-function load(){
+function load(mode){
   try{
-    return JSON.parse(localStorage.getItem(HS_KEY)) || [];
+    if(mode === 'classic'){
+      const legacy = localStorage.getItem(LEGACY_HS_KEY);
+      if(legacy && !localStorage.getItem(hsKey(mode))){
+        localStorage.setItem(hsKey(mode), legacy);
+        localStorage.removeItem(LEGACY_HS_KEY);
+      }
+    }
+  }catch{}
+  try{
+    return JSON.parse(localStorage.getItem(hsKey(mode))) || [];
   }catch{
     return [];
   }
 }
 
-function save(list){
+function save(list, mode){
   try{
-    localStorage.setItem(HS_KEY, JSON.stringify(list));
+    localStorage.setItem(hsKey(mode), JSON.stringify(list));
   }catch{}
 }
 
-export function clearHS(){
+export function clearHS(mode){
   try{
-    localStorage.removeItem(HS_KEY);
+    localStorage.removeItem(hsKey(mode));
   }catch{}
 }
 
@@ -94,33 +111,35 @@ function sanitizeName(str){
   return str.replace(/<[^>]*>/g, '').trim().slice(0, HS_NAME_MAX_LENGTH);
 }
 
-function sanitizeList(list){
+function sanitizeList(list, mode){
   let changed=false;
   const cleaned=list.map(e=>{
     const name=sanitizeName(e.name||'');
     if(name!==e.name) changed=true;
     return {...e,name};
   });
-  if(changed) save(cleaned);
+  if(changed) save(cleaned, mode);
   return cleaned;
 }
 
-export function addHS(entry){
-  const list = load();
+export function addHS(entry, mode){
+  const list = load(mode);
   const cleanEntry = { ...entry, name: sanitizeName(entry.name) };
   list.push(cleanEntry);
   list.sort((a,b) => b.score - a.score);
   const top10 = list.slice(0,10);
-  save(top10);
-  sendServerHS(cleanEntry);
+  save(top10, mode);
+  sendServerHS(cleanEntry, mode);
   return top10;
 }
 
-export async function renderHS(){
-  const tbody = document.querySelector('#snakeHsTable tbody');
+export async function renderHS(mode, options = {}){
+  const { tableSelector = '#snakeHsTable' } = options;
+  const table = document.querySelector(tableSelector);
+  const tbody = table ? table.querySelector('tbody') : null;
   if(!tbody) return;
-  let list = await loadServerHS();
-  list = list ? sanitizeList(list) : sanitizeList(load());
+  let list = await loadServerHS(mode);
+  list = list ? sanitizeList(list, mode) : sanitizeList(load(mode), mode);
   while(tbody.firstChild) tbody.removeChild(tbody.firstChild);
   list.forEach((e,i)=>{
     const tr = document.createElement('tr');

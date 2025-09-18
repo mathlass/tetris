@@ -61,7 +61,7 @@ if (!JSDOM) {
     const rows = document.querySelectorAll('#hsTable tbody tr');
     assert.strictEqual(rows.length, 1);
     assert.strictEqual(rows[0].children[1].textContent, 'Bob');
-    assert.strictEqual(document.getElementById('hsModeLabel').textContent, 'Classic');
+    assert.strictEqual(document.getElementById('hsModeLabel').textContent, 'Tetris – Classic (endlos)');
     delete global.fetch;
     delete global.window;
     delete global.document;
