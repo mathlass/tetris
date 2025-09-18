@@ -1,5 +1,5 @@
 // Simple Snake game implementation
-import { PLAYER_KEY } from './constants.js';
+import { PLAYER_KEY, SNAKE_BEST_KEY_BASE } from './constants.js';
 import { addHS, renderHS, clearHS } from './snakeHighscores.js';
 import { toggleMenuOverlay } from './menu.js';
 
@@ -38,7 +38,15 @@ export function initSnake(){
   let obstacles = [];
   let timer = null;
   let score = 0;
-  let best = Number(localStorage.getItem('snakeBest')) || 0;
+  const bestKey = modeName => `${SNAKE_BEST_KEY_BASE}_${modeName}`;
+  try{
+    const legacyBest = localStorage.getItem('snakeBest');
+    if(legacyBest !== null){
+      localStorage.setItem(bestKey('classic'), legacyBest);
+      localStorage.removeItem('snakeBest');
+    }
+  }catch{}
+  let best = 0;
   let running = false;
   let paused = false;
   let menuPrevPaused = false;
@@ -53,7 +61,7 @@ export function initSnake(){
     if(!ov) return;
     if(ovScoreEl) ovScoreEl.textContent = String(score);
     if(ovBestEl) ovBestEl.textContent = String(best);
-    renderHS();
+    renderHS(mode);
     ov.classList.add('show');
   }
 
@@ -68,6 +76,7 @@ export function initSnake(){
     score = 0;
     obstacles = [];
     digesting = [];
+    best = Number(localStorage.getItem(bestKey(mode)) || 0);
     updateScore();
     if(mode === 'obstacles' || mode === 'ultra') placeObstacles(score, mode);
     placeFood();
@@ -198,7 +207,7 @@ export function initSnake(){
       score++;
       if(score>best){
         best = score;
-        localStorage.setItem('snakeBest', String(best));
+        localStorage.setItem(bestKey(mode), String(best));
       }
       updateScore();
       if(mode === 'obstacles' || mode === 'ultra'){
@@ -219,7 +228,7 @@ export function initSnake(){
   function gameOver(){
     stop(false);
     const name = localStorage.getItem(PLAYER_KEY) || 'Player';
-    addHS({ name, score, date: new Date().toLocaleDateString() });
+    addHS({ name, score, date: new Date().toLocaleDateString() }, mode);
     showOverlay();
   }
 
@@ -318,21 +327,34 @@ export function initSnake(){
   if(btnClose) btnClose.addEventListener('click', hideOverlay);
   if(btnResetHS){
     btnResetHS.addEventListener('click', () => {
-      clearHS();
-      localStorage.removeItem('snakeBest');
-      best = 0;
+      clearHS(mode);
+      localStorage.removeItem(bestKey(mode));
+      best = Number(localStorage.getItem(bestKey(mode)) || 0);
       updateScore();
-      renderHS();
+      renderHS(mode);
+      document.dispatchEvent(new CustomEvent('snakeHsCleared', { detail: { mode } }));
     });
   }
 
   if(modeSelect){
     mode = modeSelect.value;
+    best = Number(localStorage.getItem(bestKey(mode)) || 0);
+    updateScore();
     modeSelect.addEventListener('change', () => {
       mode = modeSelect.value;
+      best = Number(localStorage.getItem(bestKey(mode)) || 0);
+      updateScore();
       reset();
     });
   }
+
+  document.addEventListener('snakeHsCleared', e => {
+    if(e.detail && e.detail.mode === mode){
+      localStorage.removeItem(bestKey(mode));
+      best = Number(localStorage.getItem(bestKey(mode)) || 0);
+      updateScore();
+    }
+  });
 
   document.addEventListener('menuToggle', e => {
     const show = e.detail.show;

@@ -1,4 +1,13 @@
 // Centralized menu overlay logic
+import {
+  MODE_LABELS,
+  TETRIS_MODES,
+  SNAKE_MODES,
+  SNAKE_MODE_LABELS,
+  SNAKE_BEST_KEY_BASE
+} from './constants.js';
+import { renderHS as renderTetrisHS, saveHS, bestKey } from './highscores.js';
+import { renderHS as renderSnakeHS, clearHS as clearSnakeHS } from './snakeHighscores.js';
 let overlay;
 let btnClose;
 let lastFocused = null;
@@ -15,6 +24,62 @@ export function initMenu(){
     score: document.getElementById('scorePanel'),
     settings: document.getElementById('settingsPanel')
   };
+  const scoreGameSelect = document.getElementById('scoreGameSelect');
+  const scoreModeSelect = document.getElementById('scoreModeSelect');
+  const hsTable = document.getElementById('hsTable');
+  const snakeTable = document.getElementById('snakeScoreTable');
+  const hsLabel = document.getElementById('hsModeLabel');
+  const lastModeByGame = {
+    tetris: TETRIS_MODES[0],
+    snake: SNAKE_MODES[0]
+  };
+  const snakeBestKey = mode => `${SNAKE_BEST_KEY_BASE}_${mode}`;
+
+  function fillModeOptions(game, preferred){
+    if(!scoreModeSelect) return preferred;
+    const modes = game === 'snake' ? SNAKE_MODES : TETRIS_MODES;
+    const labels = game === 'snake' ? SNAKE_MODE_LABELS : MODE_LABELS;
+    scoreModeSelect.innerHTML = '';
+    modes.forEach(m => {
+      const opt = document.createElement('option');
+      opt.value = m;
+      opt.textContent = labels[m] || m;
+      scoreModeSelect.appendChild(opt);
+    });
+    const target = preferred && modes.includes(preferred) ? preferred : modes[0];
+    scoreModeSelect.value = target;
+    return target;
+  }
+
+  async function updateScoreboard(game, mode){
+    if(!mode) return;
+    if(game === 'snake'){
+      if(hsTable) hsTable.classList.add('hidden');
+      if(snakeTable) snakeTable.classList.remove('hidden');
+      if(hsLabel) hsLabel.textContent = `Snake – ${SNAKE_MODE_LABELS[mode] || mode}`;
+      await renderSnakeHS(mode, { tableSelector: '#snakeScoreTable' });
+    } else {
+      if(hsTable) hsTable.classList.remove('hidden');
+      if(snakeTable) snakeTable.classList.add('hidden');
+      await renderTetrisHS(mode, { tableSelector: '#hsTable', labelSelector: '#hsModeLabel' });
+    }
+  }
+
+  const gameSelect = document.getElementById('gameSelect');
+  const tetrisModeSelect = document.getElementById('modeSelect');
+  const snakeModeSelect = document.getElementById('snakeModeSelect');
+
+  async function syncScoreboardWithActiveGame(){
+    if(!scoreGameSelect || !scoreModeSelect) return;
+    const activeGame = gameSelect ? gameSelect.value : 'tetris';
+    scoreGameSelect.value = activeGame;
+    const currentMode = activeGame === 'snake'
+      ? (snakeModeSelect ? snakeModeSelect.value : lastModeByGame.snake)
+      : (tetrisModeSelect ? tetrisModeSelect.value : lastModeByGame.tetris);
+    const selectedMode = fillModeOptions(activeGame, currentMode);
+    lastModeByGame[activeGame] = selectedMode;
+    await updateScoreboard(activeGame, selectedMode);
+  }
 
   // Open buttons
   [document.getElementById('btnMenu'), document.getElementById('snakeBtnMenu')]
@@ -44,6 +109,47 @@ export function initMenu(){
     } else if(e.key === 'Escape'){
       e.preventDefault();
       toggleMenuOverlay();
+    }
+  });
+
+  if(scoreGameSelect){
+    scoreGameSelect.addEventListener('change', () => {
+      const game = scoreGameSelect.value;
+      const mode = fillModeOptions(game, lastModeByGame[game]);
+      lastModeByGame[game] = mode;
+      void updateScoreboard(game, mode);
+    });
+  }
+  if(scoreModeSelect){
+    scoreModeSelect.addEventListener('change', () => {
+      const game = scoreGameSelect ? scoreGameSelect.value : 'tetris';
+      lastModeByGame[game] = scoreModeSelect.value;
+      void updateScoreboard(game, scoreModeSelect.value);
+    });
+  }
+  const btnResetHS = document.getElementById('btnResetHS');
+  if(btnResetHS){
+    btnResetHS.addEventListener('click', async () => {
+      const game = scoreGameSelect ? scoreGameSelect.value : 'tetris';
+      const mode = scoreModeSelect ? scoreModeSelect.value : lastModeByGame[game];
+      if(game === 'snake'){
+        clearHS(mode);
+        localStorage.removeItem(snakeBestKey(mode));
+        await updateScoreboard(game, mode);
+        document.dispatchEvent(new CustomEvent('snakeHsCleared', { detail: { mode } }));
+      } else {
+        saveHS([], mode);
+        localStorage.removeItem(bestKey(mode));
+        await updateScoreboard(game, mode);
+        document.dispatchEvent(new CustomEvent('tetrisHsCleared', { detail: { mode } }));
+      }
+    });
+  }
+
+  void syncScoreboardWithActiveGame();
+  document.addEventListener('menuToggle', e => {
+    if(e.detail && e.detail.show){
+      void syncScoreboardWithActiveGame();
     }
   });
 }
