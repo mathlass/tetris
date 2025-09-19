@@ -169,18 +169,27 @@ export function initSnake(){
     });
     snake.forEach(s => drawCell(s.x, s.y, '#0f0', cellInset));
 
-    // Draw digesting food as a smaller block inside the snake
-    ctx.fillStyle = '#ff0';
+    // Draw digesting food as a pulsating block inside the snake
     const segmentSize = size - cellInset * 2;
     digesting.forEach(d => {
       if(d.index < snake.length){
         const seg = snake[d.index];
-        const off = segmentSize / 4;
+        const phase = d.phase ?? 0;
+        const wave = (Math.sin(phase) + 1) / 2;
+        const neon = { r: 57, g: 255, b: 20 };
+        const yellow = { r: 255, g: 255, b: 0 };
+        const r = Math.round(neon.r + (yellow.r - neon.r) * wave);
+        const g = Math.round(neon.g + (yellow.g - neon.g) * wave);
+        const b = Math.round(neon.b + (yellow.b - neon.b) * wave);
+        ctx.fillStyle = `rgb(${r},${g},${b})`;
+        const sizeFactor = 0.35 + 0.25 * wave;
+        const innerSize = segmentSize * sizeFactor;
+        const off = (segmentSize - innerSize) / 2;
         ctx.fillRect(
           boardPadding + seg.x * size + cellInset + off,
           boardPadding + seg.y * size + cellInset + off,
-          segmentSize / 2,
-          segmentSize / 2
+          innerSize,
+          innerSize
         );
       }
     });
@@ -201,7 +210,10 @@ export function initSnake(){
     }
     snake.unshift(head);
     // move digesting pieces forward
-    digesting.forEach(d => d.index++);
+    digesting.forEach(d => {
+      d.index++;
+      d.phase = (d.phase ?? 0) + 0.2;
+    });
     let ate = head.x===food.x && head.y===food.y;
     if(ate){
       score++;
@@ -214,7 +226,7 @@ export function initSnake(){
         placeObstacles(score, mode);
       }
       placeFood();
-      digesting.push({index:0});
+      digesting.push({index:0, phase:0});
     }
     let grow = digesting.some(d => d.index === snake.length - 1);
     if(!grow){
