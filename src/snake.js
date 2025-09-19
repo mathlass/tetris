@@ -35,8 +35,11 @@ export function initSnake(){
   let food = {x:0, y:0};
   // Pieces currently traveling through the snake after being eaten
   let digesting = [];
+  let eatParticles = [];
   let obstacles = [];
   let timer = null;
+  let animationFrame = null;
+  let lastAnimationTime = null;
   let score = 0;
   const bestKey = modeName => `${SNAKE_BEST_KEY_BASE}_${modeName}`;
   try{
@@ -76,6 +79,8 @@ export function initSnake(){
     score = 0;
     obstacles = [];
     digesting = [];
+    eatParticles = [];
+    cancelAnimationLoop();
     best = Number(localStorage.getItem(bestKey(mode)) || 0);
     updateScore();
     if(mode === 'obstacles' || mode === 'ultra') placeObstacles(score, mode);
@@ -185,7 +190,67 @@ export function initSnake(){
       }
     });
     drawCell(food.x, food.y, '#f00', cellInset);
+
+    if(eatParticles.length){
+      const particleBaseRadius = Math.max(1.5, size * 0.15);
+      eatParticles.forEach(p => {
+        const lifeRatio = Math.max(0, Math.min(1, p.life / p.maxLife));
+        const px = boardPadding + p.x * size;
+        const py = boardPadding + p.y * size;
+        ctx.save();
+        ctx.translate(px, py);
+        ctx.rotate(p.rotation);
+        ctx.globalAlpha = lifeRatio;
+        ctx.fillStyle = '#ffeb3b';
+        ctx.beginPath();
+        const radius = particleBaseRadius * (0.6 + lifeRatio * 0.6);
+        ctx.ellipse(0, 0, radius, radius * 0.6, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      });
+      ctx.globalAlpha = 1;
+    }
     ctx.restore();
+  }
+
+  function cancelAnimationLoop(){
+    if(animationFrame !== null){
+      cancelAnimationFrame(animationFrame);
+      animationFrame = null;
+    }
+    lastAnimationTime = null;
+  }
+
+  function ensureAnimationLoop(){
+    if(animationFrame === null && eatParticles.length){
+      animationFrame = requestAnimationFrame(updateAnimations);
+    }
+  }
+
+  function updateAnimations(timestamp){
+    if(lastAnimationTime === null){
+      lastAnimationTime = timestamp;
+    }
+    const delta = timestamp - lastAnimationTime;
+    lastAnimationTime = timestamp;
+    const dt = delta / 1000;
+    eatParticles = eatParticles.filter(p => {
+      p.life -= delta;
+      if(p.life <= 0) return false;
+      p.x += p.vx * dt;
+      p.y += p.vy * dt;
+      p.vx *= 0.985;
+      p.vy += p.gravity * dt;
+      p.rotation += p.vr * dt;
+      return true;
+    });
+    draw();
+    if(eatParticles.length){
+      animationFrame = requestAnimationFrame(updateAnimations);
+    }else{
+      animationFrame = null;
+      lastAnimationTime = null;
+    }
   }
 
   function step(){
@@ -215,6 +280,26 @@ export function initSnake(){
       }
       placeFood();
       digesting.push({index:0});
+      const centerX = head.x + 0.5;
+      const centerY = head.y + 0.5;
+      const burstCount = 10 + Math.floor(Math.random() * 6);
+      for(let i=0;i<burstCount;i++){
+        const angle = Math.random() * Math.PI * 2;
+        const speed = 2.5 + Math.random() * 3.5;
+        const maxLife = 350 + Math.random() * 250;
+        eatParticles.push({
+          x: centerX,
+          y: centerY,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed - 1.5,
+          gravity: 3,
+          life: maxLife,
+          maxLife,
+          rotation: Math.random() * Math.PI * 2,
+          vr: (Math.random() - 0.5) * 6
+        });
+      }
+      ensureAnimationLoop();
     }
     let grow = digesting.some(d => d.index === snake.length - 1);
     if(!grow){
@@ -245,6 +330,8 @@ export function initSnake(){
       clearInterval(timer);
       timer = null;
     }
+    cancelAnimationLoop();
+    eatParticles = [];
     running = false;
     paused = false;
     if(hide) hideOverlay();
@@ -253,6 +340,7 @@ export function initSnake(){
   function pause(){
     if(running && !paused){
       if(timer){ clearInterval(timer); timer = null; }
+      cancelAnimationLoop();
       paused = true;
     }
   }
@@ -261,6 +349,7 @@ export function initSnake(){
     if(running && paused){
       timer = setInterval(step, 100);
       paused = false;
+      ensureAnimationLoop();
     }
   }
 
