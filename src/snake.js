@@ -36,6 +36,7 @@ export function initSnake(){
   // Pieces currently traveling through the snake after being eaten
   let digesting = [];
   let obstacles = [];
+  let headPulse = 0;
   let timer = null;
   let score = 0;
   const bestKey = modeName => `${SNAKE_BEST_KEY_BASE}_${modeName}`;
@@ -76,6 +77,7 @@ export function initSnake(){
     score = 0;
     obstacles = [];
     digesting = [];
+    headPulse = 0;
     best = Number(localStorage.getItem(bestKey(mode)) || 0);
     updateScore();
     if(mode === 'obstacles' || mode === 'ultra') placeObstacles(score, mode);
@@ -167,7 +169,23 @@ export function initSnake(){
       const color = o.type === 'hazard' ? '#f80' : '#888';
       drawCell(o.x, o.y, color, cellInset);
     });
-    snake.forEach(s => drawCell(s.x, s.y, '#0f0', cellInset));
+    if(snake.length){
+      const head = snake[0];
+      const drawSize = size - cellInset * 2;
+      const centerX = boardPadding + head.x * size + cellInset + drawSize / 2;
+      const centerY = boardPadding + head.y * size + cellInset + drawSize / 2;
+      ctx.save();
+      ctx.translate(centerX, centerY);
+      const scale = 1 + 0.3 * headPulse;
+      ctx.scale(scale, scale);
+      ctx.fillStyle = '#0f0';
+      ctx.fillRect(-drawSize / 2, -drawSize / 2, drawSize, drawSize);
+      ctx.restore();
+      for(let i = 1; i < snake.length; i++){
+        const segment = snake[i];
+        drawCell(segment.x, segment.y, '#0f0', cellInset);
+      }
+    }
 
     // Draw digesting food as a pulsating block inside the snake
     const segmentSize = size - cellInset * 2;
@@ -216,6 +234,7 @@ export function initSnake(){
     });
     let ate = head.x===food.x && head.y===food.y;
     if(ate){
+      headPulse = 1;
       score++;
       if(score>best){
         best = score;
@@ -235,6 +254,7 @@ export function initSnake(){
       digesting = digesting.filter(d => d.index !== snake.length - 1);
     }
     draw();
+    headPulse = Math.max(0, headPulse - 0.15);
   }
 
   function gameOver(){
@@ -259,6 +279,7 @@ export function initSnake(){
     }
     running = false;
     paused = false;
+    headPulse = 0;
     if(hide) hideOverlay();
   }
 
