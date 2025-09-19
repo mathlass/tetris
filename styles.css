@@ -36,14 +36,14 @@ html,body{height:100%;margin:0;background-color:var(--bg);background-image:linea
 .wrap{max-width:980px;margin:24px auto;padding:0 16px;display:grid;grid-template-columns:1fr auto;gap:24px}
 h1{font-size:28px;letter-spacing:1px;margin:0 0 8px;font-weight:600}
 p{color:var(--muted);margin:0 0 12px}
-.grid{display:grid;grid-template-columns:320px 160px 160px;gap:16px;align-items:start}
+.grid{display:grid;grid-template-columns:minmax(0,360px) repeat(2,minmax(0,1fr));gap:16px;align-items:start}
 .game-area{display:flex;flex-direction:column;gap:8px;align-items:center}
 @media (max-width:720px){
   .wrap{grid-template-columns:1fr}
   .grid{grid-template-columns:1fr}
   .board-wrap{max-width:90vw}
 }
-.panel{background:color-mix(in srgb,var(--panel-bg),transparent 20%);backdrop-filter:blur(8px);border:1px solid var(--panel-border);border-radius:16px;padding:14px 16px;box-shadow:0 10px 30px color-mix(in srgb,var(--bg),#000 30%)}
+.panel{background:color-mix(in srgb,var(--panel-bg),transparent 20%);backdrop-filter:blur(8px);border:1px solid var(--panel-border);border-radius:16px;padding:14px 16px;box-shadow:0 10px 30px color-mix(in srgb,var(--bg),#000 30%);min-width:0}
 canvas{display:block;background:var(--canvas-bg);border-radius:12px;border:1px solid var(--canvas-border)}
 .stats{display:flex;flex-direction:column;gap:8px}
 .stat{background:var(--stat-bg);border:1px solid var(--stat-border);border-radius:12px;padding:10px;text-align:center}
