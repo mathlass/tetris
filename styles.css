@@ -4,6 +4,12 @@
   --canvas-bg:#0a0c10; --canvas-border:#202533;
   --stat-bg:#0d1119; --stat-border:#1f2533;
   --button-bg:#121722; --button-border:#2a3142; --button-hover-bg:#1a2030;
+  --button-primary-bg:color-mix(in srgb,var(--accent) 92%,#0b1019 8%);
+  --button-primary-border:color-mix(in srgb,var(--accent) 55%,#02060b 45%);
+  --button-primary-hover-bg:color-mix(in srgb,var(--accent) 100%,#060b15 0%);
+  --button-primary-color:#03121f;
+  --button-primary-shadow:0 14px 32px color-mix(in srgb,var(--accent),transparent 70%);
+  --button-primary-hover-shadow:0 18px 38px color-mix(in srgb,var(--accent),transparent 60%);
   --kbd-bg:#222739; --kbd-border:#2c3550;
   --mini-bg:#0d1119; --mini-border:#1f2533;
   --input-bg:#0d1119; --input-border:#1f2533;
@@ -15,6 +21,12 @@
   --canvas-bg:#ffffff; --canvas-border:#dadce0;
   --stat-bg:#f1f3f4; --stat-border:#dadce0;
   --button-bg:#f8f9fa; --button-border:#dadce0; --button-hover-bg:#e8eaed;
+  --button-primary-bg:#0b62d1;
+  --button-primary-border:#0a58bb;
+  --button-primary-hover-bg:#0a58bb;
+  --button-primary-color:#ffffff;
+  --button-primary-shadow:0 12px 28px color-mix(in srgb,#0b62d1,transparent 65%);
+  --button-primary-hover-shadow:0 16px 34px color-mix(in srgb,#0b62d1,transparent 55%);
   --kbd-bg:#e8eaed; --kbd-border:#dadce0;
   --mini-bg:#f1f3f4; --mini-border:#dadce0;
   --input-bg:#f8f9fa; --input-border:#dadce0;
@@ -90,3 +102,6 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
 .intro-label .input{width:100%}
 .intro-submit{align-self:center;font-size:16px;padding:12px 20px}
 .intro-submit .material-icons{font-size:22px}
+.button-primary{background:var(--button-primary-bg);border:1px solid var(--button-primary-border);color:var(--button-primary-color);box-shadow:var(--button-primary-shadow);transition:background .2s ease,transform .1s ease,box-shadow .2s ease}
+.button-primary:hover{background:var(--button-primary-hover-bg);box-shadow:var(--button-primary-hover-shadow);transform:translateY(-1px)}
+.button-primary:active{transform:scale(.95)}
