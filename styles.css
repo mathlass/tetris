@@ -55,7 +55,15 @@ select.input option{background:var(--input-bg);color:var(--fg)}
 .table{width:100%;border-collapse:collapse;margin-top:8px}
 .table th,.table td{border:1px solid var(--table-border);padding:8px;text-align:left}
 .table thead th{background:var(--table-head-bg);color:var(--muted)}
+.table tbody tr:hover{background:color-mix(in srgb,var(--table-head-bg),transparent 60%)}
 .table tbody tr:nth-child(even){background:var(--table-even-bg)}
+#hsTable td:nth-child(1),
+#hsTable td:nth-child(3),
+#hsTable td:nth-child(4),
+#snakeScoreTable td:nth-child(1),
+#snakeScoreTable td:nth-child(3),
+#snakeHsTable td:nth-child(1),
+#snakeHsTable td:nth-child(3){text-align:right}
 /* Menu Overlay */
 #menuOverlay{position:fixed;inset:0;overflow-y:auto;background:rgba(0,0,0,.6);padding:24px 16px;opacity:0;pointer-events:none;transition:opacity .25s ease;z-index:9998}
 #menuOverlay.show{opacity:1;pointer-events:auto}
