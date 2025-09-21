@@ -355,6 +355,13 @@ export function initSnake(){
   btnStart.addEventListener('click', start);
   if(btnPause) btnPause.addEventListener('click', togglePause);
   canvas.addEventListener('pointerdown', handlePointer, {passive:false});
+  const preventTouchScroll = e => {
+    if(e.cancelable){
+      e.preventDefault();
+    }
+  };
+  canvas.addEventListener('touchstart', preventTouchScroll, {passive:false});
+  canvas.addEventListener('touchmove', preventTouchScroll, {passive:false});
   document.addEventListener('keydown', handleKey);
   if(btnRestart) btnRestart.addEventListener('click', start);
   if(btnClose) btnClose.addEventListener('click', hideOverlay);
