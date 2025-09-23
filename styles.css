@@ -176,9 +176,6 @@ select.input option{background:var(--input-bg);color:var(--fg)}
   letter-spacing:1px;
   font-size:26px;
 }
-#sudokuOverlay .buttons button:first-child{
-  animation:overlay-pulse 1.4s ease-in-out infinite alternate;
-}
 @keyframes pop{from{transform:scale(.95);opacity:.6} to{transform:scale(1);opacity:1}}
 /* Pause Overlay */
 .board-wrap{position:relative;touch-action:none;width:100%;max-width:300px;margin:0 auto}
@@ -496,4 +493,3 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
 @keyframes sudoku-highlight-focus{0%,100%{box-shadow:0 0 0 2px color-mix(in srgb,var(--accent),transparent 35%) inset;}50%{box-shadow:0 0 0 5px color-mix(in srgb,var(--accent),transparent 55%) inset;}}
 @keyframes sudoku-target-pulse{0%,100%{box-shadow:0 0 0 2px color-mix(in srgb,var(--accent),transparent 35%) inset;}50%{box-shadow:0 0 0 4px color-mix(in srgb,var(--accent),transparent 20%) inset;}}
 @keyframes sudoku-confetti{0%{transform:translateY(-14px)}50%{transform:translateY(14px)}100%{transform:translateY(-14px)}}
-@keyframes overlay-pulse{0%{transform:translateY(0) scale(1);box-shadow:var(--button-primary-shadow)}100%{transform:translateY(-3px) scale(1.05);box-shadow:var(--button-primary-hover-shadow)}}
