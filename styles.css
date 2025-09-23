@@ -17,8 +17,6 @@
   --sudoku-block-border:color-mix(in srgb,var(--accent) 55%,transparent 45%);
   --sudoku-block-surface:color-mix(in srgb,var(--accent) 8%,transparent 92%);
   --sudoku-block-surface-alt:color-mix(in srgb,var(--accent) 16%,transparent 84%);
-  --sudoku-progress-track:color-mix(in srgb,var(--panel-bg),transparent 35%);
-  --sudoku-progress-marker:color-mix(in srgb,var(--accent) 75%,transparent 25%);
   --overlay-celebration:color-mix(in srgb,var(--accent) 55%,#fff 8%);
 }
 .theme-light {
@@ -40,8 +38,6 @@
   --sudoku-block-border:color-mix(in srgb,var(--accent) 70%,transparent 30%);
   --sudoku-block-surface:color-mix(in srgb,var(--accent) 14%,transparent 86%);
   --sudoku-block-surface-alt:color-mix(in srgb,var(--accent) 22%,transparent 78%);
-  --sudoku-progress-track:color-mix(in srgb,var(--panel-bg),transparent 20%);
-  --sudoku-progress-marker:color-mix(in srgb,var(--accent) 70%,transparent 30%);
   --overlay-celebration:color-mix(in srgb,var(--accent) 65%,#fff 25%);
 }
 html,body{height:100%;margin:0;background-color:var(--bg);background-image:linear-gradient(135deg,color-mix(in srgb,var(--bg),#fff 5%),color-mix(in srgb,var(--bg),#000 5%));color:var(--fg);font:400 16px/1.4 'Inter',system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;overflow-x:hidden;overflow-y:auto}
@@ -282,9 +278,16 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
   font-size:0.65em;
 }
 .sudoku-cell.highlight-row:not(.selected):not(.error),
-.sudoku-cell.highlight-col:not(.selected):not(.error),
+.sudoku-cell.highlight-col:not(.selected):not(.error){
+  --cell-bg:color-mix(in srgb,var(--accent),transparent 78%);
+  box-shadow:0 0 0 1px color-mix(in srgb,var(--accent),transparent 60%) inset;
+}
 .sudoku-cell.highlight-block:not(.selected):not(.error){
-  --cell-bg:color-mix(in srgb,var(--accent),transparent 88%);
+  --cell-bg:color-mix(in srgb,var(--accent),transparent 82%);
+}
+.sudoku-cell.highlight-row.highlight-col:not(.selected):not(.error){
+  --cell-bg:color-mix(in srgb,var(--accent),transparent 70%);
+  box-shadow:0 0 0 2px color-mix(in srgb,var(--accent),transparent 40%) inset;
 }
 .sudoku-cell.highlight-number:not(.selected):not(.error){
   box-shadow:0 0 0 2px color-mix(in srgb,var(--accent),transparent 35%) inset;
@@ -340,7 +343,7 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
 .sudoku-pad{
   display:flex;
   flex-direction:column;
-  gap:12px;
+  gap:16px;
   width:min(520px,100%);
   max-width:100%;
   background:color-mix(in srgb,var(--panel-bg),transparent 8%);
@@ -388,12 +391,11 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
   cursor:default;
 }
 .sudoku-pad-tools{
-  display:flex;
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
   gap:8px;
-  flex-wrap:wrap;
 }
-.sudoku-toggle{
-  flex:1;
+.sudoku-tool{
   display:flex;
   align-items:center;
   justify-content:center;
@@ -403,7 +405,11 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
   border-radius:12px;
   border:1px solid color-mix(in srgb,var(--canvas-border),transparent 15%);
   background:color-mix(in srgb,var(--panel-bg),transparent 10%);
-  transition:background .2s ease,box-shadow .2s ease,color .2s ease;
+  transition:background .2s ease,box-shadow .2s ease,transform .2s ease,color .2s ease;
+}
+.sudoku-tool .material-icons{font-size:1.2em;}
+.sudoku-toggle{
+  flex:1;
 }
 .sudoku-toggle[aria-pressed="true"]{
   background:color-mix(in srgb,var(--accent),transparent 75%);
@@ -413,90 +419,13 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
 .sudoku-pad.mark-mode-active #sudokuMarkToggle{
   box-shadow:0 0 0 3px color-mix(in srgb,var(--accent),transparent 55%) inset;
 }
-.sudoku-pad-clear{
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:6px;
-  font-size:clamp(14px,2.6vw,18px);
-  border-radius:12px;
-  border:1px solid color-mix(in srgb,var(--canvas-border),transparent 15%);
-  background:color-mix(in srgb,var(--panel-bg),transparent 10%);
-  transition:background .2s ease,box-shadow .2s ease,transform .2s ease;
-}
-.sudoku-pad-clear:hover{
-  background:color-mix(in srgb,var(--accent),transparent 82%);
-  box-shadow:0 10px 24px color-mix(in srgb,var(--accent),transparent 80%);
-  transform:translateY(-2px);
-}
-.sudoku-pad-clear .material-icons{font-size:1.2em}
-.sudoku-progress{
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  gap:6px;
-  font-size:clamp(12px,2.4vw,15px);
-  color:var(--muted);
-  padding-bottom:8px;
-}
-.sudoku-progress-bar{
-  position:relative;
-  width:160px;
-  max-width:70vw;
-  height:8px;
-  border-radius:999px;
-  background:var(--sudoku-progress-track);
-  border:1px solid color-mix(in srgb,var(--canvas-border),transparent 25%);
-  overflow:visible;
-}
-.sudoku-progress-bar #sudokuProgressFill{
-  position:relative;
-  width:0;
-  height:100%;
-  border-radius:999px;
-  background:linear-gradient(90deg,color-mix(in srgb,var(--accent),transparent 10%) 0%,var(--accent) 100%);
-  box-shadow:0 8px 18px color-mix(in srgb,var(--accent),transparent 70%);
-  transition:width .25s ease,box-shadow .25s ease;
-}
-.sudoku-progress-milestones{
-  position:absolute;
-  inset:0;
-  pointer-events:none;
-  font-size:11px;
-  color:var(--muted);
-}
-.sudoku-progress-milestones span{
-  position:absolute;
-  bottom:-4px;
-  transform:translate(-50%,100%);
-  white-space:nowrap;
-}
-.sudoku-progress-milestones span::before{
-  content:"";
-  position:absolute;
-  top:-10px;
-  left:50%;
-  width:2px;
-  height:10px;
-  background:var(--sudoku-progress-marker);
-  border-radius:999px;
-  transform:translateX(-50%);
-}
-.sudoku-progress-milestones span[data-value="25"]{left:25%;}
-.sudoku-progress-milestones span[data-value="50"]{left:50%;}
-.sudoku-progress-milestones span[data-value="75"]{left:75%;}
 @media (max-width:640px){
   .sudoku-panel{gap:14px;}
-  .sudoku-stats{flex-direction:column;align-items:stretch;text-align:center;gap:12px;}
-  .sudoku-progress{align-items:flex-start;}
   .sudoku-grid{border-radius:18px;}
 }
 @media (max-width:480px){
   .sudoku-pad{padding:10px 12px 14px;}
   .sudoku-pad button{font-size:clamp(15px,6vw,18px);padding:12px;}
-  .sudoku-progress{font-size:clamp(11px,3vw,14px);}
-  .sudoku-progress-milestones{font-size:10px;}
-  .sudoku-progress-bar{width:140px;}
   .sudoku-grid{border-radius:16px;}
 }
 @keyframes sudoku-error{0%,100%{background:color-mix(in srgb,#b00020,transparent 75%);color:var(--fg)}50%{background:#b00020;color:#fff}}
