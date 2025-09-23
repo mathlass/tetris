@@ -14,6 +14,7 @@
   --mini-bg:#0d1119; --mini-border:#1f2533;
   --input-bg:#0d1119; --input-border:#1f2533;
   --table-head-bg:#0d1119; --table-even-bg:#0f1521; --table-border:#1f2533;
+  --sudoku-block-border:color-mix(in srgb,var(--accent) 55%,transparent 45%);
 }
 .theme-light {
   --bg:#ffffff; --fg:#202124; --muted:#5f6368; --accent:#0066cc;
@@ -31,6 +32,7 @@
   --mini-bg:#f1f3f4; --mini-border:#dadce0;
   --input-bg:#f8f9fa; --input-border:#dadce0;
   --table-head-bg:#f1f3f4; --table-even-bg:#f8f9fa; --table-border:#dadce0;
+  --sudoku-block-border:color-mix(in srgb,var(--accent) 70%,transparent 30%);
 }
 html,body{height:100%;margin:0;background-color:var(--bg);background-image:linear-gradient(135deg,color-mix(in srgb,var(--bg),#fff 5%),color-mix(in srgb,var(--bg),#000 5%));color:var(--fg);font:400 16px/1.4 'Inter',system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;overflow-x:hidden;overflow-y:auto}
 .wrap{max-width:980px;margin:24px auto;padding:0 16px;display:grid;grid-template-columns:1fr auto;gap:24px}
@@ -126,8 +128,13 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
 .button-primary:hover{background:var(--button-primary-hover-bg);box-shadow:var(--button-primary-hover-shadow);transform:translateY(-1px)}
 .button-primary:active{transform:scale(.95)}
 .sudoku-panel{display:flex;flex-direction:column;align-items:center;gap:12px}
-.sudoku-grid{width:min(360px,92vw);aspect-ratio:1;display:grid;grid-template-columns:repeat(9,1fr);background:var(--canvas-bg);border:2px solid var(--canvas-border);border-radius:16px;overflow:hidden;box-shadow:0 10px 30px color-mix(in srgb,var(--bg),#000 30%)}
-.sudoku-cell{border:1px solid color-mix(in srgb,var(--canvas-border),transparent 35%);font-size:20px;font-weight:500;display:flex;align-items:center;justify-content:center;background:color-mix(in srgb,var(--panel-bg),transparent 30%);color:var(--fg);transition:background .2s ease,color .2s ease;padding:0}
+.sudoku-grid{position:relative;width:clamp(280px,calc(100vw - 32px),520px);aspect-ratio:1;display:grid;grid-template-columns:repeat(9,1fr);background:var(--canvas-bg);border:2px solid var(--canvas-border);border-radius:16px;overflow:hidden;box-shadow:0 10px 30px color-mix(in srgb,var(--bg),#000 30%)}
+.sudoku-grid::before{content:"";position:absolute;inset:0;pointer-events:none;background:
+  repeating-linear-gradient(90deg,transparent,transparent calc(33.333% - 1.5px),var(--sudoku-block-border) calc(33.333% - 1.5px),var(--sudoku-block-border) calc(33.333% + 1.5px)),
+  repeating-linear-gradient(0deg,transparent,transparent calc(33.333% - 1.5px),var(--sudoku-block-border) calc(33.333% - 1.5px),var(--sudoku-block-border) calc(33.333% + 1.5px));
+  border-radius:inherit;
+}
+.sudoku-cell{border:1px solid color-mix(in srgb,var(--canvas-border),transparent 35%);font-size:clamp(18px,3.5vw,24px);font-weight:500;display:flex;align-items:center;justify-content:center;background:color-mix(in srgb,var(--panel-bg),transparent 30%);color:var(--fg);transition:background .2s ease,color .2s ease;padding:0}
 .sudoku-cell:disabled{cursor:default}
 .sudoku-cell.fixed{background:color-mix(in srgb,var(--panel-bg),transparent 10%);color:var(--muted);font-weight:600}
 .sudoku-cell.filled{color:var(--fg)}
@@ -137,6 +144,6 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
 .sudoku-cell.border-left{border-left-width:2px}
 .sudoku-cell.border-right{border-right-width:2px}
 .sudoku-cell.border-bottom{border-bottom-width:2px}
-.sudoku-pad{display:grid;grid-template-columns:repeat(9,minmax(0,1fr));gap:8px;width:min(360px,92vw)}
-.sudoku-pad button{font-size:18px;padding:10px;border-radius:10px}
+.sudoku-pad{display:grid;grid-template-columns:repeat(9,minmax(0,1fr));gap:8px;width:clamp(280px,calc(100vw - 32px),520px)}
+.sudoku-pad button{font-size:clamp(16px,3.2vw,20px);padding:10px;border-radius:10px}
 @keyframes sudoku-error{0%,100%{background:color-mix(in srgb,#b00020,transparent 75%);color:var(--fg)}50%{background:#b00020;color:#fff}}
