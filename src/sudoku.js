@@ -170,10 +170,18 @@ export function initSudoku(){
         cell.className = 'sudoku-cell';
         cell.dataset.row = String(r);
         cell.dataset.col = String(c);
-        if(r % 3 === 0) cell.classList.add('border-top');
-        if(c % 3 === 0) cell.classList.add('border-left');
-        if(r === GRID_SIZE - 1) cell.classList.add('border-bottom');
-        if(c === GRID_SIZE - 1) cell.classList.add('border-right');
+        if(r % 3 === 0){
+          cell.classList.add(r === 0 ? 'border-top-outer' : 'border-top-block');
+        }
+        if((r + 1) % 3 === 0){
+          cell.classList.add(r === GRID_SIZE - 1 ? 'border-bottom-outer' : 'border-bottom-block');
+        }
+        if(c % 3 === 0){
+          cell.classList.add(c === 0 ? 'border-left-outer' : 'border-left-block');
+        }
+        if((c + 1) % 3 === 0){
+          cell.classList.add(c === GRID_SIZE - 1 ? 'border-right-outer' : 'border-right-block');
+        }
         cell.addEventListener('click', () => selectCell(cell));
         cell.addEventListener('focus', () => {
           selectCell(cell);
