@@ -231,13 +231,10 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
   content:"";
   position:absolute;
   inset:0;
-  background:
-    radial-gradient(circle at 50% 32%,color-mix(in srgb,var(--accent),transparent 90%),transparent 60%),
-    linear-gradient(90deg,transparent calc(100%/3),var(--sudoku-block-chess) calc(100%/3),var(--sudoku-block-chess) calc(2*100%/3),transparent calc(2*100%/3)),
-    linear-gradient(0deg,transparent calc(100%/3),var(--sudoku-block-chess) calc(100%/3),var(--sudoku-block-chess) calc(2*100%/3),transparent calc(2*100%/3));
+  background:radial-gradient(circle at 50% 32%,color-mix(in srgb,var(--accent),transparent 92%),transparent 65%);
   background-repeat:no-repeat;
-  mix-blend-mode:soft-light;
-  opacity:.35;
+  mix-blend-mode:normal;
+  opacity:.18;
   pointer-events:none;
   transition:opacity .3s ease;
 }
@@ -334,21 +331,19 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
 }
 .sudoku-cell.highlight-row:not(.selected):not(.error),
 .sudoku-cell.highlight-col:not(.selected):not(.error){
-  --cell-bg:color-mix(in srgb,var(--accent),transparent 74%);
-  box-shadow:0 0 0 1px color-mix(in srgb,var(--accent),transparent 55%) inset;
-  animation:sudoku-highlight-band 2.2s ease-in-out infinite;
+  --cell-bg:color-mix(in srgb,var(--accent),transparent 88%);
+  box-shadow:0 0 0 1px color-mix(in srgb,var(--accent),transparent 70%) inset;
 }
 .sudoku-cell.highlight-block:not(.selected):not(.error){
-  --cell-bg:color-mix(in srgb,var(--accent),transparent 80%);
+  --cell-bg:color-mix(in srgb,var(--accent),transparent 92%);
 }
 .sudoku-cell.highlight-row.highlight-col:not(.selected):not(.error){
-  --cell-bg:color-mix(in srgb,var(--accent),transparent 66%);
-  box-shadow:0 0 0 2px color-mix(in srgb,var(--accent),transparent 35%) inset;
-  animation:sudoku-highlight-focus 2.4s ease-in-out infinite;
+  --cell-bg:color-mix(in srgb,var(--accent),transparent 82%);
+  box-shadow:0 0 0 2px color-mix(in srgb,var(--accent),transparent 55%) inset;
 }
 .sudoku-cell.highlight-number:not(.selected):not(.error){
-  box-shadow:0 0 0 2px color-mix(in srgb,var(--accent),transparent 35%) inset;
-  animation:sudoku-target-pulse 1.8s ease-in-out infinite;
+  --cell-bg:color-mix(in srgb,var(--accent),transparent 78%);
+  box-shadow:0 0 0 2px color-mix(in srgb,var(--accent),transparent 45%) inset;
 }
 .sudoku-cell.selected{
   --cell-bg:color-mix(in srgb,var(--accent),transparent 72%);
