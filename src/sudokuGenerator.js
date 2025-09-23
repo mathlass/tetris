@@ -3,6 +3,10 @@ const SIZE = 9;
 const BOX = 3;
 const DIGITS = [1,2,3,4,5,6,7,8,9];
 
+function getBoxIndex(row, col){
+  return Math.floor(row / BOX) * BOX + Math.floor(col / BOX);
+}
+
 function createGrid(){
   return Array.from({ length: SIZE }, () => Array(SIZE).fill(0));
 }
@@ -87,19 +91,61 @@ function removeCells(grid, targetClues){
   const positions = Array.from({ length: SIZE * SIZE }, (_, i) => i);
   let attempts = 0;
   let index = 0;
-  while(clues > targetClues && attempts < positions.length * 4){
+  const emptyCellsPerBox = Array(BOX * BOX).fill(0);
+
+  for(let row = 0; row < SIZE; row++){
+    for(let col = 0; col < SIZE; col++){
+      if(grid[row][col] === 0){
+        emptyCellsPerBox[getBoxIndex(row, col)]++;
+      }
+    }
+  }
+
+  const needsEmptyCell = () => emptyCellsPerBox.some(count => count === 0);
+
+  while((clues > targetClues || needsEmptyCell()) && attempts < positions.length * 6){
     if(index >= positions.length){
       index = 0;
       const shuffled = shuffle(positions);
       for(let i = 0; i < positions.length; i++) positions[i] = shuffled[i];
     }
-    const pos = positions[index++];
+
+    let pos = positions[index];
+
+    if(needsEmptyCell()){
+      const requiredBoxes = [];
+      for(let i = 0; i < emptyCellsPerBox.length; i++){
+        if(emptyCellsPerBox[i] === 0) requiredBoxes.push(i);
+      }
+      if(requiredBoxes.length){
+        const targetBox = requiredBoxes[Math.floor(Math.random() * requiredBoxes.length)];
+        const startRow = Math.floor(targetBox / BOX) * BOX;
+        const startCol = (targetBox % BOX) * BOX;
+        const candidates = [];
+        for(let r = 0; r < BOX; r++){
+          for(let c = 0; c < BOX; c++){
+            const row = startRow + r;
+            const col = startCol + c;
+            if(grid[row][col] !== 0){
+              candidates.push(row * SIZE + col);
+            }
+          }
+        }
+        if(candidates.length){
+          pos = candidates[Math.floor(Math.random() * candidates.length)];
+        }
+      }
+    }
+
+    index++;
     const row = Math.floor(pos / SIZE);
     const col = pos % SIZE;
+
     if(grid[row][col] === 0){
       attempts++;
       continue;
     }
+
     const backup = grid[row][col];
     grid[row][col] = 0;
     const copy = cloneGrid(grid);
@@ -108,6 +154,7 @@ function removeCells(grid, targetClues){
       grid[row][col] = backup;
     } else {
       clues--;
+      emptyCellsPerBox[getBoxIndex(row, col)]++;
     }
     attempts++;
   }
