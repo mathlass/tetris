@@ -179,6 +179,7 @@ export function initSudoku(){
         cell.className = 'sudoku-cell';
         cell.dataset.row = String(r);
         cell.dataset.col = String(c);
+        cell.dataset.block = String(blockRow * 3 + blockCol);
         const blockRow = Math.floor(r / 3);
         const blockCol = Math.floor(c / 3);
         if((blockRow + blockCol) % 2 === 0){
@@ -232,6 +233,29 @@ export function initSudoku(){
       : 'Best: --';
   }
 
+  function updateBlockNoteState(row, col){
+    const startRow = Math.floor(row / 3) * 3;
+    const startCol = Math.floor(col / 3) * 3;
+    let blockHasNotes = false;
+    for(let r = startRow; r < startRow + 3 && !blockHasNotes; r++){
+      for(let c = startCol; c < startCol + 3; c++){
+        const noteSet = notes[r][c];
+        if(noteSet && noteSet.size){
+          blockHasNotes = true;
+          break;
+        }
+      }
+    }
+    for(let r = startRow; r < startRow + 3; r++){
+      for(let c = startCol; c < startCol + 3; c++){
+        const target = cells[r][c];
+        if(target){
+          target.classList.toggle('notes-region', blockHasNotes);
+        }
+      }
+    }
+  }
+
   function updateCellState(row, col){
     const cell = cells[row][col];
     if(!cell) return;
@@ -249,6 +273,7 @@ export function initSudoku(){
       cell.dataset.value = String(value);
       if(noteSet) noteSet.clear();
       cell.setAttribute('aria-label', `Feld ${row + 1},${col + 1} – Vorgabe ${value}`);
+      updateBlockNoteState(row, col);
       return;
     }
 
@@ -280,6 +305,8 @@ export function initSudoku(){
       cell.classList.remove('has-notes');
       cell.setAttribute('aria-label', `Feld ${row + 1},${col + 1} – leer`);
     }
+
+    updateBlockNoteState(row, col);
   }
 
   function applyPuzzle(){
