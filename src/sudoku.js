@@ -21,6 +21,10 @@ export function initSudoku(){
   const ovBestEl = document.getElementById('sudokuOvBest');
   const btnRestart = document.getElementById('sudokuBtnRestart');
   const btnClose = document.getElementById('sudokuBtnClose');
+  const progressText = document.getElementById('sudokuProgressText');
+  const progressFill = document.getElementById('sudokuProgressFill');
+  const noteToggle = document.getElementById('sudokuNoteToggle');
+  const markToggle = document.getElementById('sudokuMarkToggle');
 
   if(!boardEl || !padEl || !timerEl || !bestEl){
     return {
@@ -32,10 +36,13 @@ export function initSudoku(){
   }
 
   const bestKey = difficulty => `${SUDOKU_BEST_KEY_BASE}_${difficulty}`;
+  const totalCells = GRID_SIZE * GRID_SIZE;
   const cells = Array.from({ length: GRID_SIZE }, () => Array(GRID_SIZE).fill(null));
+  const padButtons = padEl ? Array.from(padEl.querySelectorAll('button[data-value]')) : [];
   let initial = Array.from({ length: GRID_SIZE }, () => Array(GRID_SIZE).fill(0));
   let board = Array.from({ length: GRID_SIZE }, () => Array(GRID_SIZE).fill(0));
   let solution = Array.from({ length: GRID_SIZE }, () => Array(GRID_SIZE).fill(0));
+  let notes = createNotesGrid();
   let selectedCell = null;
   let currentDifficulty = difficultySelect ? difficultySelect.value : SUDOKU_DIFFICULTIES[0];
   let startTime = 0;
@@ -45,17 +52,113 @@ export function initSudoku(){
   let completed = false;
   let paused = false;
   let menuPaused = false;
+  let noteMode = false;
+  let markMode = false;
+  let highlightedDigit = null;
+
+  function createNotesGrid(){
+    return Array.from({ length: GRID_SIZE }, () => Array.from({ length: GRID_SIZE }, () => new Set()));
+  }
+
+  function renderNotes(noteSet){
+    return `<div class="sudoku-notes">${Array.from({ length: 9 }, (_, index) => {
+      const value = noteSet.has(index + 1) ? String(index + 1) : '&nbsp;';
+      return `<span>${value}</span>`;
+    }).join('')}</div>`;
+  }
+
+  function updatePadState(){
+    padButtons.forEach(btn => {
+      const value = Number(btn.dataset.value);
+      btn.classList.toggle('selected', highlightedDigit === value);
+    });
+    if(noteToggle){
+      noteToggle.setAttribute('aria-pressed', noteMode ? 'true' : 'false');
+    }
+    if(markToggle){
+      markToggle.setAttribute('aria-pressed', markMode ? 'true' : 'false');
+    }
+  }
+
+  function updateHighlights(){
+    cells.forEach(row => row.forEach(cell => {
+      if(cell){
+        cell.classList.remove('highlight-row', 'highlight-col', 'highlight-block', 'highlight-number');
+      }
+    }));
+
+    if(selectedCell){
+      const rowIndex = Number(selectedCell.dataset.row);
+      const colIndex = Number(selectedCell.dataset.col);
+      if(!Number.isNaN(rowIndex) && !Number.isNaN(colIndex)){
+        for(let c = 0; c < GRID_SIZE; c++){
+          cells[rowIndex][c]?.classList.add('highlight-row');
+        }
+        for(let r = 0; r < GRID_SIZE; r++){
+          cells[r][colIndex]?.classList.add('highlight-col');
+        }
+        const startRow = Math.floor(rowIndex / 3) * 3;
+        const startCol = Math.floor(colIndex / 3) * 3;
+        for(let r = startRow; r < startRow + 3; r++){
+          for(let c = startCol; c < startCol + 3; c++){
+            cells[r][c]?.classList.add('highlight-block');
+          }
+        }
+        selectedCell.classList.add('selected');
+      }
+    }
+
+    if(highlightedDigit){
+      for(let r = 0; r < GRID_SIZE; r++){
+        for(let c = 0; c < GRID_SIZE; c++){
+          if(board[r][c] === highlightedDigit){
+            cells[r][c]?.classList.add('highlight-number');
+          }
+        }
+      }
+    }
+  }
+
+  function updateProgress(){
+    let filled = 0;
+    for(let r = 0; r < GRID_SIZE; r++){
+      for(let c = 0; c < GRID_SIZE; c++){
+        if(board[r][c] !== 0){
+          filled++;
+        }
+      }
+    }
+    const percent = Math.round((filled / totalCells) * 100);
+    const remaining = totalCells - filled;
+    if(progressText){
+      progressText.textContent = `${filled}/${totalCells} Felder (${remaining} offen)`;
+    }
+    if(progressFill){
+      progressFill.style.width = `${percent}%`;
+    }
+  }
 
   function clearSelection(){
-    cells.forEach(row => row.forEach(cell => cell?.classList.remove('selected')));
+    if(selectedCell){
+      selectedCell.classList.remove('selected');
+    }
     selectedCell = null;
+    updateHighlights();
   }
 
   function selectCell(cell){
-    if(!cell || cell.classList.contains('fixed')) return;
-    clearSelection();
+    if(!cell) return;
+    if(selectedCell && selectedCell !== cell){
+      selectedCell.classList.remove('selected');
+    }
     selectedCell = cell;
     selectedCell.classList.add('selected');
+    if(!markMode){
+      const value = Number(cell.dataset.value || 0);
+      highlightedDigit = value || highlightedDigit;
+    }
+    updatePadState();
+    updateHighlights();
   }
 
   function buildBoard(){
@@ -73,9 +176,7 @@ export function initSudoku(){
         if(c === GRID_SIZE - 1) cell.classList.add('border-right');
         cell.addEventListener('click', () => selectCell(cell));
         cell.addEventListener('focus', () => {
-          if(!cell.classList.contains('fixed')){
-            selectCell(cell);
-          }
+          selectCell(cell);
         });
         boardEl.appendChild(cell);
         cells[r][c] = cell;
@@ -115,36 +216,68 @@ export function initSudoku(){
       : 'Best: --';
   }
 
-  function setCellValue(row, col, value, fixed){
+  function updateCellState(row, col){
     const cell = cells[row][col];
     if(!cell) return;
-    cell.classList.remove('fixed', 'filled', 'error', 'selected');
-    if(fixed){
+    const isFixed = initial[row][col] !== 0;
+    const value = board[row][col];
+    const noteSet = notes[row][col] || (notes[row][col] = new Set());
+
+    cell.classList.remove('fixed', 'filled', 'error', 'has-notes');
+
+    if(isFixed){
       cell.textContent = String(value);
       cell.classList.add('fixed');
-      cell.disabled = true;
+      cell.disabled = false;
+      cell.setAttribute('aria-disabled', 'true');
+      cell.dataset.value = String(value);
+      if(noteSet) noteSet.clear();
       cell.setAttribute('aria-label', `Feld ${row + 1},${col + 1} – Vorgabe ${value}`);
-    }else if(value){
+      return;
+    }
+
+    cell.disabled = false;
+    cell.removeAttribute('aria-disabled');
+
+    if(value){
       cell.textContent = String(value);
       cell.classList.add('filled');
-      cell.disabled = false;
-      cell.setAttribute('aria-label', `Feld ${row + 1},${col + 1} – ${value}`);
+      cell.dataset.value = String(value);
+      const correct = value === solution[row][col];
+      cell.classList.toggle('error', !correct);
+      const suffix = correct ? '' : ' (Konflikt)';
+      cell.setAttribute('aria-label', `Feld ${row + 1},${col + 1} – ${value}${suffix}`);
+      if(noteSet) noteSet.clear();
+    }else if(noteSet && noteSet.size){
+      cell.innerHTML = renderNotes(noteSet);
+      cell.dataset.value = '';
+      cell.classList.add('has-notes');
+      cell.classList.remove('filled');
+      cell.classList.remove('error');
+      const noteList = Array.from(noteSet).sort((a, b) => a - b).join(', ');
+      cell.setAttribute('aria-label', `Feld ${row + 1},${col + 1} – Notizen ${noteList}`);
     }else{
       cell.textContent = '';
-      cell.disabled = false;
+      cell.dataset.value = '';
+      cell.classList.remove('filled');
+      cell.classList.remove('error');
+      cell.classList.remove('has-notes');
       cell.setAttribute('aria-label', `Feld ${row + 1},${col + 1} – leer`);
     }
   }
 
   function applyPuzzle(){
     clearSelection();
+    notes = createNotesGrid();
     for(let r = 0; r < GRID_SIZE; r++){
       for(let c = 0; c < GRID_SIZE; c++){
         const value = initial[r][c];
         board[r][c] = value;
-        setCellValue(r, c, value, value !== 0);
+        updateCellState(r, c);
       }
     }
+    updateProgress();
+    updateHighlights();
   }
 
   function findFirstEditable(){
@@ -170,8 +303,12 @@ export function initSudoku(){
     active = true;
     completed = false;
     paused = false;
+    noteMode = false;
+    markMode = false;
+    highlightedDigit = null;
     applyPuzzle();
     updateBestDisplay();
+    updatePadState();
     hideOverlay();
     const first = findFirstEditable();
     if(first){
@@ -220,32 +357,106 @@ export function initSudoku(){
   }
 
   function handleNumberInput(num){
+    if(markMode){
+      highlightedDigit = highlightedDigit === num ? null : num;
+      updatePadState();
+      updateHighlights();
+      return;
+    }
+
+    if(!active || completed){
+      highlightedDigit = num;
+      updatePadState();
+      updateHighlights();
+      return;
+    }
+
+    if(!selectedCell){
+      highlightedDigit = num;
+      updatePadState();
+      updateHighlights();
+      return;
+    }
+
+    const row = Number(selectedCell.dataset.row);
+    const col = Number(selectedCell.dataset.col);
+    if(Number.isNaN(row) || Number.isNaN(col)) return;
+
+    highlightedDigit = num;
+
+    if(initial[row][col] !== 0){
+      updatePadState();
+      updateHighlights();
+      return;
+    }
+
+    const noteSet = notes[row][col] || (notes[row][col] = new Set());
+
+    if(noteMode){
+      if(board[row][col] !== 0){
+        board[row][col] = 0;
+      }
+      if(noteSet.has(num)){
+        noteSet.delete(num);
+      }else{
+        noteSet.add(num);
+      }
+      updateCellState(row, col);
+    }else{
+      if(noteSet) noteSet.clear();
+      board[row][col] = num;
+      updateCellState(row, col);
+      if(checkCompletion()){
+        completePuzzle();
+      }
+    }
+
+    updateProgress();
+    updatePadState();
+    updateHighlights();
+  }
+
+  function handleClearInput(){
+    if(markMode){
+      highlightedDigit = null;
+      updatePadState();
+      updateHighlights();
+      return;
+    }
+
     if(!selectedCell || !active || completed) return;
     const row = Number(selectedCell.dataset.row);
     const col = Number(selectedCell.dataset.col);
     if(Number.isNaN(row) || Number.isNaN(col)) return;
     if(initial[row][col] !== 0) return;
-    if(solution[row][col] === num){
-      board[row][col] = num;
-      selectedCell.classList.remove('error');
-      selectedCell.textContent = String(num);
-      selectedCell.classList.add('filled');
-      selectedCell.setAttribute('aria-label', `Feld ${row + 1},${col + 1} – ${num}`);
-      if(checkCompletion()){
-        completePuzzle();
-      }
-    }else{
-      selectedCell.classList.add('error');
-      setTimeout(() => selectedCell && selectedCell.classList.remove('error'), 350);
+
+    const noteSet = notes[row][col];
+    const hadValue = board[row][col] !== 0 || (noteSet && noteSet.size);
+
+    if(noteSet) noteSet.clear();
+    board[row][col] = 0;
+    updateCellState(row, col);
+
+    if(hadValue){
+      updateProgress();
     }
+
+    updatePadState();
+    updateHighlights();
   }
 
   padEl.addEventListener('click', e => {
-    const target = e.target.closest('button[data-value]');
-    if(!target) return;
-    const value = Number(target.dataset.value);
-    if(value >= 1 && value <= 9){
-      handleNumberInput(value);
+    const button = e.target.closest('button');
+    if(!button || !padEl.contains(button)) return;
+    if(button.dataset.action === 'clear'){
+      handleClearInput();
+      return;
+    }
+    if(button.hasAttribute('data-value')){
+      const value = Number(button.dataset.value);
+      if(value >= 1 && value <= 9){
+        handleNumberInput(value);
+      }
     }
   });
 
@@ -253,8 +464,36 @@ export function initSudoku(){
     if(e.key >= '1' && e.key <= '9'){
       handleNumberInput(Number(e.key));
       e.preventDefault();
+    }else if(e.key === 'Backspace' || e.key === 'Delete' || e.key === '0'){
+      handleClearInput();
+      e.preventDefault();
     }
   });
+
+  if(noteToggle){
+    noteToggle.addEventListener('click', () => {
+      noteMode = !noteMode;
+      if(noteMode){
+        markMode = false;
+      }
+      updatePadState();
+    });
+  }
+
+  if(markToggle){
+    markToggle.addEventListener('click', () => {
+      markMode = !markMode;
+      if(markMode){
+        noteMode = false;
+      }
+      if(!markMode && selectedCell){
+        const value = Number(selectedCell.dataset.value || 0);
+        highlightedDigit = value || highlightedDigit;
+      }
+      updatePadState();
+      updateHighlights();
+    });
+  }
 
   if(startBtn){
     startBtn.addEventListener('click', startGame);
