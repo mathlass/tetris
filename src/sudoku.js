@@ -43,6 +43,23 @@ export function initSudoku(){
   const bestKey = difficulty => `${SUDOKU_BEST_KEY_BASE}_${difficulty}`;
   const cells = Array.from({ length: GRID_SIZE }, () => Array(GRID_SIZE).fill(null));
   const padButtons = padEl ? Array.from(padEl.querySelectorAll('button[data-value]')) : [];
+  if(padButtons.length){
+    padButtons.forEach(btn => {
+      const value = btn.dataset.value;
+      if(!value) return;
+      if(!btn.querySelector('.sudoku-pad-number')){
+        const numberSpan = document.createElement('span');
+        numberSpan.className = 'sudoku-pad-number';
+        numberSpan.textContent = value;
+        const countSpan = document.createElement('span');
+        countSpan.className = 'sudoku-pad-count';
+        countSpan.textContent = `0/${GRID_SIZE}`;
+        btn.textContent = '';
+        btn.append(numberSpan, countSpan);
+      }
+      btn.setAttribute('aria-label', `Zahl ${value} – 0 von ${GRID_SIZE} gesetzt`);
+    });
+  }
   let initial = Array.from({ length: GRID_SIZE }, () => Array(GRID_SIZE).fill(0));
   let board = Array.from({ length: GRID_SIZE }, () => Array(GRID_SIZE).fill(0));
   let solution = Array.from({ length: GRID_SIZE }, () => Array(GRID_SIZE).fill(0));
@@ -91,6 +108,12 @@ export function initSudoku(){
       const isSelected = highlightedDigit === value;
       const isExhausted = value >= 1 && value <= 9 && digitUsage[value] >= GRID_SIZE;
       btn.classList.toggle('selected', isSelected);
+      const usage = value >= 1 && value <= 9 ? digitUsage[value] : 0;
+      const countEl = btn.querySelector('.sudoku-pad-count');
+      if(countEl){
+        countEl.textContent = `${usage}/${GRID_SIZE}`;
+      }
+      btn.setAttribute('aria-label', `Zahl ${value} – ${usage} von ${GRID_SIZE} gesetzt`);
       if(isExhausted){
         btn.disabled = true;
         btn.setAttribute('aria-disabled', 'true');
