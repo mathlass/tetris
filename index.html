@@ -49,7 +49,6 @@
       <h1>🧱 Tetris</h1>
       <div class="controls top-controls">
         <button id="btnMenu"><span class="material-icons">menu</span> Menü</button>
-        <button id="btnPlayer"><span class="material-icons">person</span> Spieler</button>
         <button id="themeToggle"><span class="material-icons" id="themeIcon">brightness_6</span> Theme</button>
         <button id="btnStart" class="button-primary"><span class="material-icons">play_arrow</span> Start/Neu</button>
         <button id="btnPause"><span class="material-icons">pause</span> Pause</button>
@@ -116,7 +115,6 @@
           <h1>🐍 Snake</h1>
           <div class="controls top-controls">
             <button id="snakeBtnMenu"><span class="material-icons">menu</span> Menü</button>
-            <button id="btnPlayer"><span class="material-icons">person</span> Spieler</button>
             <button id="themeToggle"><span class="material-icons" id="themeIcon">brightness_6</span> Theme</button>
             <button id="snakeStart" class="button-primary"><span class="material-icons">play_arrow</span> Start/Neu</button>
             <button id="snakePause"><span class="material-icons">pause</span> Pause</button>
@@ -157,7 +155,6 @@
         <h1>🧩 Sudoku</h1>
         <div class="controls top-controls">
           <button id="sudokuBtnMenu"><span class="material-icons">menu</span> Menü</button>
-          <button id="btnPlayer"><span class="material-icons">person</span> Spieler</button>
           <button id="themeToggle"><span class="material-icons" id="themeIcon">brightness_6</span> Theme</button>
           <button id="sudokuStart" class="button-primary"><span class="material-icons">refresh</span> Neues Spiel</button>
           <label>Schwierigkeit:
@@ -323,17 +320,6 @@
       </div>
     </div>
   </div>
-
-  <!-- Spielername Dialog -->
-  <dialog id="playerDialog">
-    <form method="dialog">
-      <label>Spielername:<br><input id="playerInput" class="input" /></label>
-      <div class="buttons" style="justify-content:center;margin-top:14px">
-        <button id="playerCancel" value="cancel">Abbrechen</button>
-        <button id="playerSave" value="default">OK</button>
-      </div>
-    </form>
-  </dialog>
 
   <script type="module" src="src/main.js"></script>
 </body>

@@ -38,14 +38,21 @@ if (!JSDOM) {
     delete global.localStorage;
   });
 
-  test('player dialog saves name', () => {
+  test('intro form stores player name and selects game', () => {
     const dom = new JSDOM(`<!DOCTYPE html><body>
-      <dialog id="playerDialog">
-        <input id="playerInput">
-        <button id="playerSave"></button>
-        <button id="playerCancel"></button>
-      </dialog>
-      <button id="btnPlayer"></button>
+      <div id="introScreen" class="hidden"></div>
+      <form id="introForm">
+        <input id="introName" />
+        <select id="introGameSelect">
+          <option value="tetris">Tetris</option>
+          <option value="snake">Snake</option>
+        </select>
+      </form>
+      <div id="globalControls" class="hidden"></div>
+      <select id="gameSelect">
+        <option value="tetris">Tetris</option>
+        <option value="snake">Snake</option>
+      </select>
     </body>`, { url: 'http://localhost' });
 
     global.window = dom.window;
@@ -53,23 +60,23 @@ if (!JSDOM) {
     global.localStorage = dom.window.localStorage;
     window.matchMedia = () => ({ matches: false, addListener() {}, removeListener() {} });
 
-    const dlg = document.getElementById('playerDialog');
-    if (!dlg.showModal) {
-      dlg.showModal = function() { this.setAttribute('open', ''); };
-      dlg.close = function() { this.removeAttribute('open'); };
-    }
+    let receivedEvent;
+    document.addEventListener('intro-complete', e => { receivedEvent = e; });
 
-    localStorage.setItem(PLAYER_KEY, 'Existing');
     initUI();
 
-    document.getElementById('btnPlayer').dispatchEvent(new window.Event('click'));
-    assert.ok(dlg.hasAttribute('open'));
+    const introName = document.getElementById('introName');
+    const introGameSelect = document.getElementById('introGameSelect');
+    introName.value = 'Alice';
+    introGameSelect.value = 'snake';
 
-    const input = document.getElementById('playerInput');
-    input.value = 'Alice';
-    document.getElementById('playerSave').dispatchEvent(new window.Event('click'));
+    document.getElementById('introForm').dispatchEvent(new window.Event('submit'));
+
     assert.strictEqual(localStorage.getItem(PLAYER_KEY), 'Alice');
-    assert.ok(!dlg.hasAttribute('open'));
+    assert.strictEqual(document.getElementById('gameSelect').value, 'snake');
+    assert.ok(!document.getElementById('globalControls').classList.contains('hidden'));
+    assert.ok(document.getElementById('introScreen').classList.contains('hide'));
+    assert.strictEqual(receivedEvent?.detail?.game, 'snake');
 
     delete global.window;
     delete global.document;

@@ -54,49 +54,16 @@ export function initUI(){
   });
 
   let playerName = localStorage.getItem(PLAYER_KEY) || 'Player';
-  const dlgPlayer = document.getElementById('playerDialog');
-  const inputPlayer = document.getElementById('playerInput');
-  const btnSave = document.getElementById('playerSave');
-  const btnCancel = document.getElementById('playerCancel');
-
-  function openPlayerDialog(){
-    if(!dlgPlayer || !inputPlayer) return;
-    inputPlayer.value = playerName;
-    dlgPlayer.showModal();
-    setTimeout(()=>inputPlayer.focus(),0);
-  }
-
   if(introNameInput){
     introNameInput.value = playerName;
     setTimeout(()=>introNameInput.focus(),0);
   }
-
-  if (btnSave) {
-    btnSave.addEventListener('click', () => {
-      playerName = inputPlayer.value.trim() || 'Player';
-      localStorage.setItem(PLAYER_KEY, playerName);
-      dlgPlayer.close();
-      if(introNameInput){
-        introNameInput.value = playerName;
-      }
-    });
-  }
-  if (btnCancel) {
-    btnCancel.addEventListener('click', () => {
-      dlgPlayer.close();
-    });
-  }
-  const btnPlayers = document.querySelectorAll('#btnPlayer');
-  btnPlayers.forEach(btn => btn.addEventListener('click', openPlayerDialog));
 
   if(introForm){
     introForm.addEventListener('submit', e => {
       e.preventDefault();
       playerName = (introNameInput?.value.trim() || 'Player');
       localStorage.setItem(PLAYER_KEY, playerName);
-      if(inputPlayer){
-        inputPlayer.value = playerName;
-      }
       const selectedGame = introGameSelect?.value || 'tetris';
       if(gameSelect){
         gameSelect.value = selectedGame;
