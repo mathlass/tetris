@@ -278,14 +278,11 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
   justify-content:center;
   color:var(--fg);
   padding:0;
-  --cell-bg:var(--sudoku-block-surface-alt);
+  --cell-bg:transparent;
   background:var(--cell-bg);
   transition:background .2s ease,color .2s ease,box-shadow .2s ease,transform .2s ease;
   transform-origin:center;
   will-change:transform;
-}
-.sudoku-cell.block-accent{
-  --cell-bg:var(--sudoku-block-surface);
 }
 .sudoku-cell:disabled,
 .sudoku-cell[aria-disabled="true"]{
@@ -297,11 +294,19 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
   font-weight:600;
 }
 .sudoku-cell.filled{
+  --cell-bg:var(--sudoku-block-surface-alt);
   color:var(--fg);
 }
+.sudoku-cell.filled.block-accent{
+  --cell-bg:var(--sudoku-block-surface);
+}
 .sudoku-cell.has-notes{
+  --cell-bg:var(--sudoku-block-surface-alt);
   font-weight:500;
   font-size:0.72em;
+}
+.sudoku-cell.has-notes.block-accent{
+  --cell-bg:var(--sudoku-block-surface);
 }
 .sudoku-cell.notes-region:not(.selected):not(.error){
   --cell-bg:color-mix(in srgb,var(--accent),transparent 88%);
