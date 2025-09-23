@@ -263,7 +263,7 @@ export function initSudoku(){
     const value = board[row][col];
     const noteSet = notes[row][col] || (notes[row][col] = new Set());
 
-    cell.classList.remove('fixed', 'filled', 'error', 'has-notes');
+    cell.classList.remove('fixed', 'filled', 'error', 'has-notes', 'correct');
 
     if(isFixed){
       cell.textContent = String(value);
@@ -286,6 +286,7 @@ export function initSudoku(){
       cell.dataset.value = String(value);
       const correct = value === solution[row][col];
       cell.classList.toggle('error', !correct);
+      cell.classList.toggle('correct', correct);
       const suffix = correct ? '' : ' (Konflikt)';
       cell.setAttribute('aria-label', `Feld ${row + 1},${col + 1} – ${value}${suffix}`);
       if(noteSet) noteSet.clear();
