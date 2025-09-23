@@ -67,10 +67,33 @@ export function initSudoku(){
     }).join('')}</div>`;
   }
 
+  function getDigitUsage(){
+    const counts = Array(10).fill(0);
+    for(let r = 0; r < GRID_SIZE; r++){
+      for(let c = 0; c < GRID_SIZE; c++){
+        const value = board[r][c];
+        if(value >= 1 && value <= 9){
+          counts[value]++;
+        }
+      }
+    }
+    return counts;
+  }
+
   function updatePadState(){
+    const digitUsage = getDigitUsage();
     padButtons.forEach(btn => {
       const value = Number(btn.dataset.value);
-      btn.classList.toggle('selected', highlightedDigit === value);
+      const isSelected = highlightedDigit === value;
+      const isExhausted = value >= 1 && value <= 9 && digitUsage[value] >= GRID_SIZE;
+      btn.classList.toggle('selected', isSelected);
+      if(isExhausted){
+        btn.disabled = true;
+        btn.setAttribute('aria-disabled', 'true');
+      }else{
+        btn.disabled = false;
+        btn.removeAttribute('aria-disabled');
+      }
     });
     if(noteToggle){
       noteToggle.setAttribute('aria-pressed', noteMode ? 'true' : 'false');
