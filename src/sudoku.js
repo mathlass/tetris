@@ -21,8 +21,6 @@ export function initSudoku(){
   const ovBestEl = document.getElementById('sudokuOvBest');
   const btnRestart = document.getElementById('sudokuBtnRestart');
   const btnClose = document.getElementById('sudokuBtnClose');
-  const progressText = document.getElementById('sudokuProgressText');
-  const progressFill = document.getElementById('sudokuProgressFill');
   const noteToggle = document.getElementById('sudokuNoteToggle');
   const markToggle = document.getElementById('sudokuMarkToggle');
 
@@ -36,7 +34,6 @@ export function initSudoku(){
   }
 
   const bestKey = difficulty => `${SUDOKU_BEST_KEY_BASE}_${difficulty}`;
-  const totalCells = GRID_SIZE * GRID_SIZE;
   const cells = Array.from({ length: GRID_SIZE }, () => Array(GRID_SIZE).fill(null));
   const padButtons = padEl ? Array.from(padEl.querySelectorAll('button[data-value]')) : [];
   let initial = Array.from({ length: GRID_SIZE }, () => Array(GRID_SIZE).fill(0));
@@ -147,26 +144,6 @@ export function initSudoku(){
           }
         }
       }
-    }
-  }
-
-  function updateProgress(){
-    let filled = 0;
-    for(let r = 0; r < GRID_SIZE; r++){
-      for(let c = 0; c < GRID_SIZE; c++){
-        if(board[r][c] !== 0){
-          filled++;
-        }
-      }
-    }
-    const percent = Math.round((filled / totalCells) * 100);
-    const remaining = totalCells - filled;
-    if(progressText){
-      progressText.textContent = `${filled}/${totalCells} Felder (${remaining} offen)`;
-    }
-    if(progressFill){
-      progressFill.style.width = `${percent}%`;
-      progressFill.setAttribute('aria-valuenow', String(percent));
     }
   }
 
@@ -315,7 +292,6 @@ export function initSudoku(){
         updateCellState(r, c);
       }
     }
-    updateProgress();
     updateHighlights();
   }
 
@@ -450,7 +426,6 @@ export function initSudoku(){
       }
     }
 
-    updateProgress();
     updatePadState();
     updateHighlights();
   }
@@ -475,10 +450,6 @@ export function initSudoku(){
     if(noteSet) noteSet.clear();
     board[row][col] = 0;
     updateCellState(row, col);
-
-    if(hadValue){
-      updateProgress();
-    }
 
     updatePadState();
     updateHighlights();

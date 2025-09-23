@@ -172,24 +172,9 @@
           <div class="controls sudoku-stats" style="justify-content:center;margin:0 0 12px;">
             <span class="timer" id="sudokuTimer">00:00</span>
             <span class="timer" id="sudokuBest">Best: --</span>
-            <div class="sudoku-progress" aria-live="polite">
-              <span id="sudokuProgressText">0/81 Felder</span>
-              <div class="sudoku-progress-bar" role="presentation">
-                <div id="sudokuProgressFill" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div>
-                <div class="sudoku-progress-milestones" aria-hidden="true">
-                  <span data-value="25">25%</span>
-                  <span data-value="50">50%</span>
-                  <span data-value="75">75%</span>
-                </div>
-              </div>
-            </div>
           </div>
           <div id="sudokuBoard" class="sudoku-grid" aria-label="Sudoku Spielfeld"></div>
           <div id="sudokuPad" class="sudoku-pad" aria-label="Zahlenauswahl">
-            <div class="sudoku-pad-tools">
-              <button type="button" id="sudokuNoteToggle" class="sudoku-toggle" aria-pressed="false"><span class="material-icons">edit_note</span> Notizen</button>
-              <button type="button" id="sudokuMarkToggle" class="sudoku-toggle" aria-pressed="false"><span class="material-icons">visibility</span> Markieren</button>
-            </div>
             <div class="sudoku-pad-keys">
               <button type="button" data-value="1">1</button>
               <button type="button" data-value="2">2</button>
@@ -201,7 +186,11 @@
               <button type="button" data-value="8">8</button>
               <button type="button" data-value="9">9</button>
             </div>
-            <button type="button" class="sudoku-pad-clear" data-action="clear"><span class="material-icons">backspace</span> Löschen</button>
+            <div class="sudoku-pad-tools">
+              <button type="button" id="sudokuNoteToggle" class="sudoku-tool sudoku-toggle" aria-pressed="false"><span class="material-icons">edit_note</span> Notizen</button>
+              <button type="button" id="sudokuMarkToggle" class="sudoku-tool sudoku-toggle" aria-pressed="false"><span class="material-icons">visibility</span> Markieren</button>
+              <button type="button" class="sudoku-tool" data-action="clear"><span class="material-icons">backspace</span> Löschen</button>
+            </div>
           </div>
         </div>
         <div class="panel" style="margin-top:16px">
