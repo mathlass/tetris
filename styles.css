@@ -223,7 +223,6 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
   grid-template-rows:repeat(9,1fr);
   background:var(--canvas-bg);
   border:4px solid var(--sudoku-outer-border);
-  border-radius:20px;
   overflow:hidden;
   box-shadow:0 24px 48px color-mix(in srgb,var(--bg),#000 50%),0 12px 22px color-mix(in srgb,var(--accent),transparent 80%);
   transition:box-shadow .3s ease,transform .3s ease;
@@ -390,22 +389,6 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
   border-left-width:2px;
   border-left-color:var(--sudoku-outer-border);
 }
-.sudoku-cell.border-top-outer{
-  border-top-width:4px;
-  border-top-color:var(--sudoku-outer-border);
-}
-.sudoku-cell.border-left-outer{
-  border-left-width:4px;
-  border-left-color:var(--sudoku-outer-border);
-}
-.sudoku-cell.border-right-outer{
-  border-right-width:4px;
-  border-right-color:var(--sudoku-outer-border);
-}
-.sudoku-cell.border-bottom-outer{
-  border-bottom-width:4px;
-  border-bottom-color:var(--sudoku-outer-border);
-}
 .sudoku-notes{
   display:grid;
   grid-template-columns:repeat(3,1fr);
@@ -508,12 +491,10 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
 }
 @media (max-width:640px){
   .sudoku-panel{gap:14px;}
-  .sudoku-grid{border-radius:18px;}
 }
 @media (max-width:480px){
   .sudoku-pad{padding:10px 12px 14px;}
   .sudoku-pad button{font-size:clamp(15px,6vw,18px);padding:12px;}
-  .sudoku-grid{border-radius:16px;}
 }
 @keyframes sudoku-error{0%,100%{background:color-mix(in srgb,#b00020,transparent 75%);color:var(--fg)}50%{background:#b00020;color:#fff}}
 @keyframes sudoku-highlight-band{0%,100%{box-shadow:0 0 0 1px color-mix(in srgb,var(--accent),transparent 55%) inset;}50%{box-shadow:0 0 0 4px color-mix(in srgb,var(--accent),transparent 70%) inset;}}
