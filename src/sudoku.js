@@ -101,6 +101,14 @@ export function initSudoku(){
     if(markToggle){
       markToggle.setAttribute('aria-pressed', markMode ? 'true' : 'false');
     }
+    if(padEl){
+      padEl.classList.toggle('note-mode-active', noteMode);
+      padEl.classList.toggle('mark-mode-active', markMode);
+    }
+    if(boardEl){
+      boardEl.classList.toggle('note-mode-active', noteMode);
+      boardEl.classList.toggle('mark-mode-active', markMode);
+    }
   }
 
   function updateHighlights(){
@@ -158,6 +166,7 @@ export function initSudoku(){
     }
     if(progressFill){
       progressFill.style.width = `${percent}%`;
+      progressFill.setAttribute('aria-valuenow', String(percent));
     }
   }
 
@@ -193,6 +202,11 @@ export function initSudoku(){
         cell.className = 'sudoku-cell';
         cell.dataset.row = String(r);
         cell.dataset.col = String(c);
+        const blockRow = Math.floor(r / 3);
+        const blockCol = Math.floor(c / 3);
+        if((blockRow + blockCol) % 2 === 0){
+          cell.classList.add('block-accent');
+        }
         if(r === 0) cell.classList.add('border-top-outer');
         if(c === 0) cell.classList.add('border-left-outer');
         if(r === GRID_SIZE - 1) cell.classList.add('border-bottom-outer');
