@@ -179,9 +179,9 @@ export function initSudoku(){
         cell.className = 'sudoku-cell';
         cell.dataset.row = String(r);
         cell.dataset.col = String(c);
-        cell.dataset.block = String(blockRow * 3 + blockCol);
         const blockRow = Math.floor(r / 3);
         const blockCol = Math.floor(c / 3);
+        cell.dataset.block = String(blockRow * 3 + blockCol);
         if((blockRow + blockCol) % 2 === 0){
           cell.classList.add('block-accent');
         }
