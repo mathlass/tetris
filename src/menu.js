@@ -4,10 +4,14 @@ import {
   TETRIS_MODES,
   SNAKE_MODES,
   SNAKE_MODE_LABELS,
-  SNAKE_BEST_KEY_BASE
+  SNAKE_BEST_KEY_BASE,
+  SUDOKU_DIFFICULTIES,
+  SUDOKU_DIFFICULTY_LABELS,
+  SUDOKU_BEST_KEY_BASE
 } from './constants.js';
 import { renderHS as renderTetrisHS, saveHS, bestKey } from './highscores.js';
 import { renderHS as renderSnakeHS, clearHS as clearSnakeHS } from './snakeHighscores.js';
+import { renderHS as renderSudokuHS, clearHS as clearSudokuHS } from './sudokuHighscores.js';
 let overlay;
 let btnClose;
 let lastFocused = null;
@@ -28,17 +32,30 @@ export function initMenu(){
   const scoreModeSelect = document.getElementById('scoreModeSelect');
   const hsTable = document.getElementById('hsTable');
   const snakeTable = document.getElementById('snakeScoreTable');
+  const sudokuTable = document.getElementById('sudokuScoreTable');
   const hsLabel = document.getElementById('hsModeLabel');
   const lastModeByGame = {
     tetris: TETRIS_MODES[0],
-    snake: SNAKE_MODES[0]
+    snake: SNAKE_MODES[0],
+    sudoku: SUDOKU_DIFFICULTIES[0]
   };
   const snakeBestKey = mode => `${SNAKE_BEST_KEY_BASE}_${mode}`;
+  const sudokuBestKey = mode => `${SUDOKU_BEST_KEY_BASE}_${mode}`;
 
   function fillModeOptions(game, preferred){
     if(!scoreModeSelect) return preferred;
-    const modes = game === 'snake' ? SNAKE_MODES : TETRIS_MODES;
-    const labels = game === 'snake' ? SNAKE_MODE_LABELS : MODE_LABELS;
+    let modes;
+    let labels;
+    if(game === 'snake'){
+      modes = SNAKE_MODES;
+      labels = SNAKE_MODE_LABELS;
+    }else if(game === 'sudoku'){
+      modes = SUDOKU_DIFFICULTIES;
+      labels = SUDOKU_DIFFICULTY_LABELS;
+    }else{
+      modes = TETRIS_MODES;
+      labels = MODE_LABELS;
+    }
     scoreModeSelect.innerHTML = '';
     modes.forEach(m => {
       const opt = document.createElement('option');
@@ -56,11 +73,19 @@ export function initMenu(){
     if(game === 'snake'){
       if(hsTable) hsTable.classList.add('hidden');
       if(snakeTable) snakeTable.classList.remove('hidden');
+      if(sudokuTable) sudokuTable.classList.add('hidden');
       if(hsLabel) hsLabel.textContent = `Snake – ${SNAKE_MODE_LABELS[mode] || mode}`;
       await renderSnakeHS(mode, { tableSelector: '#snakeScoreTable' });
+    } else if(game === 'sudoku'){
+      if(hsTable) hsTable.classList.add('hidden');
+      if(snakeTable) snakeTable.classList.add('hidden');
+      if(sudokuTable) sudokuTable.classList.remove('hidden');
+      if(hsLabel) hsLabel.textContent = `Sudoku – ${SUDOKU_DIFFICULTY_LABELS[mode] || mode}`;
+      await Promise.resolve(renderSudokuHS(mode, { tableSelector: '#sudokuScoreTable' }));
     } else {
       if(hsTable) hsTable.classList.remove('hidden');
       if(snakeTable) snakeTable.classList.add('hidden');
+      if(sudokuTable) sudokuTable.classList.add('hidden');
       await renderTetrisHS(mode, { tableSelector: '#hsTable', labelSelector: '#hsModeLabel' });
     }
   }
@@ -68,21 +93,31 @@ export function initMenu(){
   const gameSelect = document.getElementById('gameSelect');
   const tetrisModeSelect = document.getElementById('modeSelect');
   const snakeModeSelect = document.getElementById('snakeModeSelect');
+  const sudokuModeSelect = document.getElementById('sudokuDifficulty');
 
   async function syncScoreboardWithActiveGame(){
     if(!scoreGameSelect || !scoreModeSelect) return;
     const activeGame = gameSelect ? gameSelect.value : 'tetris';
     scoreGameSelect.value = activeGame;
-    const currentMode = activeGame === 'snake'
-      ? (snakeModeSelect ? snakeModeSelect.value : lastModeByGame.snake)
-      : (tetrisModeSelect ? tetrisModeSelect.value : lastModeByGame.tetris);
+    let currentMode;
+    if(activeGame === 'snake'){
+      currentMode = snakeModeSelect ? snakeModeSelect.value : lastModeByGame.snake;
+    }else if(activeGame === 'sudoku'){
+      currentMode = sudokuModeSelect ? sudokuModeSelect.value : lastModeByGame.sudoku;
+    }else{
+      currentMode = tetrisModeSelect ? tetrisModeSelect.value : lastModeByGame.tetris;
+    }
     const selectedMode = fillModeOptions(activeGame, currentMode);
     lastModeByGame[activeGame] = selectedMode;
     await updateScoreboard(activeGame, selectedMode);
   }
 
   // Open buttons
-  [document.getElementById('btnMenu'), document.getElementById('snakeBtnMenu')]
+  [
+    document.getElementById('btnMenu'),
+    document.getElementById('snakeBtnMenu'),
+    document.getElementById('sudokuBtnMenu')
+  ]
     .filter(Boolean)
     .forEach(btn => btn.addEventListener('click', toggleMenuOverlay));
 
@@ -137,6 +172,11 @@ export function initMenu(){
         localStorage.removeItem(snakeBestKey(mode));
         await updateScoreboard(game, mode);
         document.dispatchEvent(new CustomEvent('snakeHsCleared', { detail: { mode } }));
+      } else if(game === 'sudoku'){
+        clearSudokuHS(mode);
+        localStorage.removeItem(sudokuBestKey(mode));
+        await updateScoreboard(game, mode);
+        document.dispatchEvent(new CustomEvent('sudokuHsCleared', { detail: { mode } }));
       } else {
         saveHS([], mode);
         localStorage.removeItem(bestKey(mode));

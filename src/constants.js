@@ -90,3 +90,12 @@ export const SNAKE_MODE_LABELS = {
 };
 export const SNAKE_HS_KEY_BASE = 'snake_highscores_v1';
 export const SNAKE_BEST_KEY_BASE = 'snake_best_v1';
+
+export const SUDOKU_DIFFICULTIES = ['easy', 'medium', 'hard'];
+export const SUDOKU_DIFFICULTY_LABELS = {
+  easy: 'Leicht',
+  medium: 'Mittel',
+  hard: 'Schwer'
+};
+export const SUDOKU_HS_KEY_BASE = 'sudoku_highscores_v1';
+export const SUDOKU_BEST_KEY_BASE = 'sudoku_best_v1';
