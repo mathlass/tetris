@@ -175,7 +175,12 @@
             <div class="sudoku-progress" aria-live="polite">
               <span id="sudokuProgressText">0/81 Felder</span>
               <div class="sudoku-progress-bar" role="presentation">
-                <div id="sudokuProgressFill"></div>
+                <div id="sudokuProgressFill" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div>
+                <div class="sudoku-progress-milestones" aria-hidden="true">
+                  <span data-value="25">25%</span>
+                  <span data-value="50">50%</span>
+                  <span data-value="75">75%</span>
+                </div>
               </div>
             </div>
           </div>

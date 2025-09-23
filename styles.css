@@ -15,6 +15,11 @@
   --input-bg:#0d1119; --input-border:#1f2533;
   --table-head-bg:#0d1119; --table-even-bg:#0f1521; --table-border:#1f2533;
   --sudoku-block-border:color-mix(in srgb,var(--accent) 55%,transparent 45%);
+  --sudoku-block-surface:color-mix(in srgb,var(--accent) 8%,transparent 92%);
+  --sudoku-block-surface-alt:color-mix(in srgb,var(--accent) 16%,transparent 84%);
+  --sudoku-progress-track:color-mix(in srgb,var(--panel-bg),transparent 35%);
+  --sudoku-progress-marker:color-mix(in srgb,var(--accent) 75%,transparent 25%);
+  --overlay-celebration:color-mix(in srgb,var(--accent) 55%,#fff 8%);
 }
 .theme-light {
   --bg:#ffffff; --fg:#202124; --muted:#5f6368; --accent:#0066cc;
@@ -33,6 +38,11 @@
   --input-bg:#f8f9fa; --input-border:#dadce0;
   --table-head-bg:#f1f3f4; --table-even-bg:#f8f9fa; --table-border:#dadce0;
   --sudoku-block-border:color-mix(in srgb,var(--accent) 70%,transparent 30%);
+  --sudoku-block-surface:color-mix(in srgb,var(--accent) 14%,transparent 86%);
+  --sudoku-block-surface-alt:color-mix(in srgb,var(--accent) 22%,transparent 78%);
+  --sudoku-progress-track:color-mix(in srgb,var(--panel-bg),transparent 20%);
+  --sudoku-progress-marker:color-mix(in srgb,var(--accent) 70%,transparent 30%);
+  --overlay-celebration:color-mix(in srgb,var(--accent) 65%,#fff 25%);
 }
 html,body{height:100%;margin:0;background-color:var(--bg);background-image:linear-gradient(135deg,color-mix(in srgb,var(--bg),#fff 5%),color-mix(in srgb,var(--bg),#000 5%));color:var(--fg);font:400 16px/1.4 'Inter',system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;overflow-x:hidden;overflow-y:auto}
 .wrap{max-width:980px;margin:24px auto;padding:0 16px;display:grid;grid-template-columns:1fr auto;gap:24px}
@@ -99,10 +109,72 @@ select.input option{background:var(--input-bg);color:var(--fg)}
 #snakeOverlay.show{opacity:1;pointer-events:auto}
 #snakeOverlay .overlay-card{background:var(--stat-bg);border:1px solid var(--stat-border);border-radius:16px;padding:20px 22px;min-width:320px;max-width:90vw;animation:pop .3s ease-out}
 #snakeOverlay h2{margin:0 0 6px;font-weight:600;letter-spacing:1px}
-#sudokuOverlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s ease;background:rgba(0,0,0,.45);backdrop-filter:blur(2px) saturate(1.1);z-index:9999}
-#sudokuOverlay.show{opacity:1;pointer-events:auto}
-#sudokuOverlay .overlay-card{background:var(--stat-bg);border:1px solid var(--stat-border);border-radius:16px;padding:20px 22px;min-width:320px;max-width:90vw;animation:pop .3s ease-out}
-#sudokuOverlay h2{margin:0 0 6px;font-weight:600;letter-spacing:1px}
+#sudokuOverlay{
+  position:fixed;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .25s ease;
+  background:radial-gradient(circle at top,var(--overlay-celebration) 0%,rgba(0,0,0,.65) 40%,rgba(0,0,0,.82) 100%);
+  backdrop-filter:blur(3px) saturate(1.15);
+  z-index:9999;
+}
+#sudokuOverlay::before,
+#sudokuOverlay::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  background-image:radial-gradient(circle at 20% 20%,rgba(255,255,255,.25) 0 3px,transparent 4px),radial-gradient(circle at 80% 10%,rgba(255,255,255,.2) 0 2px,transparent 3px),radial-gradient(circle at 40% 80%,rgba(255,255,255,.25) 0 2px,transparent 3px),radial-gradient(circle at 70% 70%,rgba(255,255,255,.18) 0 3px,transparent 3px);
+  opacity:0;
+  pointer-events:none;
+  animation:sudoku-confetti 9s linear infinite;
+}
+#sudokuOverlay::after{
+  animation-duration:7s;
+  animation-direction:reverse;
+  mix-blend-mode:screen;
+}
+#sudokuOverlay.show{
+  opacity:1;
+  pointer-events:auto;
+}
+#sudokuOverlay.show::before,
+#sudokuOverlay.show::after{
+  opacity:.45;
+}
+#sudokuOverlay .overlay-card{
+  position:relative;
+  background:linear-gradient(145deg,color-mix(in srgb,var(--stat-bg),transparent 10%) 0%,color-mix(in srgb,var(--accent),transparent 82%) 100%);
+  border:1px solid color-mix(in srgb,var(--accent),transparent 60%);
+  border-radius:20px;
+  padding:24px 26px;
+  min-width:320px;
+  max-width:90vw;
+  box-shadow:0 22px 46px color-mix(in srgb,var(--accent),transparent 80%),0 18px 38px color-mix(in srgb,var(--bg),#000 55%);
+  overflow:hidden;
+  animation:pop .3s ease-out;
+}
+#sudokuOverlay .overlay-card::before{
+  content:"";
+  position:absolute;
+  inset:-60% -30% auto -30%;
+  height:120%;
+  background:radial-gradient(circle,var(--overlay-celebration) 0%,transparent 70%);
+  opacity:.35;
+  pointer-events:none;
+}
+#sudokuOverlay h2{
+  margin:0 0 6px;
+  font-weight:600;
+  letter-spacing:1px;
+  font-size:26px;
+}
+#sudokuOverlay .buttons button:first-child{
+  animation:overlay-pulse 1.4s ease-in-out infinite alternate;
+}
 @keyframes pop{from{transform:scale(.95);opacity:.6} to{transform:scale(1);opacity:1}}
 /* Pause Overlay */
 .board-wrap{position:relative;touch-action:none;width:100%;max-width:300px;margin:0 auto}
@@ -127,38 +199,306 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
 .button-primary{background:var(--button-primary-bg);border:1px solid var(--button-primary-border);color:var(--button-primary-color);box-shadow:var(--button-primary-shadow);transition:background .2s ease,transform .1s ease,box-shadow .2s ease}
 .button-primary:hover{background:var(--button-primary-hover-bg);box-shadow:var(--button-primary-hover-shadow);transform:translateY(-1px)}
 .button-primary:active{transform:scale(.95)}
-.sudoku-panel{display:flex;flex-direction:column;align-items:center;gap:16px}
-.sudoku-stats{gap:16px}
-.sudoku-grid{position:relative;width:min(520px,100%);max-width:100%;aspect-ratio:1;display:grid;grid-template-columns:repeat(9,1fr);grid-template-rows:repeat(9,1fr);background:var(--canvas-bg);border:2px solid var(--canvas-border);overflow:hidden}
-.sudoku-cell{border:1px solid color-mix(in srgb,var(--canvas-border),transparent 15%);font-size:clamp(18px,3.5vw,24px);font-weight:500;display:flex;align-items:center;justify-content:center;background:color-mix(in srgb,var(--panel-bg),transparent 30%);color:var(--fg);transition:background .2s ease,color .2s ease,box-shadow .2s ease;padding:0}
-.sudoku-cell:disabled{cursor:default}
-.sudoku-cell.fixed{background:color-mix(in srgb,var(--panel-bg),transparent 10%);color:var(--muted);font-weight:600}
-.sudoku-cell.filled{color:var(--fg)}
-.sudoku-cell.has-notes{font-weight:400;font-size:0.65em}
+.sudoku-panel{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:16px;
+}
+.sudoku-stats{
+  gap:16px;
+  justify-content:center;
+}
+.sudoku-grid{
+  position:relative;
+  width:min(520px,100%);
+  max-width:100%;
+  aspect-ratio:1;
+  display:grid;
+  grid-template-columns:repeat(9,1fr);
+  grid-template-rows:repeat(9,1fr);
+  background:var(--canvas-bg);
+  border:2px solid var(--canvas-border);
+  border-radius:20px;
+  overflow:hidden;
+  box-shadow:0 24px 48px color-mix(in srgb,var(--bg),#000 50%),0 12px 22px color-mix(in srgb,var(--accent),transparent 80%);
+  transition:box-shadow .3s ease,transform .3s ease;
+}
+.sudoku-grid::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:radial-gradient(circle at 50% 32%,color-mix(in srgb,var(--accent),transparent 90%),transparent 60%);
+  pointer-events:none;
+  opacity:.25;
+  transition:opacity .3s ease;
+}
+.sudoku-grid.note-mode-active{
+  box-shadow:0 26px 56px color-mix(in srgb,var(--accent),transparent 65%),0 18px 32px color-mix(in srgb,var(--bg),#000 55%);
+  transform:translateY(-2px);
+}
+.sudoku-grid.note-mode-active::before{
+  opacity:.45;
+}
+.sudoku-grid.mark-mode-active .sudoku-cell{
+  transition:background .2s ease,color .2s ease,box-shadow .2s ease,transform .2s ease,opacity .2s ease;
+}
+.sudoku-grid.mark-mode-active .sudoku-cell:not(.highlight-number):not(.selected){
+  opacity:.55;
+}
+.sudoku-cell{
+  position:relative;
+  border:1px solid color-mix(in srgb,var(--canvas-border),transparent 15%);
+  font-size:clamp(18px,3.5vw,24px);
+  font-weight:500;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:var(--fg);
+  padding:0;
+  --cell-bg:var(--sudoku-block-surface-alt);
+  background:var(--cell-bg);
+  transition:background .2s ease,color .2s ease,box-shadow .2s ease,transform .2s ease;
+  transform-origin:center;
+  will-change:transform;
+}
+.sudoku-cell.block-accent{
+  --cell-bg:var(--sudoku-block-surface);
+}
+.sudoku-cell:disabled,
+.sudoku-cell[aria-disabled="true"]{
+  cursor:default;
+}
+.sudoku-cell.fixed{
+  --cell-bg:color-mix(in srgb,var(--panel-bg),transparent 6%);
+  color:var(--muted);
+  font-weight:600;
+}
+.sudoku-cell.filled{
+  color:var(--fg);
+}
+.sudoku-cell.has-notes{
+  font-weight:400;
+  font-size:0.65em;
+}
 .sudoku-cell.highlight-row:not(.selected):not(.error),
 .sudoku-cell.highlight-col:not(.selected):not(.error),
-.sudoku-cell.highlight-block:not(.selected):not(.error){background:color-mix(in srgb,var(--accent),transparent 88%)}
-.sudoku-cell.highlight-number:not(.selected):not(.error){box-shadow:0 0 0 2px color-mix(in srgb,var(--accent),transparent 35%) inset}
-.sudoku-cell.selected{background:color-mix(in srgb,var(--accent),transparent 70%);box-shadow:0 0 0 2px var(--accent) inset}
-.sudoku-cell.error{background:color-mix(in srgb,#b00020,transparent 68%);color:#fff;box-shadow:0 0 0 2px #b00020 inset;animation:sudoku-error .35s ease}
+.sudoku-cell.highlight-block:not(.selected):not(.error){
+  --cell-bg:color-mix(in srgb,var(--accent),transparent 88%);
+}
+.sudoku-cell.highlight-number:not(.selected):not(.error){
+  box-shadow:0 0 0 2px color-mix(in srgb,var(--accent),transparent 35%) inset;
+}
+.sudoku-cell.selected{
+  --cell-bg:color-mix(in srgb,var(--accent),transparent 72%);
+  box-shadow:0 0 0 2px var(--accent) inset,0 10px 24px color-mix(in srgb,var(--accent),transparent 78%);
+  transform:scale(1.03);
+  z-index:2;
+}
+.sudoku-cell.error{
+  --cell-bg:color-mix(in srgb,#b00020,transparent 68%);
+  color:#fff;
+  box-shadow:0 0 0 2px #b00020 inset;
+  animation:sudoku-error .35s ease;
+}
+.sudoku-cell:not([aria-disabled="true"]):not(.selected):not(.error):hover{
+  --cell-bg:color-mix(in srgb,var(--accent),transparent 85%);
+  transform:translateY(-1px);
+  box-shadow:0 10px 20px color-mix(in srgb,var(--accent),transparent 82%);
+}
+.sudoku-cell:focus-visible{
+  outline:none;
+  box-shadow:0 0 0 2px color-mix(in srgb,var(--accent),transparent 40%) inset,0 0 0 4px color-mix(in srgb,var(--accent),transparent 75%);
+}
+.sudoku-grid.note-mode-active .sudoku-cell:not(.selected):not(.error):not(.highlight-row):not(.highlight-col):not(.highlight-block){
+  --cell-bg:color-mix(in srgb,var(--accent),transparent 90%);
+}
+.sudoku-grid.note-mode-active .sudoku-cell.has-notes{
+  box-shadow:0 0 0 2px color-mix(in srgb,var(--accent),transparent 45%) inset;
+}
 .sudoku-cell.border-top-block{border-top-width:3px;border-top-color:var(--sudoku-block-border)}
 .sudoku-cell.border-left-block{border-left-width:3px;border-left-color:var(--sudoku-block-border)}
 .sudoku-cell.border-top-outer{border-top-width:4px;border-top-color:var(--sudoku-block-border)}
 .sudoku-cell.border-left-outer{border-left-width:4px;border-left-color:var(--sudoku-block-border)}
 .sudoku-cell.border-right-outer{border-right-width:4px;border-right-color:var(--sudoku-block-border)}
 .sudoku-cell.border-bottom-outer{border-bottom-width:4px;border-bottom-color:var(--sudoku-block-border)}
-.sudoku-notes{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);width:100%;height:100%;gap:1px}
-.sudoku-notes span{display:flex;align-items:center;justify-content:center;font-size:clamp(11px,2vw,14px);color:var(--muted)}
-.sudoku-pad{display:flex;flex-direction:column;gap:12px;width:min(520px,100%);max-width:100%}
-.sudoku-pad-keys{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
-.sudoku-pad button{font-size:clamp(16px,3.2vw,20px);padding:10px;border-radius:10px}
-.sudoku-pad button.selected{background:color-mix(in srgb,var(--accent),transparent 75%);box-shadow:0 0 0 2px var(--accent) inset}
-.sudoku-pad-tools{display:flex;gap:8px;flex-wrap:wrap}
-.sudoku-toggle{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;font-size:clamp(14px,2.6vw,18px);padding:10px 12px;border-radius:12px;border:1px solid color-mix(in srgb,var(--canvas-border),transparent 15%);background:color-mix(in srgb,var(--panel-bg),transparent 10%);transition:background .2s ease,box-shadow .2s ease}
-.sudoku-toggle[aria-pressed="true"]{background:color-mix(in srgb,var(--accent),transparent 75%);box-shadow:0 0 0 2px var(--accent) inset}
-.sudoku-pad-clear{display:flex;align-items:center;justify-content:center;gap:6px;font-size:clamp(14px,2.6vw,18px);border-radius:12px;border:1px solid color-mix(in srgb,var(--canvas-border),transparent 15%);background:color-mix(in srgb,var(--panel-bg),transparent 10%)}
+.sudoku-notes{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  grid-template-rows:repeat(3,1fr);
+  width:100%;
+  height:100%;
+  gap:1px;
+}
+.sudoku-notes span{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:clamp(11px,2vw,14px);
+  color:var(--muted);
+}
+.sudoku-pad{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  width:min(520px,100%);
+  max-width:100%;
+  background:color-mix(in srgb,var(--panel-bg),transparent 8%);
+  border-radius:16px;
+  padding:12px 14px 16px;
+  border:1px solid color-mix(in srgb,var(--canvas-border),transparent 20%);
+  transition:background .3s ease,box-shadow .3s ease;
+}
+.sudoku-pad.note-mode-active{
+  background:color-mix(in srgb,var(--accent),transparent 85%);
+  box-shadow:0 0 0 2px color-mix(in srgb,var(--accent),transparent 45%),0 18px 32px color-mix(in srgb,var(--accent),transparent 80%);
+}
+.sudoku-pad.mark-mode-active{
+  box-shadow:0 0 0 2px color-mix(in srgb,var(--accent),transparent 35%);
+}
+.sudoku-pad-keys{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:8px;
+}
+.sudoku-pad button{
+  font-size:clamp(16px,3.2vw,20px);
+  padding:10px;
+  border-radius:12px;
+  background:color-mix(in srgb,var(--panel-bg),transparent 10%);
+  border:1px solid color-mix(in srgb,var(--canvas-border),transparent 20%);
+  transition:background .2s ease,box-shadow .2s ease,transform .2s ease;
+}
+.sudoku-pad button.selected{
+  background:color-mix(in srgb,var(--accent),transparent 75%);
+  box-shadow:0 0 0 2px var(--accent) inset,0 12px 28px color-mix(in srgb,var(--accent),transparent 75%);
+  transform:translateY(-1px);
+}
+.sudoku-pad button:hover:not([aria-disabled="true"]){
+  background:color-mix(in srgb,var(--accent),transparent 82%);
+  box-shadow:0 10px 24px color-mix(in srgb,var(--accent),transparent 80%);
+  transform:translateY(-2px);
+}
+.sudoku-pad button:focus-visible{
+  outline:none;
+  box-shadow:0 0 0 2px color-mix(in srgb,var(--accent),transparent 40%) inset,0 0 0 4px color-mix(in srgb,var(--accent),transparent 75%);
+}
+.sudoku-pad button[aria-disabled="true"]{
+  opacity:.55;
+  cursor:default;
+}
+.sudoku-pad-tools{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+}
+.sudoku-toggle{
+  flex:1;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  font-size:clamp(14px,2.6vw,18px);
+  padding:10px 12px;
+  border-radius:12px;
+  border:1px solid color-mix(in srgb,var(--canvas-border),transparent 15%);
+  background:color-mix(in srgb,var(--panel-bg),transparent 10%);
+  transition:background .2s ease,box-shadow .2s ease,color .2s ease;
+}
+.sudoku-toggle[aria-pressed="true"]{
+  background:color-mix(in srgb,var(--accent),transparent 75%);
+  box-shadow:0 0 0 2px var(--accent) inset;
+}
+.sudoku-pad.note-mode-active #sudokuNoteToggle,
+.sudoku-pad.mark-mode-active #sudokuMarkToggle{
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--accent),transparent 55%) inset;
+}
+.sudoku-pad-clear{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  font-size:clamp(14px,2.6vw,18px);
+  border-radius:12px;
+  border:1px solid color-mix(in srgb,var(--canvas-border),transparent 15%);
+  background:color-mix(in srgb,var(--panel-bg),transparent 10%);
+  transition:background .2s ease,box-shadow .2s ease,transform .2s ease;
+}
+.sudoku-pad-clear:hover{
+  background:color-mix(in srgb,var(--accent),transparent 82%);
+  box-shadow:0 10px 24px color-mix(in srgb,var(--accent),transparent 80%);
+  transform:translateY(-2px);
+}
 .sudoku-pad-clear .material-icons{font-size:1.2em}
-.sudoku-progress{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:clamp(12px,2.4vw,15px);color:var(--muted)}
-.sudoku-progress-bar{width:120px;max-width:22vw;height:6px;border-radius:999px;overflow:hidden;background:color-mix(in srgb,var(--panel-bg),transparent 35%);border:1px solid color-mix(in srgb,var(--canvas-border),transparent 25%)}
-.sudoku-progress-bar #sudokuProgressFill{width:0;height:100%;background:var(--accent);transition:width .25s ease}
+.sudoku-progress{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:6px;
+  font-size:clamp(12px,2.4vw,15px);
+  color:var(--muted);
+  padding-bottom:8px;
+}
+.sudoku-progress-bar{
+  position:relative;
+  width:160px;
+  max-width:70vw;
+  height:8px;
+  border-radius:999px;
+  background:var(--sudoku-progress-track);
+  border:1px solid color-mix(in srgb,var(--canvas-border),transparent 25%);
+  overflow:visible;
+}
+.sudoku-progress-bar #sudokuProgressFill{
+  position:relative;
+  width:0;
+  height:100%;
+  border-radius:999px;
+  background:linear-gradient(90deg,color-mix(in srgb,var(--accent),transparent 10%) 0%,var(--accent) 100%);
+  box-shadow:0 8px 18px color-mix(in srgb,var(--accent),transparent 70%);
+  transition:width .25s ease,box-shadow .25s ease;
+}
+.sudoku-progress-milestones{
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  font-size:11px;
+  color:var(--muted);
+}
+.sudoku-progress-milestones span{
+  position:absolute;
+  bottom:-4px;
+  transform:translate(-50%,100%);
+  white-space:nowrap;
+}
+.sudoku-progress-milestones span::before{
+  content:"";
+  position:absolute;
+  top:-10px;
+  left:50%;
+  width:2px;
+  height:10px;
+  background:var(--sudoku-progress-marker);
+  border-radius:999px;
+  transform:translateX(-50%);
+}
+.sudoku-progress-milestones span[data-value="25"]{left:25%;}
+.sudoku-progress-milestones span[data-value="50"]{left:50%;}
+.sudoku-progress-milestones span[data-value="75"]{left:75%;}
+@media (max-width:640px){
+  .sudoku-panel{gap:14px;}
+  .sudoku-stats{flex-direction:column;align-items:stretch;text-align:center;gap:12px;}
+  .sudoku-progress{align-items:flex-start;}
+  .sudoku-grid{border-radius:18px;}
+}
+@media (max-width:480px){
+  .sudoku-pad{padding:10px 12px 14px;}
+  .sudoku-pad button{font-size:clamp(15px,6vw,18px);padding:12px;}
+  .sudoku-progress{font-size:clamp(11px,3vw,14px);}
+  .sudoku-progress-milestones{font-size:10px;}
+  .sudoku-progress-bar{width:140px;}
+  .sudoku-grid{border-radius:16px;}
+}
 @keyframes sudoku-error{0%,100%{background:color-mix(in srgb,#b00020,transparent 75%);color:var(--fg)}50%{background:#b00020;color:#fff}}
+@keyframes sudoku-confetti{0%{transform:translateY(-14px)}50%{transform:translateY(14px)}100%{transform:translateY(-14px)}}
+@keyframes overlay-pulse{0%{transform:translateY(0) scale(1);box-shadow:var(--button-primary-shadow)}100%{transform:translateY(-3px) scale(1.05);box-shadow:var(--button-primary-hover-shadow)}}
