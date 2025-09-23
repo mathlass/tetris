@@ -169,21 +169,34 @@
           </label>
         </div>
         <div class="panel sudoku-panel">
-          <div class="controls" style="justify-content:center;margin:0 0 12px;">
+          <div class="controls sudoku-stats" style="justify-content:center;margin:0 0 12px;">
             <span class="timer" id="sudokuTimer">00:00</span>
             <span class="timer" id="sudokuBest">Best: --</span>
+            <div class="sudoku-progress" aria-live="polite">
+              <span id="sudokuProgressText">0/81 Felder</span>
+              <div class="sudoku-progress-bar" role="presentation">
+                <div id="sudokuProgressFill"></div>
+              </div>
+            </div>
           </div>
           <div id="sudokuBoard" class="sudoku-grid" aria-label="Sudoku Spielfeld"></div>
           <div id="sudokuPad" class="sudoku-pad" aria-label="Zahlenauswahl">
-            <button type="button" data-value="1">1</button>
-            <button type="button" data-value="2">2</button>
-            <button type="button" data-value="3">3</button>
-            <button type="button" data-value="4">4</button>
-            <button type="button" data-value="5">5</button>
-            <button type="button" data-value="6">6</button>
-            <button type="button" data-value="7">7</button>
-            <button type="button" data-value="8">8</button>
-            <button type="button" data-value="9">9</button>
+            <div class="sudoku-pad-tools">
+              <button type="button" id="sudokuNoteToggle" class="sudoku-toggle" aria-pressed="false"><span class="material-icons">edit_note</span> Notizen</button>
+              <button type="button" id="sudokuMarkToggle" class="sudoku-toggle" aria-pressed="false"><span class="material-icons">visibility</span> Markieren</button>
+            </div>
+            <div class="sudoku-pad-keys">
+              <button type="button" data-value="1">1</button>
+              <button type="button" data-value="2">2</button>
+              <button type="button" data-value="3">3</button>
+              <button type="button" data-value="4">4</button>
+              <button type="button" data-value="5">5</button>
+              <button type="button" data-value="6">6</button>
+              <button type="button" data-value="7">7</button>
+              <button type="button" data-value="8">8</button>
+              <button type="button" data-value="9">9</button>
+            </div>
+            <button type="button" class="sudoku-pad-clear" data-action="clear"><span class="material-icons">backspace</span> Löschen</button>
           </div>
         </div>
         <div class="panel" style="margin-top:16px">
