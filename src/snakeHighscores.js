@@ -17,9 +17,9 @@ const SUPABASE_KEY =
 const useSupabase = SUPABASE_URL && SUPABASE_KEY;
 
 async function loadServerHS(mode){
+  const modeParam = `${SNAKE_MODE_PREFIX}${mode}`;
   if(useSupabase){
     try{
-      const modeParam = `${SNAKE_MODE_PREFIX}${mode}`;
       const url = `${SUPABASE_URL}/rest/v1/scores?select=player,score,created_at&mode=eq.${modeParam}&order=score.desc&limit=10`;
       const res = await fetch(url,{
         headers:{ apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` }
@@ -33,7 +33,6 @@ async function loadServerHS(mode){
     }
     return null;
   }
-  const modeParam = `${SNAKE_MODE_PREFIX}${mode}`;
   try{
     const res = await fetch(`/scores/${modeParam}`);
     if(res.ok) return await res.json();
@@ -44,6 +43,7 @@ async function loadServerHS(mode){
 }
 
 async function sendServerHS(entry, mode){
+  const modeParam = `${SNAKE_MODE_PREFIX}${mode}`;
   if(useSupabase){
     try{
       const res = await fetch(`${SUPABASE_URL}/rest/v1/scores`,{
@@ -53,7 +53,7 @@ async function sendServerHS(entry, mode){
           apikey: SUPABASE_KEY,
           Authorization:`Bearer ${SUPABASE_KEY}`
         },
-        body:JSON.stringify({ player: entry.name, mode:`${SNAKE_MODE_PREFIX}${mode}`, score: entry.score })
+        body:JSON.stringify({ player: entry.name, mode: modeParam, score: entry.score })
       });
       if(!res.ok){
         logError(`Failed to send snake highscore to server: ${res.status} ${res.statusText}`);
@@ -63,7 +63,6 @@ async function sendServerHS(entry, mode){
     }
     return;
   }
-  const modeParam = `${SNAKE_MODE_PREFIX}${mode}`;
   try{
     const res = await fetch(`/scores/${modeParam}`,{
       method:'POST',

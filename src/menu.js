@@ -81,7 +81,7 @@ export function initMenu(){
       if(snakeTable) snakeTable.classList.add('hidden');
       if(sudokuTable) sudokuTable.classList.remove('hidden');
       if(hsLabel) hsLabel.textContent = `Sudoku – ${SUDOKU_DIFFICULTY_LABELS[mode] || mode}`;
-      await Promise.resolve(renderSudokuHS(mode, { tableSelector: '#sudokuScoreTable' }));
+      renderSudokuHS(mode, { tableSelector: '#sudokuScoreTable' });
     } else {
       if(hsTable) hsTable.classList.remove('hidden');
       if(snakeTable) snakeTable.classList.add('hidden');
