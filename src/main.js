@@ -19,42 +19,48 @@ const sudokuWrap = document.getElementById('sudokuWrap');
 const menuOverlay = document.getElementById('menuOverlay');
 let introCompleted = false;
 
+const games = {
+  tetris: {
+    controller: tetrisGame,
+    wrapper: tetrisWrap,
+    title: 'Tetris – Vanilla JS (Einzeldatei) + Scoreboard'
+  },
+  snake: {
+    controller: snakeGame,
+    wrapper: snakeWrap,
+    title: 'Snake'
+  },
+  sudoku: {
+    controller: sudokuGame,
+    wrapper: sudokuWrap,
+    title: 'Sudoku'
+  }
+};
+
 function switchGame(){
-  if(!gameSelect || !tetrisWrap || !snakeWrap || !sudokuWrap) return;
+  if(!gameSelect) return;
   if(!introCompleted) return;
   if(menuOverlay && menuOverlay.classList.contains('show')){
     toggleMenuOverlay();
   }
-  const selected = gameSelect.value;
-  if(selected === 'snake'){
-    tetrisGame.pause();
-    tetrisWrap.classList.add('hidden');
-    snakeWrap.classList.remove('hidden');
-    sudokuWrap.classList.add('hidden');
-    sudokuGame.pause();
-    sudokuGame.hideOverlay();
-    document.title = 'Snake';
-    snakeGame.resume();
-  }else if(selected === 'sudoku'){
-    tetrisGame.pause();
-    snakeGame.pause();
-    snakeGame.hideOverlay();
-    tetrisWrap.classList.add('hidden');
-    snakeWrap.classList.add('hidden');
-    sudokuWrap.classList.remove('hidden');
-    document.title = 'Sudoku';
-    sudokuGame.resume();
-  }else{
-    tetrisGame.resume();
-    tetrisWrap.classList.remove('hidden');
-    snakeWrap.classList.add('hidden');
-    sudokuWrap.classList.add('hidden');
-    document.title = 'Tetris – Vanilla JS (Einzeldatei) + Scoreboard';
-    snakeGame.pause();
-    snakeGame.hideOverlay();
-    sudokuGame.pause();
-    sudokuGame.hideOverlay();
-  }
+  const selected = games[gameSelect.value] ? gameSelect.value : 'tetris';
+  Object.entries(games).forEach(([key, { controller, wrapper, title }]) => {
+    const isActive = key === selected;
+    if(wrapper){
+      wrapper.classList.toggle('hidden', !isActive);
+    }
+    if(controller){
+      if(isActive){
+        controller.resume?.();
+      }else{
+        controller.pause?.();
+        controller.hideOverlay?.();
+      }
+    }
+    if(isActive && title){
+      document.title = title;
+    }
+  });
 }
 
 if(gameSelect){

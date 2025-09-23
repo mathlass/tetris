@@ -2,6 +2,7 @@
 import { PLAYER_KEY, SNAKE_BEST_KEY_BASE } from './constants.js';
 import { addHS, renderHS, clearHS } from './snakeHighscores.js';
 import { toggleMenuOverlay } from './menu.js';
+import { createOverlayController } from './overlay.js';
 
 export function initSnake(){
   const canvas = document.getElementById('snakeCanvas');
@@ -9,9 +10,13 @@ export function initSnake(){
   const btnPause = document.getElementById('snakePause');
   const topScoreEl = document.getElementById('snakeTopScore');
   const topBestEl = document.getElementById('snakeTopBest');
-  const ov = document.getElementById('snakeOverlay');
-  const ovScoreEl = document.getElementById('snakeOvScore');
-  const ovBestEl = document.getElementById('snakeOvBest');
+  const overlay = createOverlayController({
+    root: '#snakeOverlay',
+    bindings: {
+      score: '#snakeOvScore',
+      best: '#snakeOvBest'
+    }
+  });
   const btnRestart = document.getElementById('snakeBtnRestart');
   const btnClose = document.getElementById('snakeBtnClose');
   const btnResetHS = document.getElementById('snakeBtnResetHS');
@@ -19,7 +24,11 @@ export function initSnake(){
   if(!canvas || !btnStart){
     return {
       start: () => {},
-      stop: () => {}
+      stop: () => {},
+      pause: () => {},
+      resume: () => {},
+      hideOverlay: () => {},
+      showOverlay: () => {}
     };
   }
   const ctx = canvas.getContext('2d');
@@ -59,15 +68,12 @@ export function initSnake(){
   }
 
   function showOverlay(){
-    if(!ov) return;
-    if(ovScoreEl) ovScoreEl.textContent = String(score);
-    if(ovBestEl) ovBestEl.textContent = String(best);
-    renderHS(mode);
-    ov.classList.add('show');
+    overlay.show({ score, best });
+    void renderHS(mode);
   }
 
   function hideOverlay(){
-    if(ov) ov.classList.remove('show');
+    overlay.hide();
   }
 
   function reset(){
@@ -260,7 +266,7 @@ export function initSnake(){
   function gameOver(){
     stop(false);
     const name = localStorage.getItem(PLAYER_KEY) || 'Player';
-    addHS({ name, score, date: new Date().toLocaleDateString() }, mode);
+    void addHS({ name, score, date: new Date().toLocaleDateString() }, mode);
     showOverlay();
   }
 
@@ -371,7 +377,7 @@ export function initSnake(){
       localStorage.removeItem(bestKey(mode));
       best = Number(localStorage.getItem(bestKey(mode)) || 0);
       updateScore();
-      renderHS(mode);
+      void renderHS(mode);
       document.dispatchEvent(new CustomEvent('snakeHsCleared', { detail: { mode } }));
     });
   }
@@ -409,5 +415,5 @@ export function initSnake(){
     if(e.code === 'Escape') toggleMenuOverlay();
   });
 
-  return { start, stop, pause, resume, hideOverlay };
+  return { start, stop, pause, resume, hideOverlay, showOverlay };
 }

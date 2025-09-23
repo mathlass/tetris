@@ -1,29 +1,24 @@
 // Local highscore handling for Sudoku (based on completion time)
-import { HS_NAME_MAX_LENGTH, SUDOKU_HS_KEY_BASE } from './constants.js';
-import { logError } from './logger.js';
+import { SUDOKU_HS_KEY_BASE } from './constants.js';
+import {
+  createHighscoreStore,
+  sanitizeName
+} from './highscoreStore.js';
 
-const hsKey = difficulty => `${SUDOKU_HS_KEY_BASE}_${difficulty}`;
-
-function loadHS(difficulty){
-  try{
-    return JSON.parse(localStorage.getItem(hsKey(difficulty))) || [];
-  }catch(e){
-    logError('Failed to parse sudoku highscores', e);
-    return [];
-  }
-}
-
-function saveHS(list, difficulty){
-  try{
-    localStorage.setItem(hsKey(difficulty), JSON.stringify(list));
-  }catch(e){
-    logError('Failed to save sudoku highscores', e);
-  }
-}
-
-function sanitizeName(str = ''){
-  return str.replace(/<[^>]*>/g, '').trim().slice(0, HS_NAME_MAX_LENGTH);
-}
+const store = createHighscoreStore({
+  keyBase: SUDOKU_HS_KEY_BASE,
+  sanitizeEntry: entry => {
+    if (!entry) return null;
+    const time = Number(entry.time);
+    if (Number.isNaN(time)) return null;
+    return {
+      name: sanitizeName(entry.name || ''),
+      time,
+      date: entry.date || new Date().toLocaleDateString()
+    };
+  },
+  sortEntries: (a, b) => a.time - b.time
+});
 
 export function formatTime(totalSeconds){
   const seconds = Math.max(0, Math.floor(totalSeconds));
@@ -37,28 +32,11 @@ export function formatTime(totalSeconds){
 }
 
 export function addHS(entry, difficulty){
-  const list = loadHS(difficulty);
-  const cleanEntry = {
-    name: sanitizeName(entry.name),
-    time: Number(entry.time),
-    date: entry.date || new Date().toLocaleDateString()
-  };
-  if(Number.isNaN(cleanEntry.time)){
-    return list;
-  }
-  list.push(cleanEntry);
-  list.sort((a,b) => a.time - b.time);
-  const top10 = list.slice(0, 10);
-  saveHS(top10, difficulty);
-  return top10;
+  return store.add(entry, difficulty);
 }
 
 export function clearHS(difficulty){
-  try{
-    localStorage.removeItem(hsKey(difficulty));
-  }catch(e){
-    logError('Failed to clear sudoku highscores', e);
-  }
+  store.clear(difficulty);
 }
 
 export function renderHS(difficulty, options = {}){
@@ -66,7 +44,7 @@ export function renderHS(difficulty, options = {}){
   const table = document.querySelector(tableSelector);
   const tbody = table ? table.querySelector('tbody') : null;
   if(!tbody) return;
-  const list = loadHS(difficulty);
+  const list = store.sanitizeList(store.load(difficulty), difficulty);
   while(tbody.firstChild) tbody.removeChild(tbody.firstChild);
   list.forEach((entry, index) => {
     const tr = document.createElement('tr');
@@ -84,6 +62,6 @@ export function renderHS(difficulty, options = {}){
 }
 
 export function getBestTime(difficulty){
-  const list = loadHS(difficulty);
+  const list = store.sanitizeList(store.load(difficulty), difficulty);
   return list.length ? list[0].time : null;
 }

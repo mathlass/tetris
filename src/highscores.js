@@ -2,148 +2,86 @@
 import {
   HS_KEY_BASE,
   BEST_KEY_BASE,
-  HS_NAME_MAX_LENGTH,
   MODE_LABELS
 } from './constants.js';
-import { logError } from './logger.js';
+import {
+  createHighscoreStore,
+  createSupabaseSync,
+  sanitizeName
+} from './highscoreStore.js';
 
-export const hsKey = m => `${HS_KEY_BASE}_${m}`;
+export { sanitizeName } from './highscoreStore.js';
+
 export const bestKey = m => `${BEST_KEY_BASE}_${m}`;
 
-const SUPABASE_URL =
-  globalThis.NEXT_PUBLIC_SUPABASE_URL ||
-  (typeof process !== 'undefined' ? process.env.NEXT_PUBLIC_SUPABASE_URL : undefined);
-const SUPABASE_KEY =
-  globalThis.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
-  (typeof process !== 'undefined' ? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY : undefined);
-const useSupabase = SUPABASE_URL && SUPABASE_KEY;
+const store = createHighscoreStore({
+  keyBase: HS_KEY_BASE,
+  limit: 10,
+  sanitizeEntry: entry => {
+    if (!entry) return null;
+    const cleanScore = Number(entry.score) || 0;
+    const cleanLines = Number(entry.lines) || 0;
+    return {
+      name: sanitizeName(entry.name || ''),
+      score: cleanScore,
+      lines: cleanLines,
+      date: entry.date || ''
+    };
+  },
+  sortEntries: (a, b) => b.score - a.score || b.lines - a.lines,
+  server: createSupabaseSync({
+    buildFetchQuery: modeValue =>
+      `select=player,score,lines,created_at&mode=eq.${modeValue}&order=score.desc,lines.desc&limit=10`,
+    mapRecord: record => ({
+      name: record.player ?? record.name ?? '',
+      score: record.score,
+      lines: record.lines ?? 0,
+      date: (record.created_at || '').slice(0, 10)
+    }),
+    toPayload: (entry, modeValue) => ({
+      player: entry.name,
+      score: entry.score,
+      lines: entry.lines ?? 0,
+      mode: modeValue
+    }),
+    fallbackPayload: entry => ({
+      name: entry.name,
+      score: entry.score,
+      lines: entry.lines ?? 0,
+      date: entry.date
+    }),
+    fallbackPath: modeValue => `/scores/${modeValue}`
+  })
+});
 
-async function loadServerHS(m) {
-  if (useSupabase) {
-    try {
-      const url = `${SUPABASE_URL}/rest/v1/scores?select=player,score,lines,created_at&mode=eq.${m}&order=score.desc,lines.desc&limit=10`;
-      const res = await fetch(url, {
-        headers: {
-          apikey: SUPABASE_KEY,
-          Authorization: `Bearer ${SUPABASE_KEY}`
-        }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        return data.map(r => ({
-          name: r.player,
-          score: r.score,
-          lines: r.lines ?? 0,
-          date: (r.created_at || '').slice(0, 10)
-        }));
-      }
-    } catch (e) {
-      logError('Failed to load highscores from server', e);
-    }
-    return null;
-  }
-  try {
-    const res = await fetch(`/scores/${m}`);
-    if (res.ok) return await res.json();
-  } catch (e) {
-    logError('Failed to load highscores from server', e);
-  }
-  return null;
+export const hsKey = mode => store.storageKey(mode);
+
+export function loadHS(mode) {
+  return store.load(mode);
 }
 
-async function sendServerHS(entry, m) {
-  if (useSupabase) {
-    try {
-      const res = await fetch(`${SUPABASE_URL}/rest/v1/scores`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          apikey: SUPABASE_KEY,
-          Authorization: `Bearer ${SUPABASE_KEY}`
-        },
-        body: JSON.stringify({
-          player: entry.name,
-          score: entry.score,
-          lines: entry.lines ?? 0,
-          mode: m
-        })
-      });
-      if (!res.ok) {
-        logError(`Failed to send highscore to server: ${res.status} ${res.statusText}`);
-      }
-    } catch (e) {
-      logError('Failed to send highscore to server', e);
-    }
-    return;
-  }
-  try {
-    const res = await fetch(`/scores/${m}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(entry)
-    });
-    if (!res.ok) {
-      logError(`Failed to send highscore to server: ${res.status} ${res.statusText}`);
-    }
-  } catch (e) {
-    logError('Failed to send highscore to server', e);
-  }
+export function saveHS(list, mode) {
+  store.save(list, mode);
 }
 
-export function loadHS(m) {
-  try {
-    return JSON.parse(localStorage.getItem(hsKey(m))) || [];
-  } catch (e) {
-    logError('Failed to parse highscores from storage', e);
-    return [];
-  }
+export function sanitizeHS(list, mode) {
+  return store.sanitizeList(list, mode);
 }
 
-export function saveHS(list, m) {
-  try {
-    localStorage.setItem(hsKey(m), JSON.stringify(list));
-  } catch (e) {
-    logError('Failed to save highscores', e);
-  }
+export async function addHS(entry, mode) {
+  return store.add(entry, mode);
 }
 
-export function sanitizeName(str){
-  return str.replace(/<[^>]*>/g, '').trim().slice(0, HS_NAME_MAX_LENGTH);
+export async function getHSList(mode) {
+  return store.getList(mode);
 }
 
-export function sanitizeHS(list,m){
-  let changed=false;
-  const cleaned=list.map(e=>{
-    const name=sanitizeName(e.name||'');
-    if(name!==e.name) changed=true;
-    return {...e, name};
-  });
-  if(changed) saveHS(cleaned,m);
-  return cleaned;
-}
-
-export async function addHS(entry,m){
-  const list = sanitizeHS(loadHS(m),m);
-  const cleanEntry = {...entry, name: sanitizeName(entry.name)};
-  list.push(cleanEntry);
-  list.sort((a,b)=>b.score - a.score || b.lines - a.lines);
-  const top10 = list.slice(0,10);
-  saveHS(top10,m);
-  await sendServerHS(cleanEntry,m);
-  return top10;
-}
-
-export async function getHSList(m){
-  let list = await loadServerHS(m);
-  return list ? sanitizeHS(list, m) : sanitizeHS(loadHS(m), m);
-}
-
-export async function renderHS(m, options = {}){
+export async function renderHS(mode, options = {}) {
   const { tableSelector = '#hsTable', labelSelector = '#hsModeLabel' } = options;
   const table = document.querySelector(tableSelector);
   const tbody = table ? table.querySelector('tbody') : null;
   if(!tbody) return;
-  const list = await getHSList(m);
+  const list = await getHSList(mode);
   while(tbody.firstChild) tbody.removeChild(tbody.firstChild);
   list.forEach((e,i)=>{
     const tr=document.createElement('tr');
@@ -163,7 +101,7 @@ export async function renderHS(m, options = {}){
   if(labelSelector){
     const label = document.querySelector(labelSelector);
     if(label){
-      const modeLabel = MODE_LABELS[m] || m;
+      const modeLabel = MODE_LABELS[mode] || mode;
       label.textContent = `Tetris – ${modeLabel}`;
     }
   }

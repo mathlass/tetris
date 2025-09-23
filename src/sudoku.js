@@ -6,6 +6,7 @@ import {
 } from './constants.js';
 import { generateSudoku } from './sudokuGenerator.js';
 import { addHS, renderHS, formatTime } from './sudokuHighscores.js';
+import { createOverlayController } from './overlay.js';
 
 const GRID_SIZE = 9;
 
@@ -16,9 +17,13 @@ export function initSudoku(){
   const bestEl = document.getElementById('sudokuBest');
   const startBtn = document.getElementById('sudokuStart');
   const difficultySelect = document.getElementById('sudokuDifficulty');
-  const overlay = document.getElementById('sudokuOverlay');
-  const ovTimeEl = document.getElementById('sudokuOvTime');
-  const ovBestEl = document.getElementById('sudokuOvBest');
+  const overlay = createOverlayController({
+    root: '#sudokuOverlay',
+    bindings: {
+      time: '#sudokuOvTime',
+      best: '#sudokuOvBest'
+    }
+  });
   const btnRestart = document.getElementById('sudokuBtnRestart');
   const btnClose = document.getElementById('sudokuBtnClose');
   const noteToggle = document.getElementById('sudokuNoteToggle');
@@ -29,7 +34,9 @@ export function initSudoku(){
       start: () => {},
       pause: () => {},
       resume: () => {},
-      hideOverlay: () => {}
+      stop: () => {},
+      hideOverlay: () => {},
+      showOverlay: () => {}
     };
   }
 
@@ -361,19 +368,16 @@ export function initSudoku(){
   }
 
   function hideOverlay(){
-    if(!overlay) return;
-    overlay.classList.remove('show');
-    overlay.setAttribute('aria-hidden', 'true');
+    overlay.hide();
   }
 
   function showOverlay(seconds){
-    if(!overlay) return;
-    if(ovTimeEl) ovTimeEl.textContent = formatTime(seconds);
     const bestSeconds = Number(localStorage.getItem(bestKey(currentDifficulty)) || 0);
-    if(ovBestEl) ovBestEl.textContent = bestSeconds ? formatTime(bestSeconds) : '--';
+    overlay.show({
+      time: formatTime(seconds),
+      best: bestSeconds ? formatTime(bestSeconds) : '--'
+    });
     renderHS(currentDifficulty, { tableSelector: '#sudokuOvTable' });
-    overlay.classList.add('show');
-    overlay.setAttribute('aria-hidden', 'false');
   }
 
   function checkCompletion(){
@@ -390,7 +394,7 @@ export function initSudoku(){
     completed = true;
     const totalSeconds = Math.max(1, Math.floor(elapsed / 1000));
     const playerName = localStorage.getItem(PLAYER_KEY) || 'Player';
-    addHS({ name: playerName, time: totalSeconds, date: new Date().toLocaleDateString() }, currentDifficulty);
+    void addHS({ name: playerName, time: totalSeconds, date: new Date().toLocaleDateString() }, currentDifficulty);
     const bestSeconds = Number(localStorage.getItem(bestKey(currentDifficulty)) || 0);
     if(!bestSeconds || totalSeconds < bestSeconds){
       localStorage.setItem(bestKey(currentDifficulty), String(totalSeconds));
@@ -592,10 +596,19 @@ export function initSudoku(){
     }
   }
 
+  function stop(){
+    if(active){
+      pause();
+      active = false;
+    }
+  }
+
   return {
     start: startGame,
     pause,
     resume,
-    hideOverlay
+    stop,
+    hideOverlay,
+    showOverlay
   };
 }
