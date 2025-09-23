@@ -14,11 +14,11 @@ if (!JSDOM) {
   const MODE = 'classic';
   const HS_KEY = `${SNAKE_HS_KEY_BASE}_${MODE}`;
 
-  test('addHS sanitizes stored name', () => {
+  test('addHS sanitizes stored name', async () => {
     const dom = new JSDOM('', { url: 'http://localhost' });
     global.localStorage = dom.window.localStorage;
     global.fetch = async () => ({ ok: true });
-    const list = addHS({ name: '<b>Eve</b>', score: 1, date: 'now' }, MODE);
+    const list = await addHS({ name: '<b>Eve</b>', score: 1, date: 'now' }, MODE);
     assert.strictEqual(list[0].name, 'Eve');
     const saved = JSON.parse(dom.window.localStorage.getItem(HS_KEY));
     assert.strictEqual(saved[0].name, 'Eve');

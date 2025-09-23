@@ -18,6 +18,7 @@ import { collides, clearLines as clearBoardLines, rotate, getDropY } from './log
 import { addHS, renderHS, sanitizeName, bestKey } from './highscores.js';
 import { loadSettings, saveSettings, applyPalette } from './settings.js';
 import { toggleMenuOverlay } from './menu.js';
+import { createOverlayController } from './overlay.js';
 
 // ==== Scoring helper (exported for tests)
 export function updateScore(state, linesCleared, combo, backToBack) {
@@ -49,13 +50,21 @@ export function initGame(){
   const sfx = createSfx(settings);
 
   // ==== Overlay helpers
-  const overlay = () => document.getElementById('overlay');
-  function showOverlay({score, lines}){
-    document.getElementById('ovScore').textContent = score;
-    document.getElementById('ovLines').textContent = lines;
-    overlay().classList.add('show');
+  const overlayController = createOverlayController({
+    root: '#overlay',
+    bindings: {
+      score: '#ovScore',
+      lines: '#ovLines'
+    }
+  });
+
+  function showOverlay(data){
+    overlayController.show({ score: data.score, lines: data.lines });
   }
-  function hideOverlay(){ overlay().classList.remove('show'); }
+
+  function hideOverlay(){
+    overlayController.hide();
+  }
 
   // ==== State
   const canvas = document.getElementById('game');
@@ -115,7 +124,7 @@ export function initGame(){
     }
     updateSide();
     drawBoard();
-    renderHS(mode);
+    void renderHS(mode);
   }
 
   // ==== Rendering
@@ -286,8 +295,8 @@ export function initGame(){
     best = Math.max(best, score);
     localStorage.setItem(bestKey(mode), best);
     const name = sanitizeName((localStorage.getItem(PLAYER_KEY) || 'Player').trim());
-    addHS({ name, score, lines, date: new Date().toISOString().slice(0,10) }, mode);
-    renderHS(mode);
+    void addHS({ name, score, lines, date: new Date().toISOString().slice(0,10) }, mode);
+    void renderHS(mode);
     updateSide();
     showOverlay({score, lines});
     sfx.gameover();
@@ -320,8 +329,7 @@ export function initGame(){
   // ==== Input
   window.addEventListener('keydown', (e)=>{
     // Overlay hat Vorrang: Enter = Neustart, Escape = Schließen
-    const ov = document.getElementById('overlay');
-    if(ov && ov.classList.contains('show')){
+    if(overlayController.isVisible()){
       if(['Enter','NumpadEnter'].includes(e.code)) { e.preventDefault(); reset(); update(); return; }
       if(e.code==='Escape') { e.preventDefault(); hideOverlay(); return; }
       e.preventDefault(); return;
@@ -387,7 +395,7 @@ export function initGame(){
       if(clearedMode === mode){
         best = 0;
         updateSide();
-        renderHS(mode);
+        void renderHS(mode);
       }
     }
   });
@@ -460,11 +468,23 @@ export function initGame(){
   }
 
   // Initiale Anzeige
-  renderHS(mode);
+  void renderHS(mode);
   updateSide();
 
+  const start = () => { reset(); update(); };
+  const pause = () => { if(running) setPaused(true); };
+  const resume = () => { if(running) setPaused(false); };
+  const stop = () => {
+    running = false;
+    setPaused(false);
+  };
+
   return {
-    pause: () => { if(running) setPaused(true); },
-    resume: () => { if(running) setPaused(false); }
+    start,
+    pause,
+    resume,
+    stop,
+    showOverlay,
+    hideOverlay
   };
 }
