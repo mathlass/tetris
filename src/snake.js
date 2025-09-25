@@ -168,7 +168,7 @@ export function initSnake(){
     ctx.closePath();
     ctx.clip();
 
-    ctx.fillStyle = '#000';
+    ctx.fillStyle = '#fff';
     ctx.fillRect(boardPadding, boardPadding, size * cells, size * cells);
     const cellInset = Math.max(1, size * cellPaddingFactor);
     obstacles.forEach(o => {

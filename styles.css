@@ -22,6 +22,9 @@
   --sudoku-block-surface-alt:color-mix(in srgb,var(--accent) 6%,transparent 94%);
   --sudoku-block-chess:color-mix(in srgb,var(--accent) 12%,transparent 88%);
   --overlay-celebration:color-mix(in srgb,var(--accent) 55%,#fff 8%);
+  --snake-board-surface:color-mix(in srgb,#ffffff 18%,transparent 82%);
+  --snake-board-border:color-mix(in srgb,#ffffff 55%,transparent 45%);
+  --snake-board-shadow:0 18px 40px color-mix(in srgb,#000,transparent 88%);
 }
 .theme-light {
   --bg:#ffffff; --fg:#202124; --muted:#5f6368; --accent:#0066cc;
@@ -47,6 +50,9 @@
   --sudoku-block-surface-alt:color-mix(in srgb,var(--accent) 10%,transparent 90%);
   --sudoku-block-chess:color-mix(in srgb,var(--accent) 16%,transparent 84%);
   --overlay-celebration:color-mix(in srgb,var(--accent) 65%,#fff 25%);
+  --snake-board-surface:color-mix(in srgb,#ffffff 92%,transparent 8%);
+  --snake-board-border:color-mix(in srgb,#000000 18%,transparent 82%);
+  --snake-board-shadow:0 18px 34px color-mix(in srgb,#000,transparent 88%);
 }
 html,body{height:100%;margin:0;background-color:var(--bg);background-image:linear-gradient(135deg,color-mix(in srgb,var(--bg),#fff 5%),color-mix(in srgb,var(--bg),#000 5%));color:var(--fg);font:400 16px/1.4 'Inter',system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;overflow-x:hidden;overflow-y:auto}
 .wrap{max-width:980px;margin:24px auto;padding:0 16px;display:grid;grid-template-columns:1fr auto;gap:24px}
@@ -61,7 +67,7 @@ p{color:var(--muted);margin:0 0 12px}
 }
 .panel{background:color-mix(in srgb,var(--panel-bg),transparent 20%);backdrop-filter:blur(8px);border:1px solid var(--panel-border);border-radius:16px;padding:14px 16px;box-shadow:0 10px 30px color-mix(in srgb,var(--bg),#000 30%);min-width:0}
 canvas{display:block;background:var(--canvas-bg);border-radius:12px;border:1px solid var(--canvas-border)}
-#snakeCanvas{touch-action:none;-webkit-user-select:none;user-select:none}
+#snakeCanvas{touch-action:none;-webkit-user-select:none;user-select:none;background:var(--snake-board-surface);border:1px solid var(--snake-board-border);box-shadow:var(--snake-board-shadow)}
 .stats{display:flex;flex-direction:column;gap:8px}
 .stat{background:var(--stat-bg);border:1px solid var(--stat-border);border-radius:12px;padding:10px;text-align:center}
 .stat b{display:block;font-size:22px;margin-top:6px;color:var(--accent);font-weight:600;letter-spacing:1px}
