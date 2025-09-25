@@ -73,6 +73,10 @@ export function initGame(){
     const c = document.getElementById(`next${n}`);
     return c ? c.getContext('2d') : null;
   });
+  const timerDisplay = document.getElementById('timer');
+  const timerMeterEl = document.getElementById('timerMeter');
+  const timerTrackEl = document.getElementById('timerProgressTrack');
+  const timerFillEl = document.getElementById('timerProgressFill');
 
   let board, cur, bag=[], queue=[];
   let score=0, lines=0, level=1, best=0;
@@ -113,13 +117,25 @@ export function initGame(){
     mode = sel ? sel.value : MODE_CLASSIC;
     timeLeft = (mode===MODE_ULTRA) ? ULTRA_SECONDS : null;
     best = Number(localStorage.getItem(bestKey(mode))||0);
-    const tEl = document.getElementById('timer');
-    if(tEl){
-      tEl.style.visibility = timeLeft === null ? 'hidden' : 'visible';
-      if(timeLeft===null) tEl.textContent='';
-      else {
+    const isTimed = timeLeft !== null;
+    if(timerMeterEl){
+      timerMeterEl.hidden = !isTimed;
+      timerMeterEl.setAttribute('aria-hidden', isTimed ? 'false' : 'true');
+    }
+    if(timerTrackEl){
+      timerTrackEl.setAttribute('aria-valuemax', String(ULTRA_SECONDS));
+      timerTrackEl.setAttribute('aria-valuenow', String(Math.round(isTimed ? timeLeft : 0)));
+    }
+    if(timerFillEl){
+      const initialProgress = isTimed ? 1 : 0;
+      timerFillEl.style.transform = `scaleX(${initialProgress})`;
+    }
+    if(timerDisplay){
+      if(!isTimed){
+        timerDisplay.textContent = '';
+      }else{
         const s = Math.floor(timeLeft%60).toString().padStart(2,'0');
-        tEl.textContent = `⏱️ ${Math.floor(timeLeft/60)}:${s}`;
+        timerDisplay.textContent = `⏱️ ${Math.floor(timeLeft/60)}:${s}`;
       }
     }
     updateSide();
@@ -308,13 +324,22 @@ export function initGame(){
     const delta = time - lastTime; lastTime = time;
     if(!paused){
       // Timer-Logik für Ultra Mode
-      const tEl = document.getElementById('timer');
       if(timeLeft!==null){
         timeLeft = Math.max(0, timeLeft - delta/1000);
-        if(tEl){ const s=Math.floor(timeLeft%60).toString().padStart(2,'0'); tEl.textContent=`⏱️ ${Math.floor(timeLeft/60)}:${s}`; }
+        if(timerDisplay){
+          const s = Math.floor(timeLeft%60).toString().padStart(2,'0');
+          timerDisplay.textContent = `⏱️ ${Math.floor(timeLeft/60)}:${s}`;
+        }
+        if(timerTrackEl){
+          timerTrackEl.setAttribute('aria-valuenow', String(Math.ceil(timeLeft)));
+        }
+        if(timerFillEl){
+          const ratio = Math.max(0, Math.min(1, timeLeft / ULTRA_SECONDS));
+          timerFillEl.style.transform = `scaleX(${ratio})`;
+        }
         if(timeLeft===0){ gameOver(); }
-      } else if(tEl){
-        tEl.textContent='';
+      } else if(timerDisplay){
+        timerDisplay.textContent='';
       }
       dropTimer += delta;
       if(dropTimer > dropInterval){
