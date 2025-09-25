@@ -8,7 +8,7 @@ export function initUI(){
   }
 
   const btnThemes = document.querySelectorAll('#themeToggle');
-  const themeIcons = document.querySelectorAll('#themeIcon');
+  const themeIcons = document.querySelectorAll('[data-theme-icon]');
   const globalControls = document.getElementById('globalControls');
   const introScreen = document.getElementById('introScreen');
   const introForm = document.getElementById('introForm');
@@ -37,8 +37,9 @@ export function initUI(){
     document.dispatchEvent(evt);
   }
   function updateThemeIcon(){
+    const symbol = document.body.classList.contains('theme-light') ? '🌙' : '🌞';
     themeIcons.forEach(icon => {
-      icon.textContent = document.body.classList.contains('theme-light') ? 'dark_mode' : 'light_mode';
+      icon.textContent = symbol;
     });
   }
   updateThemeIcon();

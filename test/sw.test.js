@@ -75,17 +75,23 @@ const expectedAssets = [
   './manifest.json',
   './styles.css',
   './src/audio.js',
+  './src/botPlayer.js',
   './src/constants.js',
   './src/game.js',
+  './src/highscoreStore.js',
   './src/highscores.js',
   './src/logger.js',
   './src/logic.js',
   './src/main.js',
   './src/menu.js',
+  './src/overlay.js',
   './src/pieces.js',
   './src/settings.js',
   './src/snake.js',
   './src/snakeHighscores.js',
+  './src/sudoku.js',
+  './src/sudokuGenerator.js',
+  './src/sudokuHighscores.js',
   './src/ui.js',
   './icons/icon-180.png',
   './icons/icon-192.png',
@@ -102,7 +108,7 @@ test('service worker caches assets and serves them offline', async () => {
   await env.listeners.install({ waitUntil: p => { installDone = p; } });
   await installDone;
 
-  const cache = await env.caches.open('tetris-cache-v4');
+  const cache = await env.caches.open('tetris-cache-v5');
   const keys = await cache.keys();
   const urls = keys.map(req => req.url.replace('https://example.com', '.'));
   assert.deepEqual(urls.sort(), expectedAssets.sort());

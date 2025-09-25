@@ -14,8 +14,7 @@ if (!JSDOM) {
 
   test('theme toggle updates localStorage and icon', () => {
     const dom = new JSDOM(`<!DOCTYPE html><body>
-      <button id="themeToggle"></button>
-      <span id="themeIcon"></span>
+      <button id="themeToggle"><span data-theme-icon></span></button>
     </body>`, { url: 'http://localhost' });
 
     global.window = dom.window;
@@ -26,12 +25,12 @@ if (!JSDOM) {
     initUI();
 
     const btn = document.getElementById('themeToggle');
-    const icon = document.getElementById('themeIcon');
+    const icon = document.querySelector('[data-theme-icon]');
 
     btn.dispatchEvent(new window.Event('click'));
 
     assert.strictEqual(localStorage.getItem(THEME_KEY), 'light');
-    assert.strictEqual(icon.textContent, 'dark_mode');
+    assert.strictEqual(icon.textContent, '🌙');
 
     delete global.window;
     delete global.document;

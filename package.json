@@ -3,8 +3,7 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "test": "node --test",
-    "start": "node server.js"
+    "test": "node --test"
   },
   "devDependencies": {
     "jsdom": "^23.0.0"
