@@ -50,7 +50,7 @@
   --sudoku-block-surface-alt:color-mix(in srgb,var(--accent) 10%,transparent 90%);
   --sudoku-block-chess:color-mix(in srgb,var(--accent) 16%,transparent 84%);
   --overlay-celebration:color-mix(in srgb,var(--accent) 65%,#fff 25%);
-  --snake-board-surface:color-mix(in srgb,var(--accent) 20%,#ffffff 80%);
+  --snake-board-surface:#ffffff;
   --snake-board-border:color-mix(in srgb,var(--accent) 35%,transparent 65%);
   --snake-board-shadow:0 18px 34px color-mix(in srgb,var(--accent),transparent 86%);
 }
