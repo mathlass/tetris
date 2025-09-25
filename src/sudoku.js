@@ -233,7 +233,7 @@ export function initSudoku(){
 
   function updateTimerDisplay(){
     const seconds = Math.floor(elapsed / 1000);
-    timerEl.textContent = formatTime(seconds);
+    timerEl.textContent = `Zeit: ${formatTime(seconds)}`;
   }
 
   function runTimer(){
