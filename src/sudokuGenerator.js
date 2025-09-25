@@ -89,6 +89,10 @@ const DIFFICULTY_SETTINGS = {
 function removeCells(grid, targetClues){
   let clues = SIZE * SIZE;
   const positions = Array.from({ length: SIZE * SIZE }, (_, i) => i);
+  {
+    const shuffled = shuffle(positions);
+    for(let i = 0; i < positions.length; i++) positions[i] = shuffled[i];
+  }
   let attempts = 0;
   let index = 0;
   const emptyCellsPerBox = Array(BOX * BOX).fill(0);
@@ -102,6 +106,37 @@ function removeCells(grid, targetClues){
   }
 
   const needsEmptyCell = () => emptyCellsPerBox.some(count => count === 0);
+
+  const pickFromBox = (boxIndex) => {
+    const startRow = Math.floor(boxIndex / BOX) * BOX;
+    const startCol = (boxIndex % BOX) * BOX;
+    const candidates = [];
+    for(let r = 0; r < BOX; r++){
+      for(let c = 0; c < BOX; c++){
+        const row = startRow + r;
+        const col = startCol + c;
+        if(grid[row][col] !== 0){
+          candidates.push(row * SIZE + col);
+        }
+      }
+    }
+    if(!candidates.length) return null;
+    return candidates[Math.floor(Math.random() * candidates.length)];
+  };
+
+  const findUnderfilledBox = () => {
+    const minEmpty = Math.min(...emptyCellsPerBox);
+    const maxEmpty = Math.max(...emptyCellsPerBox);
+    if(maxEmpty - minEmpty < 2) return null;
+    const underfilled = [];
+    for(let i = 0; i < emptyCellsPerBox.length; i++){
+      if(emptyCellsPerBox[i] === minEmpty){
+        underfilled.push(i);
+      }
+    }
+    if(!underfilled.length) return null;
+    return underfilled[Math.floor(Math.random() * underfilled.length)];
+  };
 
   while((clues > targetClues || needsEmptyCell()) && attempts < positions.length * 6){
     if(index >= positions.length){
@@ -119,21 +154,14 @@ function removeCells(grid, targetClues){
       }
       if(requiredBoxes.length){
         const targetBox = requiredBoxes[Math.floor(Math.random() * requiredBoxes.length)];
-        const startRow = Math.floor(targetBox / BOX) * BOX;
-        const startCol = (targetBox % BOX) * BOX;
-        const candidates = [];
-        for(let r = 0; r < BOX; r++){
-          for(let c = 0; c < BOX; c++){
-            const row = startRow + r;
-            const col = startCol + c;
-            if(grid[row][col] !== 0){
-              candidates.push(row * SIZE + col);
-            }
-          }
-        }
-        if(candidates.length){
-          pos = candidates[Math.floor(Math.random() * candidates.length)];
-        }
+        const candidate = pickFromBox(targetBox);
+        if(candidate !== null) pos = candidate;
+      }
+    } else {
+      const targetBox = findUnderfilledBox();
+      if(targetBox !== null){
+        const candidate = pickFromBox(targetBox);
+        if(candidate !== null) pos = candidate;
       }
     }
 
