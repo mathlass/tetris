@@ -10,8 +10,6 @@
   <meta name="theme-color" content="#0f1115" />
   <link rel="manifest" href="manifest.json" />
   <link rel="apple-touch-icon" href="icons/icon-180.png" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -30,7 +28,7 @@
             <option value="sudoku">Sudoku</option>
           </select>
         </label>
-        <button type="submit" class="intro-submit button-primary"><span class="material-icons">play_arrow</span> Los geht's</button>
+        <button type="submit" class="intro-submit button-primary"><span class="icon" aria-hidden="true">▶</span> Los geht's</button>
       </form>
     </div>
   </div>
@@ -48,10 +46,10 @@
     <div>
       <h1>🧱 Tetris</h1>
       <div class="controls top-controls">
-        <button id="btnMenu"><span class="material-icons">menu</span> Menü</button>
-        <button id="themeToggle"><span class="material-icons" id="themeIcon">brightness_6</span> Theme</button>
-        <button id="btnStart" class="button-primary"><span class="material-icons">play_arrow</span> Start/Neu</button>
-        <button id="btnPause"><span class="material-icons">pause</span> Pause</button>
+        <button id="btnMenu"><span class="icon" aria-hidden="true">☰</span> Menü</button>
+        <button id="themeToggle"><span class="icon" data-theme-icon aria-hidden="true">🌙</span> Theme</button>
+        <button id="btnStart" class="button-primary"><span class="icon" aria-hidden="true">▶</span> Start/Neu</button>
+        <button id="btnPause"><span class="icon" aria-hidden="true">⏸</span> Pause</button>
         <label>Modus:
           <select id="modeSelect" class="input">
             <option value="classic">Classic (endlos)</option>
@@ -114,10 +112,10 @@
         <div>
           <h1>🐍 Snake</h1>
           <div class="controls top-controls">
-            <button id="snakeBtnMenu"><span class="material-icons">menu</span> Menü</button>
-            <button id="themeToggle"><span class="material-icons" id="themeIcon">brightness_6</span> Theme</button>
-            <button id="snakeStart" class="button-primary"><span class="material-icons">play_arrow</span> Start/Neu</button>
-            <button id="snakePause"><span class="material-icons">pause</span> Pause</button>
+            <button id="snakeBtnMenu"><span class="icon" aria-hidden="true">☰</span> Menü</button>
+            <button id="themeToggle"><span class="icon" data-theme-icon aria-hidden="true">🌙</span> Theme</button>
+            <button id="snakeStart" class="button-primary"><span class="icon" aria-hidden="true">▶</span> Start/Neu</button>
+            <button id="snakePause"><span class="icon" aria-hidden="true">⏸</span> Pause</button>
             <label>Modus:
               <select id="snakeModeSelect" class="input">
                 <option value="classic">Classic</option>
@@ -154,9 +152,9 @@
       <div>
         <h1>🧩 Sudoku</h1>
         <div class="controls top-controls">
-          <button id="sudokuBtnMenu"><span class="material-icons">menu</span> Menü</button>
-          <button id="themeToggle"><span class="material-icons" id="themeIcon">brightness_6</span> Theme</button>
-          <button id="sudokuStart" class="button-primary"><span class="material-icons">refresh</span> Neues Spiel</button>
+          <button id="sudokuBtnMenu"><span class="icon" aria-hidden="true">☰</span> Menü</button>
+          <button id="themeToggle"><span class="icon" data-theme-icon aria-hidden="true">🌙</span> Theme</button>
+          <button id="sudokuStart" class="button-primary"><span class="icon" aria-hidden="true">↻</span> Neues Spiel</button>
           <label>Schwierigkeit:
             <select id="sudokuDifficulty" class="input">
               <option value="easy">Leicht</option>
@@ -184,9 +182,9 @@
               <button type="button" data-value="9">9</button>
             </div>
             <div class="sudoku-pad-tools" role="group" aria-label="Werkzeugtasten">
-              <button type="button" id="sudokuNoteToggle" class="sudoku-tool sudoku-toggle" aria-pressed="false" title="Notizmodus umschalten"><span class="material-icons">edit_note</span> Notizen</button>
-              <button type="button" id="sudokuMarkToggle" class="sudoku-tool sudoku-toggle" aria-pressed="false" title="Markiermodus umschalten"><span class="material-icons">visibility</span> Markieren</button>
-              <button type="button" class="sudoku-tool" data-action="clear" title="Aktives Feld leeren"><span class="material-icons">backspace</span> Löschen</button>
+              <button type="button" id="sudokuNoteToggle" class="sudoku-tool sudoku-toggle" aria-pressed="false" title="Notizmodus umschalten"><span class="icon" aria-hidden="true">✏️</span> Notizen</button>
+              <button type="button" id="sudokuMarkToggle" class="sudoku-tool sudoku-toggle" aria-pressed="false" title="Markiermodus umschalten"><span class="icon" aria-hidden="true">👁️</span> Markieren</button>
+              <button type="button" class="sudoku-tool" data-action="clear" title="Aktives Feld leeren"><span class="icon" aria-hidden="true">⌫</span> Löschen</button>
             </div>
           </div>
         </div>
@@ -205,8 +203,8 @@
       <p>Deine Zeit: <b id="sudokuOvTime">00:00</b></p>
       <p>Beste Zeit: <b id="sudokuOvBest">--</b></p>
       <div class="buttons" style="justify-content:center;margin-top:12px;">
-        <button id="sudokuBtnRestart" class="button-primary"><span class="material-icons">replay</span> Noch einmal</button>
-        <button id="sudokuBtnClose"><span class="material-icons">close</span> Schließen</button>
+        <button id="sudokuBtnRestart" class="button-primary"><span class="icon" aria-hidden="true">↻</span> Noch einmal</button>
+        <button id="sudokuBtnClose"><span class="icon" aria-hidden="true">✕</span> Schließen</button>
       </div>
       <div class="panel" style="margin-top:16px">
         <h3>Top-Zeiten</h3>

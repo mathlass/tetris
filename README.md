@@ -22,22 +22,13 @@ Wenn du eine neue Version veröffentlichst, kann der Browser wegen des Caches no
 - Einmal **neu laden** (auf iPhone: Adresse antippen → Nach-unten-ziehen → neu laden).
 - Oder die Version in `sw.js` (Konstante `CACHE`) hochzählen (z. B. `tetris-cache-v3`).
 
-## Highscores & Backend
-### Supabase (empfohlen)
-1) In Supabase eine Tabelle `scores` mit den Spalten `id uuid primary key default gen_random_uuid()`,
-   `player text`, `mode text`, `score integer`, `lines integer`, `created_at timestamp default now()` anlegen.
-2) Die Variablen `NEXT_PUBLIC_SUPABASE_URL` und `NEXT_PUBLIC_SUPABASE_ANON_KEY` als
-   Umgebungsvariablen oder per Script-Tag (`window.NEXT_PUBLIC_SUPABASE_URL = '...';`) setzen.
-3) Das Spiel nutzt dann automatisch die Supabase-REST-API, um Highscores zu lesen und zu speichern.
-
-### Lokaler Node-Server (Fallback)
-1) `npm install` ist nicht nötig – der Server verwendet nur eingebaute Module.
-2) Start: `node server.js` (speichert Daten in `scores.json`).
-3) Das Spiel ruft die Endpunkte `/scores/<mode>` (GET/POST) auf. Für Snake wird der Modus `snake` verwendet.
-
-Viel Spaß!
+## Highscores & Offline-Nutzung
+- Highscores werden ausschließlich lokal im Browser (LocalStorage) gespeichert.
+- Es werden keine Netzwerkaufrufe mehr durchgeführt – das Spiel funktioniert komplett offline.
 
 ## Lokale Entwicklung
-1) Optional: `npm install` (keine externen Abhängigkeiten erforderlich).
-2) Server starten: `npm start` → `http://localhost:3000`.
+1) Optional: `npm install` (für Tests).
+2) Öffne `index.html` direkt im Browser oder nutze einen beliebigen statischen Webserver.
 3) Tests ausführen: `npm test` (Node.js Test Runner).
+
+Viel Spaß!

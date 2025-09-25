@@ -4,11 +4,7 @@ import {
   BEST_KEY_BASE,
   MODE_LABELS
 } from './constants.js';
-import {
-  createHighscoreStore,
-  createSupabaseSync,
-  sanitizeName
-} from './highscoreStore.js';
+import { createHighscoreStore, sanitizeName } from './highscoreStore.js';
 
 export { sanitizeName } from './highscoreStore.js';
 
@@ -28,30 +24,7 @@ const store = createHighscoreStore({
       date: entry.date || ''
     };
   },
-  sortEntries: (a, b) => b.score - a.score || b.lines - a.lines,
-  server: createSupabaseSync({
-    buildFetchQuery: modeValue =>
-      `select=player,score,lines,created_at&mode=eq.${modeValue}&order=score.desc,lines.desc&limit=10`,
-    mapRecord: record => ({
-      name: record.player ?? record.name ?? '',
-      score: record.score,
-      lines: record.lines ?? 0,
-      date: (record.created_at || '').slice(0, 10)
-    }),
-    toPayload: (entry, modeValue) => ({
-      player: entry.name,
-      score: entry.score,
-      lines: entry.lines ?? 0,
-      mode: modeValue
-    }),
-    fallbackPayload: entry => ({
-      name: entry.name,
-      score: entry.score,
-      lines: entry.lines ?? 0,
-      date: entry.date
-    }),
-    fallbackPath: modeValue => `/scores/${modeValue}`
-  })
+  sortEntries: (a, b) => b.score - a.score || b.lines - a.lines
 });
 
 export const hsKey = mode => store.storageKey(mode);

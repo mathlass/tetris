@@ -17,12 +17,10 @@ if (!JSDOM) {
   test('addHS sanitizes stored name', async () => {
     const dom = new JSDOM('', { url: 'http://localhost' });
     global.localStorage = dom.window.localStorage;
-    global.fetch = async () => ({ ok: true });
     const list = await addHS({ name: '<b>Eve</b>', score: 1, date: 'now' }, MODE);
     assert.strictEqual(list[0].name, 'Eve');
     const saved = JSON.parse(dom.window.localStorage.getItem(HS_KEY));
     assert.strictEqual(saved[0].name, 'Eve');
-    delete global.fetch;
     delete global.localStorage;
   });
 
@@ -39,7 +37,6 @@ if (!JSDOM) {
     const dom = new JSDOM(`<!DOCTYPE html><table id="snakeHsTable"><tbody></tbody></table>`, { url: 'http://localhost' });
     global.document = dom.window.document;
     global.localStorage = dom.window.localStorage;
-    global.fetch = async () => { throw new Error('offline'); };
     const entries = [
       { name: 'Ana', score: 2, date: 'd1' },
       { name: 'Bob', score: 1, date: 'd2' }
@@ -50,7 +47,6 @@ if (!JSDOM) {
     assert.strictEqual(rows.length, 2);
     assert.strictEqual(rows[0].children[1].textContent, 'Ana');
     assert.strictEqual(rows[1].children[2].textContent, '1');
-    delete global.fetch;
     delete global.document;
     delete global.localStorage;
   });

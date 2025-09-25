@@ -1,10 +1,6 @@
 // Highscore storage and rendering for Snake
 import { SNAKE_HS_KEY_BASE } from './constants.js';
-import {
-  createHighscoreStore,
-  createSupabaseSync,
-  sanitizeName
-} from './highscoreStore.js';
+import { createHighscoreStore, sanitizeName } from './highscoreStore.js';
 
 const LEGACY_HS_KEY = 'snake_hs';
 
@@ -28,28 +24,7 @@ const store = createHighscoreStore({
         storage.removeItem(LEGACY_HS_KEY);
       }
     } catch {}
-  },
-  server: createSupabaseSync({
-    modePrefix: 'snake_',
-    buildFetchQuery: modeValue =>
-      `select=player,score,created_at&mode=eq.${modeValue}&order=score.desc&limit=10`,
-    mapRecord: record => ({
-      name: record.player ?? record.name ?? '',
-      score: record.score,
-      date: (record.created_at || '').slice(0, 10)
-    }),
-    toPayload: (entry, modeValue) => ({
-      player: entry.name,
-      score: entry.score,
-      mode: modeValue
-    }),
-    fallbackPayload: entry => ({
-      name: entry.name,
-      score: entry.score,
-      date: entry.date
-    }),
-    fallbackPath: modeValue => `/scores/${modeValue}`
-  })
+  }
 });
 
 export function clearHS(mode) {
