@@ -10,11 +10,15 @@
   <meta name="theme-color" content="#0f1115" />
   <link rel="manifest" href="manifest.json" />
   <link rel="apple-touch-icon" href="icons/icon-180.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <div id="introScreen" role="dialog" aria-modal="true">
     <div class="intro-card">
+      <div class="intro-card__glow" aria-hidden="true"></div>
       <h1>👋 Willkommen</h1>
       <p>Bitte gib deinen Namen ein und wähle das Spiel, mit dem du starten möchtest.</p>
       <form id="introForm" class="intro-form" novalidate>
@@ -44,7 +48,10 @@
   <div id="tetrisWrap" class="hidden">
     <div class="wrap">
     <div>
-      <h1>🧱 Tetris</h1>
+      <div class="page-header">
+        <h1 class="page-title"><span class="page-title__icon" aria-hidden="true">🧱</span><span class="page-title__text">Tetris</span></h1>
+        <p class="page-header__lead">Staple die Neon-Blöcke und jage den Highscore.</p>
+      </div>
       <div class="controls top-controls">
         <button id="btnMenu"><span class="icon" aria-hidden="true">☰</span> Menü</button>
         <button id="themeToggle"><span class="icon" data-theme-icon aria-hidden="true">🌙</span> Theme</button>
@@ -60,10 +67,17 @@
       </div>
       <div class="grid">
         <div class="panel">
-          <div class="controls" style="margin:0 0 8px">
-            <span class="timer" id="topScore">Score: 0</span>
-            <span class="timer" id="topBest">Best: 0</span>
-            <span class="timer" id="timer" style="margin-left:auto"></span>
+          <div class="controls controls--bar">
+            <div class="stat-inline">
+              <span class="timer" id="topScore">Score: 0</span>
+              <span class="timer" id="topBest">Best: 0</span>
+            </div>
+            <div class="timer-meter" id="timerMeter" hidden aria-hidden="true">
+              <span class="timer" id="timer"></span>
+              <div class="timer-meter__track" id="timerProgressTrack" role="progressbar" aria-label="Restzeit" aria-valuemin="0" aria-valuemax="120" aria-valuenow="0">
+                <div class="timer-meter__fill" id="timerProgressFill"></div>
+              </div>
+            </div>
           </div>
           <div class="game-area">
             <div class="board-wrap">
@@ -79,16 +93,20 @@
           
           <div class="tag" id="comboTag"></div>
         </div>
-        <div class="panel">
-          <h3>Spielmodi</h3>
+        <div class="panel panel--info">
+          <div class="panel__header">
+            <h3>Spielmodi</h3>
+          </div>
           <ul>
             <li><b>Classic (endlos)</b> – spiele so lange, bis keine Steine mehr passen; die Geschwindigkeit steigt mit der Zeit.</li>
             <li><b>Classic – 1 Drehung</b> – wie Classic, aber jedes Teil darf nur einmal gedreht werden.</li>
             <li><b>Ultra – 2 Minuten</b> – erreiche möglichst viele Punkte innerhalb von zwei Minuten.</li>
           </ul>
         </div>
-        <div class="panel">
-          <h3>Steuerung</h3>
+        <div class="panel panel--info">
+          <div class="panel__header">
+            <h3>Steuerung</h3>
+          </div>
           <p>Nutze die Bildschirm-Buttons (Pfeile/Rotieren/Soft/Pause/Neu) auf Mobilgeräten.</p>
           <p>Auf Desktop funktionieren zusätzlich folgende Tasten:</p>
           <ul>
@@ -110,7 +128,10 @@
   <div id="snakeWrap" class="hidden">
       <div class="wrap">
         <div>
-          <h1>🐍 Snake</h1>
+          <div class="page-header">
+            <h1 class="page-title"><span class="page-title__icon" aria-hidden="true">🐍</span><span class="page-title__text">Snake</span></h1>
+            <p class="page-header__lead">Kurve durch das Grid und sammle Glanzeffekte.</p>
+          </div>
           <div class="controls top-controls">
             <button id="snakeBtnMenu"><span class="icon" aria-hidden="true">☰</span> Menü</button>
             <button id="themeToggle"><span class="icon" data-theme-icon aria-hidden="true">🌙</span> Theme</button>
@@ -131,16 +152,20 @@
             </div>
             <canvas id="snakeCanvas" width="330" height="330" aria-label="Snake Board" style="margin:0 auto"></canvas>
           </div>
-          <div class="panel" style="margin-top:16px">
-            <h3>Spielmodi</h3>
+          <div class="panel panel--info" style="margin-top:16px">
+            <div class="panel__header">
+              <h3>Spielmodi</h3>
+            </div>
             <ul>
               <li><b>Classic</b> – spiele endlos ohne Hindernisse und knacke deinen Highscore.</li>
               <li><b>Mit Hindernissen</b> – klassische Snake mit festen Blockern, die mit steigendem Score mehr werden.</li>
               <li><b>Ultra</b> – noch mehr Hindernisse, die schneller hinzukommen – halte so lange wie möglich durch.</li>
             </ul>
           </div>
-          <div class="panel" style="margin-top:16px">
-            <h3>Steuerung</h3>
+          <div class="panel panel--info" style="margin-top:16px">
+            <div class="panel__header">
+              <h3>Steuerung</h3>
+            </div>
             <p>Tippe links oder rechts auf den Bildschirm, um die Schlange 90° nach links beziehungsweise rechts zu drehen. Iss die roten Häppchen und vermeide Kollisionen mit Wänden oder dir selbst.</p>
           </div>
         </div>
@@ -150,7 +175,10 @@
   <div id="sudokuWrap" class="hidden">
     <div class="wrap">
       <div>
-        <h1>🧩 Sudoku</h1>
+        <div class="page-header">
+          <h1 class="page-title"><span class="page-title__icon" aria-hidden="true">🧩</span><span class="page-title__text">Sudoku</span></h1>
+          <p class="page-header__lead">Fülle das Raster mit smarter Hervorhebung und Notizzonen.</p>
+        </div>
         <div class="controls top-controls">
           <button id="sudokuBtnMenu"><span class="icon" aria-hidden="true">☰</span> Menü</button>
           <button id="themeToggle"><span class="icon" data-theme-icon aria-hidden="true">🌙</span> Theme</button>
@@ -188,8 +216,10 @@
             </div>
           </div>
         </div>
-        <div class="panel" style="margin-top:16px">
-          <h3>So funktioniert's</h3>
+        <div class="panel panel--info" style="margin-top:16px">
+          <div class="panel__header">
+            <h3>So funktioniert's</h3>
+          </div>
           <p>Fülle jede Zeile, Spalte und jeden 3×3-Block mit den Zahlen von 1 bis 9.</p>
           <p>Tippe zunächst auf ein leeres Feld. Über die Zahlen unterhalb des Spielfeldes kannst du deine Auswahl einsetzen.</p>
         </div>
@@ -206,8 +236,10 @@
         <button id="sudokuBtnRestart" class="button-primary"><span class="icon" aria-hidden="true">↻</span> Noch einmal</button>
         <button id="sudokuBtnClose"><span class="icon" aria-hidden="true">✕</span> Schließen</button>
       </div>
-      <div class="panel" style="margin-top:16px">
-        <h3>Top-Zeiten</h3>
+      <div class="panel panel--info" style="margin-top:16px">
+        <div class="panel__header">
+          <h3>Top-Zeiten</h3>
+        </div>
         <table class="table" id="sudokuOvTable">
           <thead>
             <tr><th>#</th><th>Name</th><th>Zeit</th><th>Datum</th></tr>
@@ -225,8 +257,10 @@
       <button id="tabSettings" role="tab" aria-controls="settingsPanel">Einstellungen</button>
     </div>
     <div class="menu-overlay__inner">
-      <div class="panel" id="scorePanel" style="margin-top:16px;">
-        <h3>Scoreboard – <span id="hsModeLabel">Tetris – Classic (endlos)</span></h3>
+      <div class="panel panel--info" id="scorePanel" style="margin-top:16px;">
+        <div class="panel__header">
+          <h3>Scoreboard – <span id="hsModeLabel">Tetris – Classic (endlos)</span></h3>
+        </div>
         <div class="controls" style="flex-wrap:wrap;gap:8px;">
           <label>Spiel:
             <select id="scoreGameSelect" class="input">
@@ -264,8 +298,10 @@
         </table>
       </div>
 
-      <div class="panel" id="settingsPanel" style="margin-top:16px;display:none;">
-        <h3>Einstellungen</h3>
+      <div class="panel panel--info" id="settingsPanel" style="margin-top:16px;display:none;">
+        <div class="panel__header">
+          <h3>Einstellungen</h3>
+        </div>
         <div class="controls">
           <label><input type="checkbox" id="optSound" checked> Sound</label>
           <label><input type="checkbox" id="optGhost" checked> Ghost Piece</label>

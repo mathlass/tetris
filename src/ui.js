@@ -3,9 +3,29 @@ import { THEME_KEY, PLAYER_KEY } from './constants.js';
 export function initUI(){
   const prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
   const storedTheme = localStorage.getItem(THEME_KEY);
-  if (storedTheme === 'light' || (storedTheme === null && prefersLight)) {
-    document.body.classList.add('theme-light');
+  const themeOrder = ['dark','light','aurora'];
+  const themeConfig = {
+    dark:{ className:'', icon:'🌙', label:'Dunkel' },
+    light:{ className:'theme-light', icon:'🌞', label:'Hell' },
+    aurora:{ className:'theme-aurora', icon:'⚡', label:'Aurora' }
+  };
+  const removableClasses = themeOrder
+    .map(key => themeConfig[key]?.className)
+    .filter(Boolean);
+
+  function applyTheme(theme){
+    removableClasses.forEach(cls => document.body.classList.remove(cls));
+    const themeClass = themeConfig[theme]?.className;
+    if(themeClass){
+      document.body.classList.add(themeClass);
+    }
+    document.body.dataset.theme = theme;
   }
+
+  let currentTheme = themeOrder.includes(storedTheme)
+    ? storedTheme
+    : (storedTheme === null && prefersLight ? 'light' : 'dark');
+  applyTheme(currentTheme);
 
   const btnThemes = document.querySelectorAll('#themeToggle');
   const themeIcons = document.querySelectorAll('[data-theme-icon]');
@@ -37,19 +57,23 @@ export function initUI(){
     document.dispatchEvent(evt);
   }
   function updateThemeIcon(){
-    const symbol = document.body.classList.contains('theme-light') ? '🌙' : '🌞';
+    const config = themeConfig[currentTheme] ?? themeConfig.dark;
     themeIcons.forEach(icon => {
-      icon.textContent = symbol;
+      icon.textContent = config.icon;
+    });
+    btnThemes.forEach(btn => {
+      const label = `Theme wechseln (aktuell: ${config.label})`;
+      btn.setAttribute('aria-label', label);
+      btn.setAttribute('title', label);
     });
   }
   updateThemeIcon();
   btnThemes.forEach(btn => {
     btn.addEventListener('click', () => {
-      document.body.classList.toggle('theme-light');
-      localStorage.setItem(
-        THEME_KEY,
-        document.body.classList.contains('theme-light') ? 'light' : 'dark'
-      );
+      const nextIndex = (themeOrder.indexOf(currentTheme) + 1) % themeOrder.length;
+      currentTheme = themeOrder[nextIndex];
+      applyTheme(currentTheme);
+      localStorage.setItem(THEME_KEY, currentTheme);
       updateThemeIcon();
     });
   });
