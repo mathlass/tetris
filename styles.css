@@ -378,9 +378,9 @@ select.input option{background:var(--input-bg);color:var(--fg)}
 #overlay.show{opacity:1;pointer-events:auto}
 #overlay .overlay-card{background:var(--stat-bg);border:1px solid var(--stat-border);border-radius:16px;padding:20px 22px;min-width:320px;max-width:90vw;animation:pop .3s ease-out}
 #overlay h2{margin:0 0 6px;font-weight:600;letter-spacing:1px}
-#snakeOverlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s ease;background:rgba(0,0,0,.45);backdrop-filter:blur(2px) saturate(1.1);z-index:9999}
+#snakeOverlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s ease;background:rgba(0,0,0,.45);backdrop-filter:blur(2px) saturate(1.1);z-index:9999;padding:18px;box-sizing:border-box}
 #snakeOverlay.show{opacity:1;pointer-events:auto}
-#snakeOverlay .overlay-card{background:var(--stat-bg);border:1px solid var(--stat-border);border-radius:16px;padding:20px 22px;min-width:320px;max-width:90vw;animation:pop .3s ease-out}
+#snakeOverlay .overlay-card{background:var(--stat-bg);border:1px solid var(--stat-border);border-radius:16px;padding:20px 22px;min-width:320px;max-width:90vw;max-height:calc(100vh - 48px);overflow:auto;animation:pop .3s ease-out}
 #snakeOverlay h2{margin:0 0 6px;font-weight:600;letter-spacing:1px}
 #sudokuOverlay{
   position:fixed;
