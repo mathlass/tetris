@@ -199,6 +199,7 @@ body::after{
 }
 
 .wrap{max-width:1040px;margin:32px auto;padding:0 20px;display:grid;grid-template-columns:1fr auto;gap:28px}
+#snakeWrap .wrap{grid-template-columns:minmax(0,1fr)}
 h1{font-family:var(--font-heading);font-size:30px;letter-spacing:1px;margin:0 0 10px;font-weight:700}
 p{color:var(--muted);margin:0 0 16px}
 .page-header{display:flex;flex-direction:column;gap:6px;margin-bottom:18px}
