@@ -218,12 +218,36 @@ export function initGame(){
     clearCanvas(ctx2);
     if(!piece) return;
     const m = piece.shape[0];
-    const size = Math.floor(Math.min(ctx2.canvas.width, ctx2.canvas.height) / 4);
-    const offX = Math.floor((ctx2.canvas.width/size - m[0].length)/2);
-    const offY = Math.floor((ctx2.canvas.height/size - m.length)/2);
-    for(let y=0;y<m.length;y++){
-      for(let x=0;x<m[y].length;x++){
-        if(m[y][x]) drawCell(offX+x, offY+y, COLORS[piece.type], ctx2, size);
+
+    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+    for(let y=0; y<m.length; y++){
+      for(let x=0; x<m[y].length; x++){
+        if(!m[y][x]) continue;
+        if(x < minX) minX = x;
+        if(x > maxX) maxX = x;
+        if(y < minY) minY = y;
+        if(y > maxY) maxY = y;
+      }
+    }
+
+    if(maxX === -Infinity || maxY === -Infinity) return;
+
+    let size = Math.floor(Math.min(ctx2.canvas.width, ctx2.canvas.height) / 4);
+    if(size <= 0) size = 1;
+
+    const cellsX = ctx2.canvas.width / size;
+    const cellsY = ctx2.canvas.height / size;
+    const pieceWidth = (maxX - minX) + 1;
+    const pieceHeight = (maxY - minY) + 1;
+    const offX = (cellsX - pieceWidth) / 2;
+    const offY = (cellsY - pieceHeight) / 2;
+
+    for(let y=0; y<m.length; y++){
+      for(let x=0; x<m[y].length; x++){
+        if(!m[y][x]) continue;
+        const drawX = offX + (x - minX);
+        const drawY = offY + (y - minY);
+        drawCell(drawX, drawY, COLORS[piece.type], ctx2, size);
       }
     }
   }
