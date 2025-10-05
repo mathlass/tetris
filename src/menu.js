@@ -7,11 +7,15 @@ import {
   SNAKE_BEST_KEY_BASE,
   SUDOKU_DIFFICULTIES,
   SUDOKU_DIFFICULTY_LABELS,
-  SUDOKU_BEST_KEY_BASE
+  SUDOKU_BEST_KEY_BASE,
+  NONOGRAM_PUZZLES,
+  NONOGRAM_PUZZLE_LABELS,
+  NONOGRAM_BEST_KEY_BASE
 } from './constants.js';
 import { renderHS as renderTetrisHS, saveHS, bestKey } from './highscores.js';
 import { renderHS as renderSnakeHS, clearHS as clearSnakeHS } from './snakeHighscores.js';
 import { renderHS as renderSudokuHS, clearHS as clearSudokuHS } from './sudokuHighscores.js';
+import { renderHS as renderNonogramHS, clearHS as clearNonogramHS } from './nonogramHighscores.js';
 let overlay;
 let btnClose;
 let lastFocused = null;
@@ -33,14 +37,17 @@ export function initMenu(){
   const hsTable = document.getElementById('hsTable');
   const snakeTable = document.getElementById('snakeScoreTable');
   const sudokuTable = document.getElementById('sudokuScoreTable');
+  const nonogramTable = document.getElementById('nonogramScoreTable');
   const hsLabel = document.getElementById('hsModeLabel');
   const lastModeByGame = {
     tetris: TETRIS_MODES[0],
     snake: SNAKE_MODES[0],
-    sudoku: SUDOKU_DIFFICULTIES[0]
+    sudoku: SUDOKU_DIFFICULTIES[0],
+    nonogram: NONOGRAM_PUZZLES[0]
   };
   const snakeBestKey = mode => `${SNAKE_BEST_KEY_BASE}_${mode}`;
   const sudokuBestKey = mode => `${SUDOKU_BEST_KEY_BASE}_${mode}`;
+  const nonogramBestKey = mode => `${NONOGRAM_BEST_KEY_BASE}_${mode}`;
 
   function fillModeOptions(game, preferred){
     if(!scoreModeSelect) return preferred;
@@ -52,6 +59,9 @@ export function initMenu(){
     }else if(game === 'sudoku'){
       modes = SUDOKU_DIFFICULTIES;
       labels = SUDOKU_DIFFICULTY_LABELS;
+    }else if(game === 'nonogram'){
+      modes = NONOGRAM_PUZZLES;
+      labels = NONOGRAM_PUZZLE_LABELS;
     }else{
       modes = TETRIS_MODES;
       labels = MODE_LABELS;
@@ -74,18 +84,28 @@ export function initMenu(){
       if(hsTable) hsTable.classList.add('hidden');
       if(snakeTable) snakeTable.classList.remove('hidden');
       if(sudokuTable) sudokuTable.classList.add('hidden');
+      if(nonogramTable) nonogramTable.classList.add('hidden');
       if(hsLabel) hsLabel.textContent = `Snake – ${SNAKE_MODE_LABELS[mode] || mode}`;
       await renderSnakeHS(mode, { tableSelector: '#snakeScoreTable' });
     } else if(game === 'sudoku'){
       if(hsTable) hsTable.classList.add('hidden');
       if(snakeTable) snakeTable.classList.add('hidden');
       if(sudokuTable) sudokuTable.classList.remove('hidden');
+      if(nonogramTable) nonogramTable.classList.add('hidden');
       if(hsLabel) hsLabel.textContent = `Sudoku – ${SUDOKU_DIFFICULTY_LABELS[mode] || mode}`;
       renderSudokuHS(mode, { tableSelector: '#sudokuScoreTable' });
+    } else if(game === 'nonogram'){
+      if(hsTable) hsTable.classList.add('hidden');
+      if(snakeTable) snakeTable.classList.add('hidden');
+      if(sudokuTable) sudokuTable.classList.add('hidden');
+      if(nonogramTable) nonogramTable.classList.remove('hidden');
+      if(hsLabel) hsLabel.textContent = `Nonogramm – ${NONOGRAM_PUZZLE_LABELS[mode] || mode}`;
+      renderNonogramHS(mode, { tableSelector: '#nonogramScoreTable' });
     } else {
       if(hsTable) hsTable.classList.remove('hidden');
       if(snakeTable) snakeTable.classList.add('hidden');
       if(sudokuTable) sudokuTable.classList.add('hidden');
+      if(nonogramTable) nonogramTable.classList.add('hidden');
       await renderTetrisHS(mode, { tableSelector: '#hsTable', labelSelector: '#hsModeLabel' });
     }
   }
@@ -94,6 +114,7 @@ export function initMenu(){
   const tetrisModeSelect = document.getElementById('modeSelect');
   const snakeModeSelect = document.getElementById('snakeModeSelect');
   const sudokuModeSelect = document.getElementById('sudokuDifficulty');
+  const nonogramModeSelect = document.getElementById('nonogramPuzzleSelect');
 
   async function syncScoreboardWithActiveGame(){
     if(!scoreGameSelect || !scoreModeSelect) return;
@@ -104,6 +125,8 @@ export function initMenu(){
       currentMode = snakeModeSelect ? snakeModeSelect.value : lastModeByGame.snake;
     }else if(activeGame === 'sudoku'){
       currentMode = sudokuModeSelect ? sudokuModeSelect.value : lastModeByGame.sudoku;
+    }else if(activeGame === 'nonogram'){
+      currentMode = nonogramModeSelect ? nonogramModeSelect.value : lastModeByGame.nonogram;
     }else{
       currentMode = tetrisModeSelect ? tetrisModeSelect.value : lastModeByGame.tetris;
     }
@@ -116,7 +139,8 @@ export function initMenu(){
   [
     document.getElementById('btnMenu'),
     document.getElementById('snakeBtnMenu'),
-    document.getElementById('sudokuBtnMenu')
+    document.getElementById('sudokuBtnMenu'),
+    document.getElementById('nonogramBtnMenu')
   ]
     .filter(Boolean)
     .forEach(btn => btn.addEventListener('click', toggleMenuOverlay));
@@ -177,6 +201,11 @@ export function initMenu(){
         localStorage.removeItem(sudokuBestKey(mode));
         await updateScoreboard(game, mode);
         document.dispatchEvent(new CustomEvent('sudokuHsCleared', { detail: { mode } }));
+      } else if(game === 'nonogram'){
+        clearNonogramHS(mode);
+        localStorage.removeItem(nonogramBestKey(mode));
+        await updateScoreboard(game, mode);
+        document.dispatchEvent(new CustomEvent('nonogramHsCleared', { detail: { mode } }));
       } else {
         saveHS([], mode);
         localStorage.removeItem(bestKey(mode));

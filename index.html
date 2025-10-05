@@ -30,6 +30,7 @@
             <option value="tetris">Tetris</option>
             <option value="snake">Snake</option>
             <option value="sudoku">Sudoku</option>
+            <option value="nonogram">Nonogramm</option>
           </select>
         </label>
         <button type="submit" class="intro-submit button-primary"><span class="icon" aria-hidden="true">▶</span> Los geht's</button>
@@ -42,6 +43,7 @@
         <option value="tetris">Tetris</option>
         <option value="snake">Snake</option>
         <option value="sudoku">Sudoku</option>
+        <option value="nonogram">Nonogramm</option>
       </select>
     </label>
   </div>
@@ -224,6 +226,73 @@
     </div>
   </div>
 
+  <div id="nonogramWrap" class="hidden">
+    <div class="wrap">
+      <div>
+        <div class="page-header">
+          <h1 class="page-title"><span class="page-title__icon" aria-hidden="true">🧠</span><span class="page-title__text">Nonogramm</span></h1>
+        </div>
+        <div class="controls top-controls">
+          <button id="nonogramBtnMenu"><span class="icon" aria-hidden="true">☰</span> Menü</button>
+          <button id="themeToggle"><span class="icon" data-theme-icon aria-hidden="true">🌙</span> Theme</button>
+          <button id="nonogramStart" class="button-primary"><span class="icon" aria-hidden="true">↻</span> Neues Rätsel</button>
+          <label>Rätsel:
+            <select id="nonogramPuzzleSelect" class="input">
+              <option value="classic">10×10 Rätsel</option>
+            </select>
+          </label>
+        </div>
+        <div class="panel nonogram-panel">
+          <div class="controls nonogram-stats" style="justify-content:center;margin:0 0 12px;">
+            <span class="timer" id="nonogramTimer">Zeit: 00:00</span>
+            <span class="timer" id="nonogramBest">Best: --</span>
+          </div>
+          <div id="nonogramGrid" class="nonogram-grid" aria-label="Nonogramm Spielfeld">
+            <div class="nonogram-grid__corner" aria-hidden="true"></div>
+            <div class="nonogram-clues nonogram-clues--cols" id="nonogramColClues"></div>
+            <div class="nonogram-clues nonogram-clues--rows" id="nonogramRowClues"></div>
+            <div class="nonogram-cells" id="nonogramCells" role="group" aria-label="Nonogramm Gitter"></div>
+          </div>
+          <div class="nonogram-tools" role="group" aria-label="Werkzeugauswahl">
+            <button type="button" data-nonogram-tool="fill" class="button-primary nonogram-tool" aria-pressed="true"><span class="icon" aria-hidden="true">⬛</span> Füllen</button>
+            <button type="button" data-nonogram-tool="mark" class="nonogram-tool" aria-pressed="false"><span class="icon" aria-hidden="true">✕</span> Markieren</button>
+            <button type="button" data-nonogram-tool="clear" class="nonogram-tool" aria-pressed="false"><span class="icon" aria-hidden="true">⌫</span> Leeren</button>
+          </div>
+        </div>
+        <div class="panel panel--info" style="margin-top:16px">
+          <div class="panel__header">
+            <h3>So funktioniert's</h3>
+          </div>
+          <p>Nutze die Hinweise links und oberhalb des Gitters, um festzulegen, welche Felder gefüllt werden müssen.</p>
+          <p>Tippe auf ein Feld, um zwischen gefüllt, markiert oder leer zu wechseln. Ein Rechtsklick markiert ein Feld direkt.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="nonogramOverlay" aria-hidden="true">
+    <div class="overlay-card" role="dialog" aria-modal="true" aria-labelledby="nonogramOvTitle">
+      <h2 id="nonogramOvTitle">🎉 Nonogramm gelöst!</h2>
+      <p>Deine Zeit: <b id="nonogramOvTime">00:00</b></p>
+      <p>Beste Zeit: <b id="nonogramOvBest">--</b></p>
+      <div class="buttons" style="justify-content:center;margin-top:12px;">
+        <button id="nonogramBtnRestart" class="button-primary"><span class="icon" aria-hidden="true">↻</span> Noch einmal</button>
+        <button id="nonogramBtnClose"><span class="icon" aria-hidden="true">✕</span> Schließen</button>
+      </div>
+      <div class="panel panel--info" style="margin-top:16px;">
+        <div class="panel__header">
+          <h3>Top-Zeiten</h3>
+        </div>
+        <table class="table" id="nonogramOvTable">
+          <thead>
+            <tr><th>#</th><th>Name</th><th>Zeit</th><th>Datum</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
   <div id="sudokuOverlay" aria-hidden="true">
     <div class="overlay-card" role="dialog" aria-modal="true" aria-labelledby="sudokuOvTitle">
       <h2 id="sudokuOvTitle">🎉 Sudoku gelöst!</h2>
@@ -264,6 +333,7 @@
               <option value="tetris">Tetris</option>
               <option value="snake">Snake</option>
               <option value="sudoku">Sudoku</option>
+              <option value="nonogram">Nonogramm</option>
             </select>
           </label>
           <label>Modus:
@@ -288,6 +358,12 @@
           <tbody></tbody>
         </table>
         <table class="table hidden" id="sudokuScoreTable">
+          <thead>
+            <tr><th>#</th><th>Name</th><th>Zeit</th><th>Datum</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+        <table class="table hidden" id="nonogramScoreTable">
           <thead>
             <tr><th>#</th><th>Name</th><th>Zeit</th><th>Datum</th></tr>
           </thead>
