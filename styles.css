@@ -343,12 +343,30 @@ b{color:var(--fg);font-weight:600}
 #snakeWrap .top-controls{justify-content:center}
 #sudokuWrap .top-controls{justify-content:center}
 #snakeWrap .top-controls > *{margin-left:0;margin-right:0}
+#snakeWrap .panel > .controls:first-child{
+  width:100%;
+  justify-content:space-between;
+}
 .input{background:var(--input-bg);border:1px solid var(--input-border);border-radius:12px;padding:10px 12px;color:var(--fg);transition:border-color .2s ease,box-shadow .2s ease,background .2s ease}
 .input:focus{outline:none;border-color:color-mix(in srgb,var(--accent),transparent 45%);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent),transparent 80%)}
 select.input{background:var(--input-bg);border:1px solid var(--input-border);color:var(--fg)}
 select.input option{background:var(--input-bg);color:var(--fg)}
-.stat-inline{display:flex;gap:12px;align-items:center;color:var(--muted);font-weight:500}
+.stat-inline{display:flex;gap:12px;align-items:center;color:var(--muted);font-weight:500;width:100%;justify-content:space-between}
 .timer{font-weight:600;font-size:17px;color:var(--accent);letter-spacing:.6px}
+.controls > .timer,
+.controls .stat-inline .timer{
+  flex:1;
+  min-width:0;
+}
+.controls > .timer:first-child,
+.controls .stat-inline .timer:first-child{
+  text-align:left;
+}
+.controls > .timer:last-child,
+.controls .stat-inline .timer:last-child{
+  text-align:right;
+}
+.controls .stat-inline{flex:1}
 .timer-meter{display:flex;flex-direction:column;align-items:flex-end;gap:6px;min-width:160px}
 .timer-meter[hidden]{display:none}
 .timer-meter__track{width:100%;height:6px;border-radius:999px;background:var(--timer-track-bg);overflow:hidden;position:relative;border:1px solid color-mix(in srgb,var(--timer-track-bg),transparent 30%)}
