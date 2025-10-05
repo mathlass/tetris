@@ -100,9 +100,13 @@ export const SUDOKU_DIFFICULTY_LABELS = {
 export const SUDOKU_HS_KEY_BASE = 'sudoku_highscores_v1';
 export const SUDOKU_BEST_KEY_BASE = 'sudoku_best_v1';
 
-export const NONOGRAM_PUZZLES = ['classic'];
+export const NONOGRAM_PUZZLES = ['classic', 'smiley', 'space', 'tree', 'house'];
 export const NONOGRAM_PUZZLE_LABELS = {
-  classic: '10×10 Rätsel'
+  classic: 'Pixel-Herz (10×10)',
+  smiley: 'Smiley (10×10)',
+  space: 'Space-Invader (10×10)',
+  tree: 'Winterbaum (10×10)',
+  house: 'Haus (10×10)'
 };
 export const NONOGRAM_HS_KEY_BASE = 'nonogram_highscores_v1';
 export const NONOGRAM_BEST_KEY_BASE = 'nonogram_best_v1';

@@ -27,6 +27,66 @@ const PUZZLES = {
       [0,0,0,0,1,0,0,0,0,0],
       [0,0,0,0,1,0,0,0,0,0]
     ]
+  },
+  smiley: {
+    title: 'Smiley',
+    grid: [
+      [0,0,1,1,1,1,1,1,0,0],
+      [0,1,0,0,0,0,0,0,1,0],
+      [1,0,1,0,0,0,0,1,0,1],
+      [1,0,1,0,0,0,0,1,0,1],
+      [1,0,0,0,0,0,0,0,0,1],
+      [1,0,0,0,0,0,0,0,0,1],
+      [1,0,1,0,0,0,0,1,0,1],
+      [1,0,0,1,1,1,1,0,0,1],
+      [0,1,0,0,0,0,0,0,1,0],
+      [0,0,1,1,1,1,1,1,0,0]
+    ]
+  },
+  space: {
+    title: 'Space-Invader',
+    grid: [
+      [0,0,1,1,1,1,1,1,0,0],
+      [0,1,1,1,1,1,1,1,1,0],
+      [1,1,0,1,1,1,1,0,1,1],
+      [1,1,1,1,1,1,1,1,1,1],
+      [1,1,1,0,1,1,0,1,1,1],
+      [1,1,1,1,1,1,1,1,1,1],
+      [0,1,1,0,0,0,0,1,1,0],
+      [0,0,1,1,0,0,1,1,0,0],
+      [0,0,1,0,0,0,0,1,0,0],
+      [0,1,0,0,0,0,0,0,1,0]
+    ]
+  },
+  tree: {
+    title: 'Winterbaum',
+    grid: [
+      [0,0,0,0,0,1,0,0,0,0],
+      [0,0,0,0,1,1,1,0,0,0],
+      [0,0,0,1,1,1,1,1,0,0],
+      [0,0,1,1,1,1,1,1,1,0],
+      [0,1,1,1,1,1,1,1,1,1],
+      [0,0,0,0,0,1,0,0,0,0],
+      [0,0,0,0,0,1,0,0,0,0],
+      [0,0,0,0,0,1,0,0,0,0],
+      [0,0,0,0,1,1,1,0,0,0],
+      [0,0,0,1,1,1,1,1,0,0]
+    ]
+  },
+  house: {
+    title: 'Haus',
+    grid: [
+      [0,0,0,0,0,1,0,0,0,0],
+      [0,0,0,0,1,1,1,0,0,0],
+      [0,0,0,1,1,1,1,1,0,0],
+      [0,0,1,1,1,1,1,1,1,0],
+      [0,1,1,1,1,1,1,1,1,1],
+      [1,1,1,0,0,0,0,0,1,1],
+      [1,0,0,1,0,0,1,0,0,1],
+      [1,0,0,1,1,1,1,0,0,1],
+      [1,0,0,1,0,0,1,0,0,1],
+      [1,1,1,1,1,1,1,1,1,1]
+    ]
   }
 };
 
@@ -66,6 +126,20 @@ export function initNonogram(){
   let state = [];
   function normalizePuzzle(id){
     return NONOGRAM_PUZZLES.includes(id) ? id : size;
+  }
+
+  function listAvailablePuzzles(){
+    return NONOGRAM_PUZZLES.filter(Boolean).map(normalizePuzzle);
+  }
+
+  function pickRandomPuzzle(excludeId){
+    const available = listAvailablePuzzles();
+    const pool = excludeId ? available.filter(id => id !== excludeId) : [...available];
+    if(!pool.length){
+      pool.push(...(available.length ? available : [size]));
+    }
+    const index = Math.floor(Math.random() * pool.length);
+    return normalizePuzzle(pool[index] ?? size);
   }
 
   let currentPuzzle = normalizePuzzle(puzzleSelect ? puzzleSelect.value : size);
@@ -383,7 +457,14 @@ export function initNonogram(){
   updateToolState();
 
   if(startBtn){
-    startBtn.addEventListener('click', startGame);
+    startBtn.addEventListener('click', () => {
+      const nextPuzzle = pickRandomPuzzle(currentPuzzle);
+      if(puzzleSelect){
+        puzzleSelect.value = nextPuzzle;
+      }
+      currentPuzzle = nextPuzzle;
+      startGame();
+    });
   }
 
   if(btnRestart){
@@ -400,15 +481,14 @@ export function initNonogram(){
   }
 
   if(puzzleSelect){
-    if(!puzzleSelect.options.length){
-      NONOGRAM_PUZZLES.forEach(id => {
-        const opt = document.createElement('option');
-        opt.value = id;
-        opt.textContent = NONOGRAM_PUZZLE_LABELS[id] || id;
-        puzzleSelect.appendChild(opt);
-      });
-      puzzleSelect.value = currentPuzzle;
-    }
+    puzzleSelect.innerHTML = '';
+    NONOGRAM_PUZZLES.forEach(id => {
+      const opt = document.createElement('option');
+      opt.value = id;
+      opt.textContent = NONOGRAM_PUZZLE_LABELS[id] || id;
+      puzzleSelect.appendChild(opt);
+    });
+    puzzleSelect.value = currentPuzzle;
     puzzleSelect.addEventListener('change', () => {
       currentPuzzle = normalizePuzzle(puzzleSelect.value);
       updateBestDisplay();
