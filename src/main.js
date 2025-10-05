@@ -3,6 +3,7 @@ import { initUI } from './ui.js';
 import { initGame } from './game.js';
 import { initSnake } from './snake.js';
 import { initSudoku } from './sudoku.js';
+import { initNonogram } from './nonogram.js';
 import { initMenu, toggleMenuOverlay } from './menu.js';
 import { logError } from './logger.js';
 
@@ -11,11 +12,13 @@ initMenu();
 const tetrisGame = initGame();
 const snakeGame = initSnake();
 const sudokuGame = initSudoku();
+const nonogramGame = initNonogram();
 
 const gameSelect = document.getElementById('gameSelect');
 const tetrisWrap = document.getElementById('tetrisWrap');
 const snakeWrap = document.getElementById('snakeWrap');
 const sudokuWrap = document.getElementById('sudokuWrap');
+const nonogramWrap = document.getElementById('nonogramWrap');
 const menuOverlay = document.getElementById('menuOverlay');
 let introCompleted = false;
 
@@ -34,6 +37,11 @@ const games = {
     controller: sudokuGame,
     wrapper: sudokuWrap,
     title: 'Sudoku'
+  },
+  nonogram: {
+    controller: nonogramGame,
+    wrapper: nonogramWrap,
+    title: 'Nonogramm'
   }
 };
 

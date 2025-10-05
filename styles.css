@@ -51,6 +51,14 @@
   --snake-board-surface:color-mix(in srgb,var(--accent) 18%,transparent 82%);
   --snake-board-border:color-mix(in srgb,var(--accent) 55%,transparent 45%);
   --snake-board-shadow:0 18px 40px color-mix(in srgb,var(--accent),transparent 84%);
+  --nonogram-cell-size:34px;
+  --nonogram-cell-border:color-mix(in srgb,var(--canvas-border),transparent 40%);
+  --nonogram-cell-bg:color-mix(in srgb,var(--panel-bg),transparent 18%);
+  --nonogram-cell-filled:color-mix(in srgb,var(--accent) 70%,var(--panel-bg) 30%);
+  --nonogram-cell-mark:color-mix(in srgb,var(--accent-strong) 60%,var(--panel-bg) 40%);
+  --nonogram-cell-mark-symbol:var(--panel-bg);
+  --nonogram-clue-color:color-mix(in srgb,var(--muted),transparent 10%);
+  --nonogram-clue-accent:var(--fg);
 }
 .theme-light {
   --bg:#f8fbff;
@@ -342,6 +350,7 @@ b{color:var(--fg);font-weight:600}
 .top-controls{margin-bottom:12px;gap:10px;flex-wrap:wrap}
 #snakeWrap .top-controls{justify-content:center}
 #sudokuWrap .top-controls{justify-content:center}
+#nonogramWrap .top-controls{justify-content:center}
 #snakeWrap .top-controls > *{margin-left:0;margin-right:0}
 #snakeWrap .panel > .controls:first-child{
   width:100%;
@@ -460,6 +469,39 @@ select.input option{background:var(--input-bg);color:var(--fg)}
   opacity:.35;
   pointer-events:none;
 }
+#nonogramOverlay{
+  position:fixed;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .25s ease;
+  background:radial-gradient(circle at 50% 18%,color-mix(in srgb,var(--accent),transparent 70%) 0%,rgba(0,0,0,.75) 55%,rgba(0,0,0,.88) 100%);
+  backdrop-filter:blur(3px) saturate(1.12);
+  z-index:9999;
+  padding:18px;
+  box-sizing:border-box;
+}
+#nonogramOverlay.show{
+  opacity:1;
+  pointer-events:auto;
+}
+#nonogramOverlay .overlay-card{
+  position:relative;
+  background:linear-gradient(150deg,color-mix(in srgb,var(--stat-bg),transparent 12%) 0%,color-mix(in srgb,var(--accent),transparent 80%) 100%);
+  border:1px solid color-mix(in srgb,var(--accent),transparent 55%);
+  border-radius:20px;
+  padding:24px 26px;
+  min-width:320px;
+  max-width:90vw;
+  max-height:calc(100vh - 72px);
+  overflow:auto;
+  box-shadow:0 24px 52px color-mix(in srgb,var(--accent),transparent 82%),0 18px 36px color-mix(in srgb,var(--bg),#000 55%);
+  animation:pop .3s ease-out;
+}
+#nonogramOverlay h2{margin:0 0 8px;font-weight:700;letter-spacing:.5px;}
 #sudokuOverlay h2{
   margin:0 0 6px;
   font-weight:600;
@@ -793,12 +835,196 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
   font-weight:700;
   box-shadow:0 0 0 3px color-mix(in srgb,var(--accent),transparent 35%) inset;
 }
+.nonogram-panel{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:18px;
+}
+.nonogram-grid{
+  --nonogram-columns:10;
+  --nonogram-rows:10;
+  --nonogram-clue-offset:calc(var(--nonogram-cell-size) * 2.4);
+  position:relative;
+  display:grid;
+  grid-template-columns:var(--nonogram-clue-offset) minmax(0,1fr);
+  grid-template-rows:var(--nonogram-clue-offset) minmax(0,1fr);
+  border:4px solid color-mix(in srgb,var(--accent),transparent 65%);
+  border-radius:20px;
+  background:linear-gradient(160deg,color-mix(in srgb,var(--panel-bg),transparent 6%),color-mix(in srgb,var(--panel-bg),transparent 18%));
+  box-shadow:0 26px 50px color-mix(in srgb,var(--bg),#000 42%),0 16px 32px color-mix(in srgb,var(--accent),transparent 82%);
+  overflow:hidden;
+}
+.nonogram-grid__corner{
+  grid-column:1;
+  grid-row:1;
+  min-width:var(--nonogram-clue-offset);
+  min-height:var(--nonogram-clue-offset);
+  border-right:1px solid color-mix(in srgb,var(--nonogram-cell-border),transparent 35%);
+  border-bottom:1px solid color-mix(in srgb,var(--nonogram-cell-border),transparent 35%);
+  background:color-mix(in srgb,var(--panel-bg),transparent 12%);
+}
+.nonogram-clues{
+  display:grid;
+  color:var(--nonogram-clue-color);
+  font-weight:600;
+  font-size:.85rem;
+  letter-spacing:.02em;
+}
+.nonogram-clues--cols{
+  grid-column:2;
+  grid-row:1;
+  grid-template-columns:repeat(var(--nonogram-columns),var(--nonogram-cell-size));
+  gap:4px;
+  padding:10px 12px 16px;
+  align-items:end;
+  justify-items:center;
+  min-height:var(--nonogram-clue-offset);
+}
+.nonogram-clues--rows{
+  grid-column:1;
+  grid-row:2;
+  grid-template-rows:repeat(var(--nonogram-rows),var(--nonogram-cell-size));
+  gap:4px;
+  padding:16px 12px 16px 12px;
+  justify-items:end;
+  align-items:center;
+  min-width:var(--nonogram-clue-offset);
+}
+.nonogram-clue{
+  display:flex;
+  gap:6px;
+  align-items:center;
+  justify-content:center;
+  white-space:nowrap;
+}
+.nonogram-clue--col{
+  flex-direction:column;
+  justify-content:flex-end;
+  min-height:100%;
+}
+.nonogram-clue--row{
+  justify-content:flex-end;
+}
+.nonogram-clue span{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:1.3em;
+  padding:0 4px;
+  border-radius:6px;
+}
+.nonogram-cells{
+  grid-column:2;
+  grid-row:2;
+  display:grid;
+  grid-template-columns:repeat(var(--nonogram-columns),var(--nonogram-cell-size));
+  grid-template-rows:repeat(var(--nonogram-rows),var(--nonogram-cell-size));
+  gap:3px;
+  padding:14px;
+  border:2px solid var(--nonogram-cell-border);
+  border-radius:16px;
+  background:var(--canvas-bg);
+  box-shadow:0 20px 48px color-mix(in srgb,var(--accent),transparent 85%) inset;
+}
+.nonogram-cell{
+  width:var(--nonogram-cell-size);
+  height:var(--nonogram-cell-size);
+  border:1px solid var(--nonogram-cell-border);
+  border-radius:8px;
+  background:var(--nonogram-cell-bg);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:var(--fg);
+  cursor:pointer;
+  transition:background .15s ease,border-color .15s ease,box-shadow .15s ease,transform .15s ease;
+}
+.nonogram-cell:hover{
+  border-color:color-mix(in srgb,var(--accent),transparent 45%);
+  transform:translateY(-1px);
+}
+.nonogram-cell:focus-visible{
+  outline:none;
+  border-color:color-mix(in srgb,var(--accent),transparent 25%);
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--accent),transparent 60%);
+}
+.nonogram-cell--filled{
+  background:var(--nonogram-cell-filled);
+  border-color:color-mix(in srgb,var(--accent),transparent 25%);
+  box-shadow:0 8px 18px color-mix(in srgb,var(--accent),transparent 68%) inset;
+}
+.nonogram-cell--marked{
+  border-color:color-mix(in srgb,var(--accent-strong),transparent 35%);
+}
+.nonogram-cell--marked::after{
+  content:'✕';
+  color:var(--nonogram-cell-mark);
+  font-size:1.1em;
+  font-weight:700;
+  line-height:1;
+}
+.nonogram-tools{
+  display:flex;
+  gap:12px;
+  flex-wrap:wrap;
+  justify-content:center;
+}
+.nonogram-tool{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  padding:10px 18px;
+  font-weight:600;
+  border-radius:12px;
+}
+.nonogram-tool .icon{font-size:1.1em;}
+.nonogram-tool:not(.button-primary){
+  border:1px solid var(--button-border);
+  background:var(--button-bg);
+  color:var(--fg);
+  transition:background .2s ease,border-color .2s ease,box-shadow .2s ease;
+}
+.nonogram-tool:not(.button-primary):hover{
+  background:var(--button-hover-bg);
+  border-color:color-mix(in srgb,var(--accent),transparent 55%);
+}
+.nonogram-tool.selected,
+.nonogram-tool[aria-pressed="true"]{
+  border-color:color-mix(in srgb,var(--accent),transparent 30%);
+}
+.nonogram-tool.selected:not(.button-primary),
+.nonogram-tool[aria-pressed="true"]:not(.button-primary){
+  box-shadow:0 0 0 2px color-mix(in srgb,var(--accent),transparent 55%) inset;
+  background:color-mix(in srgb,var(--accent),transparent 82%);
+  color:var(--nonogram-clue-accent);
+}
+.nonogram-tool.selected.button-primary,
+.nonogram-tool[aria-pressed="true"].button-primary{
+  box-shadow:var(--button-primary-hover-shadow);
+}
 @media (max-width:640px){
   .sudoku-panel{gap:14px;}
 }
 @media (max-width:480px){
   .sudoku-pad{padding:10px 12px 14px;}
   .sudoku-pad button{font-size:clamp(15px,6vw,18px);padding:12px;}
+}
+@media (max-width:700px){
+  .nonogram-grid{
+    --nonogram-cell-size:30px;
+    --nonogram-clue-offset:calc(var(--nonogram-cell-size) * 2.2);
+  }
+}
+@media (max-width:480px){
+  .nonogram-grid{
+    --nonogram-cell-size:24px;
+    --nonogram-clue-offset:calc(var(--nonogram-cell-size) * 2.6);
+  }
+  .nonogram-tool{
+    flex:1 1 45%;
+    justify-content:center;
+  }
 }
 @keyframes sudoku-error{0%,100%{background:color-mix(in srgb,#b00020,transparent 75%);color:var(--fg)}50%{background:#b00020;color:#fff}}
 @keyframes sudoku-highlight-band{0%,100%{box-shadow:0 0 0 1px color-mix(in srgb,var(--accent),transparent 55%) inset;}50%{box-shadow:0 0 0 4px color-mix(in srgb,var(--accent),transparent 70%) inset;}}
