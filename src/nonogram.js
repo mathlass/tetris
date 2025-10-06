@@ -738,7 +738,7 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialPuzzleId }, r
 
   return html`
     <div className="flex flex-col gap-6">
-      <NonogramControls
+      <${NonogramControls}
         puzzleId=${puzzleId}
         onPuzzleChange=${id => startPuzzle(id, { reset: true })}
         onRandomPuzzle=${handleRandomPuzzle}
@@ -763,8 +763,8 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialPuzzleId }, r
                 height: 'var(--cell-size)'
               }}
             ></div>
-            <GridHints orientation="cols" clues=${colClues} />
-            <GridHints orientation="rows" clues=${rowClues} />
+            <${GridHints} orientation="cols" clues=${colClues} />
+            <${GridHints} orientation="rows" clues=${rowClues} />
             <div
               className="grid rounded-3xl border border-slate-200 bg-slate-300/60 shadow-inner"
               style=${{
@@ -774,7 +774,7 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialPuzzleId }, r
               }}
             >
               ${board.map((rowCells, rowIndex) => rowCells.map((cell, colIndex) => html`
-                <NonogramCell
+                <${NonogramCell}
                   key=${`${rowIndex}-${colIndex}`}
                   row=${rowIndex}
                   col=${colIndex}
@@ -815,7 +815,7 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialPuzzleId }, r
           </div>
         </aside>
       </div>
-      <CompletionOverlay
+      <${CompletionOverlay}
         visible=${overlayVisible}
         info=${overlayInfo}
         onRestart=${() => {
