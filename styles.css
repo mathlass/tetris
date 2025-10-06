@@ -853,16 +853,18 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
   align-items:center;
   gap:18px;
 }
+.nonogram-board{
+  width:100%;
+  display:flex;
+  justify-content:center;
+}
 .nonogram-grid{
-  --nonogram-columns:10;
-  --nonogram-rows:10;
-  --nonogram-clue-offset:calc(var(--nonogram-cell-size) * 2.4);
   position:relative;
   display:grid;
-  grid-template-columns:var(--nonogram-clue-offset) minmax(0,1fr);
-  grid-template-rows:var(--nonogram-clue-offset) minmax(0,1fr);
-  border:2px solid var(--nonogram-cell-border);
-  background:var(--panel-bg);
+  grid-template-columns:auto minmax(0,1fr);
+  grid-template-rows:auto minmax(0,1fr);
+  gap:var(--nonogram-layout-gap,12px);
+  background:transparent;
   max-width:100%;
   max-height:100%;
   overflow:auto;
@@ -870,43 +872,39 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
 .nonogram-grid__corner{
   grid-column:1;
   grid-row:1;
-  min-width:var(--nonogram-clue-offset);
-  min-height:var(--nonogram-clue-offset);
-  border-right:1px solid var(--nonogram-cell-border);
-  border-bottom:1px solid var(--nonogram-cell-border);
-  background:var(--panel-bg);
+  min-width:calc(var(--nonogram-cell-size) * .75);
+  min-height:calc(var(--nonogram-cell-size) * .75);
+  background:transparent;
 }
 .nonogram-clues{
   display:grid;
   color:var(--nonogram-clue-color);
   font-weight:600;
-  font-size:.85rem;
+  font-size:var(--nonogram-clue-font,.9rem);
   letter-spacing:.02em;
-  background:var(--panel-bg);
+  background:transparent;
 }
 .nonogram-clues--cols{
   grid-column:2;
   grid-row:1;
   grid-template-columns:repeat(var(--nonogram-columns),var(--nonogram-cell-size));
-  gap:2px;
-  padding:8px 8px 12px;
+  column-gap:var(--nonogram-clue-gap,8px);
+  row-gap:var(--nonogram-clue-gap,8px);
   align-items:end;
   justify-items:center;
-  min-height:var(--nonogram-clue-offset);
 }
 .nonogram-clues--rows{
   grid-column:1;
   grid-row:2;
   grid-template-rows:repeat(var(--nonogram-rows),var(--nonogram-cell-size));
-  gap:2px;
-  padding:12px 8px 12px 8px;
+  row-gap:var(--nonogram-clue-gap,8px);
+  column-gap:var(--nonogram-clue-gap,8px);
   justify-items:end;
   align-items:center;
-  min-width:var(--nonogram-clue-offset);
 }
 .nonogram-clue{
   display:flex;
-  gap:4px;
+  gap:var(--nonogram-clue-number-gap,6px);
   align-items:center;
   justify-content:center;
   white-space:nowrap;
@@ -919,12 +917,16 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
 .nonogram-clue--row{
   justify-content:flex-end;
 }
-.nonogram-clue span{
+.nonogram-clue__number{
   display:inline-flex;
   align-items:center;
   justify-content:center;
-  min-width:1.3em;
-  padding:0 4px;
+  min-width:1.4ch;
+  padding:0 2px;
+}
+.nonogram-clue--complete{
+  color:color-mix(in srgb,var(--nonogram-clue-color),transparent 25%);
+  opacity:.65;
 }
 .nonogram-cells{
   grid-column:2;
@@ -932,9 +934,10 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
   display:grid;
   grid-template-columns:repeat(var(--nonogram-columns),var(--nonogram-cell-size));
   grid-template-rows:repeat(var(--nonogram-rows),var(--nonogram-cell-size));
-  gap:0;
-  border:1px solid var(--nonogram-cell-border);
-  background:var(--nonogram-cell-border);
+  gap:var(--nonogram-cell-gap,1px);
+  padding:var(--nonogram-cell-gap,1px);
+  border:3px solid color-mix(in srgb,var(--nonogram-cell-border),transparent 10%);
+  background:color-mix(in srgb,var(--nonogram-cell-border),transparent 10%);
 }
 .nonogram-cell{
   box-sizing:border-box;
@@ -947,7 +950,7 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
   justify-content:center;
   color:var(--fg);
   cursor:pointer;
-  transition:background .12s ease,border-color .12s ease;
+  transition:background .12s ease,border-color .12s ease,box-shadow .12s ease;
 }
 .nonogram-cell:hover{
   border-color:color-mix(in srgb,var(--accent),transparent 45%);
@@ -964,12 +967,28 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
   background:var(--nonogram-cell-bg);
   border-color:color-mix(in srgb,var(--nonogram-cell-mark),transparent 40%);
 }
-.nonogram-cell--marked::after{
-  content:'✕';
-  color:var(--nonogram-cell-mark);
+.nonogram-cell__mark{
   font-size:1.1em;
   font-weight:700;
   line-height:1;
+  color:var(--nonogram-cell-mark);
+}
+.nonogram-cell--major-col{
+  border-right-width:2px;
+}
+.nonogram-cell--major-row{
+  border-bottom-width:2px;
+}
+.nonogram-cell--error{
+  outline:2px solid color-mix(in srgb,#f43f5e,transparent 30%);
+  outline-offset:-2px;
+}
+.nonogram-cell--row-complete,
+.nonogram-cell--col-complete{
+  box-shadow:inset 0 0 0 999px color-mix(in srgb,var(--nonogram-cell-border),transparent 55%);
+}
+.nonogram-cell--row-complete.nonogram-cell--col-complete{
+  box-shadow:inset 0 0 0 999px color-mix(in srgb,var(--nonogram-cell-filled),transparent 70%);
 }
 .nonogram-tools{
   display:flex;
