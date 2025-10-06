@@ -184,10 +184,12 @@ function NonogramControls({
   activeTool,
   onToolChange
 }){
+  const statTileClasses = 'flex flex-col rounded-2xl bg-white/70 px-3 py-2 text-right shadow-inner shadow-white/60 ring-1 ring-inset ring-slate-200/70';
+
   return html`
     <div className="flex flex-col gap-4 rounded-3xl border border-slate-200 bg-white/80 p-5 shadow-sm backdrop-blur">
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-        <div className="flex flex-wrap items-center gap-3">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+        <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <label className="flex items-center gap-2 text-sm font-medium text-slate-700">
             Rätsel
             <select
@@ -195,54 +197,58 @@ function NonogramControls({
               value=${puzzleId}
               onChange=${event => onPuzzleChange(event.target.value)}
             >
-              ${NONOGRAM_PUZZLES.map(id => html`<option key=${id} value=${id}>${NONOGRAM_PUZZLE_LABELS[id] || id}</option>`) }
+              ${NONOGRAM_PUZZLES.map(id => html`<option key=${id} value=${id}>${NONOGRAM_PUZZLE_LABELS[id] || id}</option>`)}
             </select>
           </label>
-          <button
-            type="button"
-            className="inline-flex items-center gap-2 rounded-full bg-sky-600 px-3 py-1.5 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2"
-            onClick=${onRandomPuzzle}
-          >
-            <span aria-hidden="true">🔀</span>
-            Zufall
-          </button>
-          <button
-            type="button"
-            className="inline-flex items-center gap-2 rounded-full bg-slate-900 px-3 py-1.5 text-sm font-semibold text-white shadow-sm transition hover:bg-black focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2"
-            onClick=${onReset}
-          >
-            <span aria-hidden="true">↻</span>
-            Zurücksetzen
-          </button>
-          <button
-            type="button"
-            className="inline-flex items-center gap-2 rounded-full border border-transparent bg-rose-500/90 px-3 py-1.5 text-sm font-semibold text-white shadow-sm transition hover:bg-rose-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 focus-visible:ring-offset-2"
-            onClick=${onGiveUp}
-          >
-            <span aria-hidden="true">⚑</span>
-            Aufgeben
-          </button>
+          <div className="grid w-full grid-cols-2 gap-2 sm:w-auto sm:flex sm:flex-wrap sm:justify-end">
+            <button
+              type="button"
+              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-sky-600 px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2"
+              onClick=${onRandomPuzzle}
+            >
+              <span aria-hidden="true">🔀</span>
+              Zufall
+            </button>
+            <button
+              type="button"
+              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-900 px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-black focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2"
+              onClick=${onReset}
+            >
+              <span aria-hidden="true">↻</span>
+              Zurücksetzen
+            </button>
+            <button
+              type="button"
+              className="inline-flex items-center justify-center gap-2 rounded-2xl border border-transparent bg-rose-500/90 px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-rose-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 focus-visible:ring-offset-2"
+              onClick=${onGiveUp}
+            >
+              <span aria-hidden="true">⚑</span>
+              Aufgeben
+            </button>
+          </div>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="grid w-full grid-cols-2 gap-2 sm:w-auto sm:auto-cols-max sm:grid-flow-col sm:items-stretch">
           <button
             type="button"
-            className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500"
+            className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500"
+            aria-label=${paused ? 'Fortsetzen' : 'Pause'}
+            title=${paused ? 'Fortsetzen' : 'Pause'}
             onClick=${onPauseToggle}
           >
             <span aria-hidden="true">${paused ? '▶' : '⏸'}</span>
-            ${paused ? 'Fortsetzen' : 'Pause'}
+            <span className="hidden sm:inline">${paused ? 'Fortsetzen' : 'Pause'}</span>
           </button>
-          <div className="flex flex-col text-right">
+          <div className=${statTileClasses}>
             <span className="text-xs uppercase tracking-wide text-slate-500">Zeit</span>
             <span className="text-lg font-semibold text-slate-900">${timerLabel}</span>
           </div>
-          <div className="hidden flex-col text-right sm:flex">
+          <div className=${`hidden sm:flex ${statTileClasses}`}>
             <span className="text-xs uppercase tracking-wide text-slate-500">Best</span>
             <span className="text-sm font-semibold text-slate-900">
               ${personalBest ? formatNonogramTime(personalBest) : '--'}
             </span>
           </div>
-          <div className="hidden flex-col text-right md:flex">
+          <div className=${`hidden md:flex ${statTileClasses}`}>
             <span className="text-xs uppercase tracking-wide text-slate-500">Top</span>
             <span className="text-sm font-semibold text-slate-900">
               ${leaderboardBest ? formatNonogramTime(leaderboardBest) : '--'}
