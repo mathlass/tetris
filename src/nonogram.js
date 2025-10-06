@@ -130,32 +130,21 @@ function CompletionOverlay({ visible, info, onRestart, onClose }){
   `, document.body);
 }
 
-function GridHints({ orientation, clues }){
-  const style = orientation === 'cols'
-    ? {
-        gridTemplateColumns: `repeat(${clues.length}, var(--cell-size))`,
-        fontSize: 'var(--clue-font)',
-        gap: 'var(--clue-gap)'
-      }
-    : {
-        gridTemplateRows: `repeat(${clues.length}, var(--cell-size))`,
-        fontSize: 'var(--clue-font)',
-        gap: 'var(--clue-gap)'
-      };
+function GridHints({ orientation, clues, completed = [] }){
+  const isCols = orientation === 'cols';
   return html`
-    <div
-      className=${`grid ${orientation === 'cols' ? 'items-end justify-items-center px-1 pb-1' : 'items-center justify-items-end pr-1'}`}
-      style=${style}
-    >
-      ${clues.map((line, index) => html`
-        <div key=${index} className="flex flex-wrap items-center justify-center gap-1 text-sm font-semibold text-slate-600">
-          ${line.map((value, idx) => html`
-            <span key=${idx} className="inline-flex min-w-[1.5ch] items-center justify-center">
-              ${value === 0 ? '•' : value}
-            </span>
-          `)}
-        </div>
-      `)}
+    <div className=${`nonogram-clues ${isCols ? 'nonogram-clues--cols' : 'nonogram-clues--rows'}`}>
+      ${clues.map((line, index) => {
+        const values = line.length === 1 && line[0] === 0 ? ['•'] : line;
+        const lineClass = `nonogram-clue ${isCols ? 'nonogram-clue--col' : 'nonogram-clue--row'}${completed[index] ? ' nonogram-clue--complete' : ''}`;
+        return html`
+          <div key=${index} className=${lineClass}>
+            ${values.map((value, idx) => html`
+              <span key=${idx} className="nonogram-clue__number">${value}</span>
+            `)}
+          </div>
+        `;
+      })}
     </div>
   `;
 }
@@ -169,7 +158,9 @@ function NonogramCell({
   onAction,
   error,
   maxRows,
-  maxCols
+  maxCols,
+  rowComplete,
+  colComplete
 }){
   const pointerRef = useRef({ timeout: null, longPressFired: false });
 
@@ -233,20 +224,23 @@ function NonogramCell({
 
   useEffect(() => () => clearTimer(), []);
 
-  const stateClasses = state === 'filled'
-    ? 'bg-slate-900 text-white shadow-inner shadow-slate-900/30'
-    : state === 'marked'
-      ? 'bg-white text-slate-500'
-      : 'bg-white text-transparent';
-
   const majorCol = (col + 1) % 5 === 0 && col + 1 !== maxCols;
   const majorRow = (row + 1) % 5 === 0 && row + 1 !== maxRows;
-  const borderClasses = `border border-slate-200 ${majorCol ? 'border-r-2 border-r-slate-400' : ''} ${majorRow ? 'border-b-2 border-b-slate-400' : ''}`;
+  const className = [
+    'nonogram-cell',
+    state === 'filled' ? 'nonogram-cell--filled' : '',
+    state === 'marked' ? 'nonogram-cell--marked' : '',
+    error ? 'nonogram-cell--error' : '',
+    majorCol ? 'nonogram-cell--major-col' : '',
+    majorRow ? 'nonogram-cell--major-row' : '',
+    rowComplete ? 'nonogram-cell--row-complete' : '',
+    colComplete ? 'nonogram-cell--col-complete' : ''
+  ].filter(Boolean).join(' ');
 
   return html`
     <button
       type="button"
-      className=${`relative flex select-none items-center justify-center rounded-lg ${stateClasses} ${borderClasses} transition duration-150 ease-out focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 ${error ? 'ring-2 ring-rose-400' : ''}`}
+      className=${className}
       data-state=${state}
       aria-label=${`Feld ${row + 1},${col + 1} – ${state === 'filled' ? 'gefüllt' : state === 'marked' ? 'markiert' : 'leer'}`}
       disabled=${disabled}
@@ -257,12 +251,8 @@ function NonogramCell({
       onPointerUp=${handlePointerUp}
       onPointerLeave=${handlePointerLeave}
       onPointerCancel=${handlePointerLeave}
-      style=${{
-        width: 'var(--cell-size)',
-        height: 'var(--cell-size)'
-      }}
     >
-      ${state === 'marked' ? html`<span className="text-xl font-semibold text-slate-400">✕</span>` : null}
+      ${state === 'marked' ? html`<span className="nonogram-cell__mark" aria-hidden="true">✕</span>` : null}
     </button>
   `;
 }
@@ -351,6 +341,8 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialDifficulty },
     let correct = 0;
     let hasMissing = false;
     const errorSet = new Set();
+    const rowComplete = Array(rows).fill(true);
+    const colComplete = Array(cols).fill(true);
     for(let r = 0; r < rows; r++){
       for(let c = 0; c < cols; c++){
         const shouldFill = puzzle.grid[r][c] === 1;
@@ -361,12 +353,16 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialDifficulty },
             correct++;
           }else{
             hasMissing = true;
+            rowComplete[r] = false;
+            colComplete[c] = false;
             if(current === 'marked'){
               errorSet.add(key);
             }
           }
         }else if(current === 'filled'){
           errorSet.add(key);
+          rowComplete[r] = false;
+          colComplete[c] = false;
         }
       }
     }
@@ -375,7 +371,9 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialDifficulty },
       progress: requiredCells ? correct / requiredCells : 1,
       solved,
       errors: errorSet,
-      hasMissing
+      hasMissing,
+      rowComplete,
+      colComplete
     };
   }, [board, puzzle, rows, cols, requiredCells]);
 
@@ -555,11 +553,15 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialDifficulty },
   ), [clampSupported, fallbackCellSize, rows, cols]);
 
   const boardStyle = useMemo(() => ({
-    '--cell-size': cellSize,
-    '--cell-gap': '4px',
-    '--clue-font': 'clamp(0.7rem, 1.4vw, 0.95rem)',
-    '--clue-gap': '4px'
-  }), [cellSize]);
+    '--nonogram-cell-size': cellSize,
+    '--nonogram-cell-gap': '2px',
+    '--nonogram-layout-gap': '12px',
+    '--nonogram-clue-gap': '8px',
+    '--nonogram-clue-number-gap': '6px',
+    '--nonogram-clue-font': 'clamp(0.7rem, 1.4vw, 0.95rem)',
+    '--nonogram-columns': String(cols),
+    '--nonogram-rows': String(rows)
+  }), [cellSize, rows, cols]);
 
   const timerLabel = formatNonogramTime(Math.floor(elapsed / 1000));
   const bestLabel = personalBest ? formatNonogramTime(personalBest) : '--';
@@ -585,25 +587,12 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialDifficulty },
           <span className="timer">Best: ${bestLabel}</span>
           <span className="timer">Fortschritt: ${progressPercent}%</span>
         </div>
-        <div className="nonogram-board" style=${{ display: 'flex', justifyContent: 'center' }}>
-          <div className="relative inline-grid gap-2" style=${boardStyle}>
-            <div
-              className="rounded-lg"
-              style=${{
-                width: 'var(--cell-size)',
-                height: 'var(--cell-size)'
-              }}
-            ></div>
-            <${GridHints} orientation="cols" clues=${colClues} />
-            <${GridHints} orientation="rows" clues=${rowClues} />
-            <div
-              className="grid rounded-3xl border border-slate-200 bg-slate-300/60 shadow-inner"
-              style=${{
-                gridTemplateColumns: `repeat(${cols}, var(--cell-size))`,
-                gap: 'var(--cell-gap)',
-                padding: 'var(--cell-gap)'
-              }}
-            >
+        <div className="nonogram-board">
+          <div className="nonogram-grid" style=${boardStyle}>
+            <div className="nonogram-grid__corner" aria-hidden="true"></div>
+            <${GridHints} orientation="cols" clues=${colClues} completed=${derived.colComplete} />
+            <${GridHints} orientation="rows" clues=${rowClues} completed=${derived.rowComplete} />
+            <div className="nonogram-cells">
               ${board.map((rowCells, rowIndex) => rowCells.map((cell, colIndex) => html`
                 <${NonogramCell}
                   key=${`${rowIndex}-${colIndex}`}
@@ -616,6 +605,8 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialDifficulty },
                   error=${derived.errors.has(`${rowIndex}-${colIndex}`)}
                   maxRows=${rows}
                   maxCols=${cols}
+                  rowComplete=${derived.rowComplete[rowIndex]}
+                  colComplete=${derived.colComplete[colIndex]}
                 />
               `))}
             </div>
