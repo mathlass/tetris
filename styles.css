@@ -1038,3 +1038,4 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
 @keyframes sudoku-highlight-focus{0%,100%{box-shadow:0 0 0 2px color-mix(in srgb,var(--accent),transparent 35%) inset;}50%{box-shadow:0 0 0 5px color-mix(in srgb,var(--accent),transparent 55%) inset;}}
 @keyframes sudoku-target-pulse{0%,100%{box-shadow:0 0 0 2px color-mix(in srgb,var(--accent),transparent 35%) inset;}50%{box-shadow:0 0 0 4px color-mix(in srgb,var(--accent),transparent 20%) inset;}}
 @keyframes sudoku-confetti{0%{transform:translateY(-14px)}50%{transform:translateY(14px)}100%{transform:translateY(-14px)}}
+.nonogram-react-root{width:100%;}

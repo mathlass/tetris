@@ -39,7 +39,7 @@ export function renderHS(puzzleId, options = {}){
   const table = document.querySelector(tableSelector);
   const tbody = table ? table.querySelector('tbody') : null;
   if(!tbody) return;
-  const list = store.sanitizeList(store.load(puzzleId), puzzleId);
+  const list = getHighscores(puzzleId);
   while(tbody.firstChild) tbody.removeChild(tbody.firstChild);
   list.forEach((entry, index) => {
     const tr = document.createElement('tr');
@@ -57,6 +57,10 @@ export function renderHS(puzzleId, options = {}){
 }
 
 export function getBestTime(puzzleId){
-  const list = store.sanitizeList(store.load(puzzleId), puzzleId);
+  const list = getHighscores(puzzleId);
   return list.length ? list[0].time : null;
+}
+
+export function getHighscores(puzzleId){
+  return store.sanitizeList(store.load(puzzleId), puzzleId);
 }
