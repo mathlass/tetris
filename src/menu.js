@@ -8,8 +8,8 @@ import {
   SUDOKU_DIFFICULTIES,
   SUDOKU_DIFFICULTY_LABELS,
   SUDOKU_BEST_KEY_BASE,
-  NONOGRAM_PUZZLES,
-  NONOGRAM_PUZZLE_LABELS,
+  NONOGRAM_DIFFICULTIES,
+  NONOGRAM_DIFFICULTY_LABELS,
   NONOGRAM_BEST_KEY_BASE
 } from './constants.js';
 import { renderHS as renderTetrisHS, saveHS, bestKey } from './highscores.js';
@@ -43,7 +43,7 @@ export function initMenu(){
     tetris: TETRIS_MODES[0],
     snake: SNAKE_MODES[0],
     sudoku: SUDOKU_DIFFICULTIES[0],
-    nonogram: NONOGRAM_PUZZLES[0]
+    nonogram: NONOGRAM_DIFFICULTIES[0]
   };
   const snakeBestKey = mode => `${SNAKE_BEST_KEY_BASE}_${mode}`;
   const sudokuBestKey = mode => `${SUDOKU_BEST_KEY_BASE}_${mode}`;
@@ -60,8 +60,8 @@ export function initMenu(){
       modes = SUDOKU_DIFFICULTIES;
       labels = SUDOKU_DIFFICULTY_LABELS;
     }else if(game === 'nonogram'){
-      modes = NONOGRAM_PUZZLES;
-      labels = NONOGRAM_PUZZLE_LABELS;
+      modes = NONOGRAM_DIFFICULTIES;
+      labels = NONOGRAM_DIFFICULTY_LABELS;
     }else{
       modes = TETRIS_MODES;
       labels = MODE_LABELS;
@@ -99,7 +99,7 @@ export function initMenu(){
       if(snakeTable) snakeTable.classList.add('hidden');
       if(sudokuTable) sudokuTable.classList.add('hidden');
       if(nonogramTable) nonogramTable.classList.remove('hidden');
-      if(hsLabel) hsLabel.textContent = `Nonogramm – ${NONOGRAM_PUZZLE_LABELS[mode] || mode}`;
+      if(hsLabel) hsLabel.textContent = `Nonogramm – ${NONOGRAM_DIFFICULTY_LABELS[mode] || mode}`;
       renderNonogramHS(mode, { tableSelector: '#nonogramScoreTable' });
     } else {
       if(hsTable) hsTable.classList.remove('hidden');
@@ -114,7 +114,7 @@ export function initMenu(){
   const tetrisModeSelect = document.getElementById('modeSelect');
   const snakeModeSelect = document.getElementById('snakeModeSelect');
   const sudokuModeSelect = document.getElementById('sudokuDifficulty');
-  const nonogramModeSelect = document.getElementById('nonogramPuzzleSelect');
+  const nonogramModeSelect = document.getElementById('nonogramDifficulty');
 
   async function syncScoreboardWithActiveGame(){
     if(!scoreGameSelect || !scoreModeSelect) return;

@@ -236,9 +236,16 @@
         <div class="controls top-controls">
           <button id="nonogramBtnMenu"><span class="icon" aria-hidden="true">☰</span> Menü</button>
           <button id="themeToggle"><span class="icon" data-theme-icon aria-hidden="true">🌙</span> Theme</button>
-          <select id="nonogramPuzzleSelect" class="input hidden" aria-hidden="true">
-            <option value="classic">Pixel-Herz</option>
-          </select>
+          <button id="nonogramStart" class="button-primary"><span class="icon" aria-hidden="true">↻</span> Neues Spiel</button>
+        </div>
+        <div class="controls" style="justify-content:center;margin:16px 0 12px;">
+          <label>Schwierigkeit:
+            <select id="nonogramDifficulty" class="input">
+              <option value="easy">Leicht (5×5)</option>
+              <option value="medium">Mittel (7×7)</option>
+              <option value="hard">Schwer (10×10)</option>
+            </select>
+          </label>
         </div>
         <div id="nonogramRoot" class="nonogram-react-root"></div>
       </div>

@@ -11,8 +11,8 @@ import { createPortal } from 'https://esm.sh/react-dom@18.2.0';
 import htm from 'https://esm.sh/htm@3.1.1';
 import {
   PLAYER_KEY,
-  NONOGRAM_PUZZLES,
-  NONOGRAM_PUZZLE_LABELS,
+  NONOGRAM_DIFFICULTIES,
+  NONOGRAM_DIFFICULTY_LABELS,
   NONOGRAM_BEST_KEY_BASE
 } from './constants.js';
 import {
@@ -26,12 +26,12 @@ import {
   computeLineClues,
   createEmptyBoard,
   countFilledCells,
-  normalizePuzzleId
+  normalizeDifficulty
 } from './nonogramData.js';
 
 const html = htm.bind(React.createElement);
 const LONG_PRESS_MS = 420;
-const DEFAULT_PUZZLE = NONOGRAM_PUZZLES[0] || 'classic';
+const DEFAULT_DIFFICULTY = NONOGRAM_DIFFICULTIES[0] || 'easy';
 const MIN_CELL_SIZE = 22;
 const MAX_CELL_SIZE = 52;
 const BOARD_PADDING_CELLS = 6;
@@ -66,45 +66,6 @@ function bestKey(puzzleId){
 function readPersonalBest(puzzleId){
   const value = Number(localStorage.getItem(bestKey(puzzleId)) || 0);
   return Number.isFinite(value) && value > 0 ? value : null;
-}
-
-function useHiddenSelect(puzzleId, onSelect){
-  const selectRef = useRef(null);
-
-  useEffect(() => {
-    const select = document.getElementById('nonogramPuzzleSelect');
-    if(!select){
-      return;
-    }
-    selectRef.current = select;
-    select.setAttribute('aria-hidden', 'true');
-    select.classList.add('hidden');
-    select.innerHTML = '';
-    NONOGRAM_PUZZLES.forEach(id => {
-      const option = document.createElement('option');
-      option.value = id;
-      option.textContent = NONOGRAM_PUZZLE_LABELS[id] || id;
-      select.appendChild(option);
-    });
-    select.value = puzzleId;
-    const handleChange = event => {
-      const next = normalizePuzzleId(event.target.value, DEFAULT_PUZZLE);
-      if(onSelect){
-        onSelect(next);
-      }
-    };
-    select.addEventListener('change', handleChange);
-    return () => {
-      select.removeEventListener('change', handleChange);
-    };
-  }, []);
-
-  useEffect(() => {
-    const select = selectRef.current;
-    if(select){
-      select.value = puzzleId;
-    }
-  }, [puzzleId]);
 }
 
 function CompletionOverlay({ visible, info, onRestart, onClose }){
@@ -167,131 +128,6 @@ function CompletionOverlay({ visible, info, onRestart, onClose }){
       </div>
     </div>
   `, document.body);
-}
-
-function NonogramControls({
-  puzzleId,
-  onPuzzleChange,
-  onRandomPuzzle,
-  onReset,
-  onGiveUp,
-  onPauseToggle,
-  paused,
-  timerLabel,
-  personalBest,
-  leaderboardBest,
-  progress,
-  activeTool,
-  onToolChange
-}){
-  const statTileClasses = 'flex flex-col rounded-2xl bg-white/70 px-3 py-2 text-right shadow-inner shadow-white/60 ring-1 ring-inset ring-slate-200/70';
-
-  return html`
-    <div className="flex flex-col gap-4 rounded-3xl border border-slate-200 bg-white/80 p-5 shadow-sm backdrop-blur">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-        <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <label className="flex items-center gap-2 text-sm font-medium text-slate-700">
-            Rätsel
-            <select
-              className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 shadow-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-300"
-              value=${puzzleId}
-              onChange=${event => onPuzzleChange(event.target.value)}
-            >
-              ${NONOGRAM_PUZZLES.map(id => html`<option key=${id} value=${id}>${NONOGRAM_PUZZLE_LABELS[id] || id}</option>`)}
-            </select>
-          </label>
-          <div className="grid w-full grid-cols-2 gap-2 sm:w-auto sm:flex sm:flex-wrap sm:justify-end">
-            <button
-              type="button"
-              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-sky-600 px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2"
-              onClick=${onRandomPuzzle}
-            >
-              <span aria-hidden="true">🔀</span>
-              Zufall
-            </button>
-            <button
-              type="button"
-              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-900 px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-black focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2"
-              onClick=${onReset}
-            >
-              <span aria-hidden="true">↻</span>
-              Zurücksetzen
-            </button>
-            <button
-              type="button"
-              className="inline-flex items-center justify-center gap-2 rounded-2xl border border-transparent bg-rose-500/90 px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-rose-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 focus-visible:ring-offset-2"
-              onClick=${onGiveUp}
-            >
-              <span aria-hidden="true">⚑</span>
-              Aufgeben
-            </button>
-          </div>
-        </div>
-        <div className="grid w-full grid-cols-2 gap-2 sm:w-auto sm:auto-cols-max sm:grid-flow-col sm:items-stretch">
-          <button
-            type="button"
-            className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500"
-            aria-label=${paused ? 'Fortsetzen' : 'Pause'}
-            title=${paused ? 'Fortsetzen' : 'Pause'}
-            onClick=${onPauseToggle}
-          >
-            <span aria-hidden="true">${paused ? '▶' : '⏸'}</span>
-            <span className="hidden sm:inline">${paused ? 'Fortsetzen' : 'Pause'}</span>
-          </button>
-          <div className=${statTileClasses}>
-            <span className="text-xs uppercase tracking-wide text-slate-500">Zeit</span>
-            <span className="text-lg font-semibold text-slate-900">${timerLabel}</span>
-          </div>
-          <div className=${`hidden sm:flex ${statTileClasses}`}>
-            <span className="text-xs uppercase tracking-wide text-slate-500">Best</span>
-            <span className="text-sm font-semibold text-slate-900">
-              ${personalBest ? formatNonogramTime(personalBest) : '--'}
-            </span>
-          </div>
-          <div className=${`hidden md:flex ${statTileClasses}`}>
-            <span className="text-xs uppercase tracking-wide text-slate-500">Top</span>
-            <span className="text-sm font-semibold text-slate-900">
-              ${leaderboardBest ? formatNonogramTime(leaderboardBest) : '--'}
-            </span>
-          </div>
-        </div>
-      </div>
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-        <div className="grid grid-cols-3 gap-2 sm:w-auto sm:grid-cols-3">
-          ${[
-            { id: 'fill', label: 'Füllen', icon: '⬛' },
-            { id: 'mark', label: 'Markieren', icon: '✕' },
-            { id: 'clear', label: 'Leeren', icon: '⌫' }
-          ].map(tool => html`
-            <button
-              key=${tool.id}
-              type="button"
-              className=${`flex items-center justify-center gap-2 rounded-2xl px-3 py-2 text-sm font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 ${activeTool === tool.id ? 'bg-sky-600 text-white shadow-sm' : 'bg-white text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50'}`}
-              onClick=${() => onToolChange(tool.id)}
-            >
-              <span aria-hidden="true">${tool.icon}</span>
-              ${tool.label}
-            </button>
-          `)}
-        </div>
-        <div className="flex flex-1 flex-col gap-2">
-          <div className="flex items-center justify-between text-xs font-medium uppercase tracking-wide text-slate-500">
-            <span>Fortschritt</span>
-            <span>${Math.round(progress * 100)}%</span>
-          </div>
-          <div className="h-2 w-full overflow-hidden rounded-full bg-slate-200">
-            <div
-              className="h-full rounded-full bg-gradient-to-r from-sky-400 via-sky-500 to-blue-600 transition-all duration-300"
-              style=${{ width: `${Math.round(progress * 100)}%` }}
-            ></div>
-          </div>
-        </div>
-      </div>
-      <p className="rounded-2xl bg-slate-900/5 px-4 py-3 text-sm text-slate-600">
-        Tipp: Linksklick oder kurzes Tippen füllt eine Zelle. Rechtsklick oder langes Drücken setzt ein ✕. Über die Tool-Leiste kannst du auf Touch-Geräten bequem zwischen den Modi wechseln.
-      </p>
-    </div>
-  `;
 }
 
 function GridHints({ orientation, clues }){
@@ -431,33 +267,27 @@ function NonogramCell({
   `;
 }
 
-const NonogramApp = React.forwardRef(function NonogramApp({ initialPuzzleId }, ref){
-  const [puzzleId, setPuzzleId] = useState(() => normalizePuzzleId(initialPuzzleId, DEFAULT_PUZZLE));
-  const puzzle = useMemo(() => getNonogramPuzzle(puzzleId), [puzzleId]);
+const NonogramApp = React.forwardRef(function NonogramApp({ initialDifficulty }, ref){
+  const [difficulty, setDifficulty] = useState(() => normalizeDifficulty(initialDifficulty, DEFAULT_DIFFICULTY));
+  const [resetKey, setResetKey] = useState(0);
+  const puzzle = useMemo(() => getNonogramPuzzle(difficulty), [difficulty]);
   const rows = puzzle.grid.length;
   const cols = puzzle.grid[0].length;
-  const [resetKey, setResetKey] = useState(0);
   const [board, setBoard] = useState(() => createEmptyBoard(rows, cols));
   const [activeTool, setActiveTool] = useState('fill');
   const [running, setRunning] = useState(true);
   const [paused, setPaused] = useState(false);
   const [completed, setCompleted] = useState(false);
-  const [gaveUp, setGaveUp] = useState(false);
   const [elapsed, setElapsed] = useState(0);
   const [overlayVisible, setOverlayVisible] = useState(false);
   const [overlayInfo, setOverlayInfo] = useState(null);
-  const [status, setStatus] = useState('');
+  const [status, setStatus] = useState('Wähle ein Werkzeug und starte mit den Hinweisen.');
   const [statusTone, setStatusTone] = useState('neutral');
   const timerRef = useRef(null);
   const startedAtRef = useRef(Date.now());
 
-  const [personalBest, setPersonalBest] = useState(() => readPersonalBest(puzzleId));
-  const [leaderboardBest, setLeaderboardBest] = useState(() => getBestTime(puzzleId));
-
-  useHiddenSelect(puzzleId, next => {
-    setPuzzleId(next);
-    setResetKey(key => key + 1);
-  });
+  const [personalBest, setPersonalBest] = useState(() => readPersonalBest(difficulty));
+  const [leaderboardBest, setLeaderboardBest] = useState(() => getBestTime(difficulty));
 
   const rowClues = useMemo(() => puzzle.grid.map(computeLineClues), [puzzle]);
   const colClues = useMemo(() => {
@@ -476,20 +306,20 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialPuzzleId }, r
     setRunning(true);
     setPaused(false);
     setCompleted(false);
-    setGaveUp(false);
     setElapsed(0);
     setOverlayVisible(false);
     setOverlayInfo(null);
+    setActiveTool('fill');
     startedAtRef.current = Date.now();
-    setStatus('Viel Erfolg!');
+    setStatus('Wähle ein Werkzeug und starte mit den Hinweisen.');
     setStatusTone('neutral');
-  }, [puzzleId, rows, cols, resetKey]);
+  }, [difficulty, rows, cols, resetKey]);
 
   useEffect(() => {
-    setPersonalBest(readPersonalBest(puzzleId));
-    setLeaderboardBest(getBestTime(puzzleId));
-    renderHS(puzzleId, { tableSelector: '#nonogramScoreTable' });
-  }, [puzzleId]);
+    setPersonalBest(readPersonalBest(difficulty));
+    setLeaderboardBest(getBestTime(difficulty));
+    renderHS(difficulty, { tableSelector: '#nonogramScoreTable' });
+  }, [difficulty]);
 
   useEffect(() => {
     if(timerRef.current){
@@ -550,14 +380,14 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialPuzzleId }, r
   }, [board, puzzle, rows, cols, requiredCells]);
 
   useEffect(() => {
-    if(!running || paused || completed || gaveUp){
+    if(!running || paused || completed){
       return;
     }
     if(derived.solved){
       const seconds = Math.max(1, Math.round(elapsed / 1000));
       setRunning(false);
       setCompleted(true);
-      setStatus('Perfekt gelöst! 🎯');
+      setStatus('Perfekt gelöst! 🎉');
       setStatusTone('success');
       const playerName = localStorage.getItem(PLAYER_KEY) || 'Player';
       const payload = {
@@ -566,10 +396,10 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialPuzzleId }, r
         date: new Date().toLocaleDateString()
       };
       const finalize = () => {
-        const leaderboardTime = getBestTime(puzzleId);
+        const leaderboardTime = getBestTime(difficulty);
         setLeaderboardBest(leaderboardTime);
-        renderHS(puzzleId, { tableSelector: '#nonogramScoreTable' });
-        const stored = readPersonalBest(puzzleId);
+        renderHS(difficulty, { tableSelector: '#nonogramScoreTable' });
+        const stored = readPersonalBest(difficulty);
         setOverlayInfo({
           time: seconds,
           personalBest: stored,
@@ -578,25 +408,25 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialPuzzleId }, r
         });
         setOverlayVisible(true);
       };
-      void addHS(payload, puzzleId).then(finalize).catch(finalize);
-      const previousBest = readPersonalBest(puzzleId);
+      void addHS(payload, difficulty).then(finalize).catch(finalize);
+      const previousBest = readPersonalBest(difficulty);
       if(!previousBest || seconds < previousBest){
-        localStorage.setItem(bestKey(puzzleId), String(seconds));
+        localStorage.setItem(bestKey(difficulty), String(seconds));
         setPersonalBest(seconds);
       }else{
         setPersonalBest(previousBest);
       }
     }else if(derived.errors.size > 0){
-      setStatus('Es gibt markierte Fehler – prüfe rot hervorgehobene Felder.');
+      setStatus('Es gibt Fehler – korrigiere rot markierte Felder.');
       setStatusTone('warning');
-    }else if(!derived.hasMissing && derived.progress > 0){
-      setStatus('Alle bisherigen Züge stimmen ✔️');
-      setStatusTone('success');
     }else if(derived.progress > 0){
-      setStatus('Weiter so – die Hinweise helfen dir Schritt für Schritt.');
+      setStatus('Guter Fortschritt – die Hinweise passen.');
+      setStatusTone('success');
+    }else{
+      setStatus('Wähle ein Werkzeug und starte mit den Hinweisen.');
       setStatusTone('neutral');
     }
-  }, [derived, elapsed, running, paused, completed, gaveUp, puzzleId]);
+  }, [derived, elapsed, running, paused, completed, difficulty]);
 
   const handleAction = useCallback((row, col, action) => {
     if(!running || paused || completed){
@@ -621,55 +451,9 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialPuzzleId }, r
     });
   }, [running, paused, completed]);
 
-  const startPuzzle = useCallback((id, { reset = false } = {}) => {
-    const normalized = normalizePuzzleId(id, DEFAULT_PUZZLE);
-    if(normalized === puzzleId && !reset){
-      setResetKey(key => key + 1);
-    }else{
-      setPuzzleId(normalized);
-      if(reset){
-        setResetKey(key => key + 1);
-      }
-    }
-  }, [puzzleId]);
-
-  const handleRandomPuzzle = useCallback(() => {
-    const pool = NONOGRAM_PUZZLES.filter(Boolean);
-    if(pool.length <= 1){
-      setResetKey(key => key + 1);
-      return;
-    }
-    const filtered = pool.filter(id => id !== puzzleId);
-    const next = filtered[Math.floor(Math.random() * filtered.length)] || pool[0];
-    startPuzzle(next, { reset: true });
-  }, [puzzleId, startPuzzle]);
-
-  const handleGiveUp = useCallback(() => {
-    setBoard(puzzle.grid.map(row => row.map(cell => (cell ? 'filled' : 'empty'))));
-    setRunning(false);
-    setPaused(false);
-    setCompleted(true);
-    setGaveUp(true);
-    setStatus('Lösung eingeblendet – probiere gleich das nächste Rätsel.');
-    setStatusTone('warning');
-    setOverlayInfo({
-      time: Math.max(1, Math.round(elapsed / 1000)),
-      personalBest,
-      leaderboardBest,
-      gaveUp: true
-    });
-    setOverlayVisible(true);
-  }, [puzzle, elapsed, personalBest, leaderboardBest]);
-
-  const togglePause = useCallback(() => {
-    if(!running){
-      setRunning(true);
-      setPaused(false);
-      startedAtRef.current = Date.now() - elapsed;
-      return;
-    }
-    setPaused(prev => !prev);
-  }, [running, elapsed]);
+  const restart = useCallback(() => {
+    setResetKey(key => key + 1);
+  }, []);
 
   const stopGame = useCallback(() => {
     setRunning(false);
@@ -677,7 +461,7 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialPuzzleId }, r
   }, []);
 
   useImperativeHandle(ref, () => ({
-    start: () => startPuzzle(puzzleId, { reset: true }),
+    start: restart,
     pause: () => setPaused(true),
     resume: () => {
       if(!completed && running){
@@ -697,10 +481,45 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialPuzzleId }, r
       }
     },
     syncScores: () => {
-      setPersonalBest(readPersonalBest(puzzleId));
-      setLeaderboardBest(getBestTime(puzzleId));
+      setPersonalBest(readPersonalBest(difficulty));
+      setLeaderboardBest(getBestTime(difficulty));
     }
-  }), [startPuzzle, puzzleId, stopGame, overlayInfo, completed, running, elapsed]);
+  }), [restart, stopGame, overlayInfo, completed, running, elapsed, difficulty]);
+
+  useEffect(() => {
+    const select = document.getElementById('nonogramDifficulty');
+    if(!select){
+      return undefined;
+    }
+    const handleChange = event => {
+      const next = normalizeDifficulty(event.target.value, DEFAULT_DIFFICULTY);
+      setDifficulty(next);
+      setResetKey(key => key + 1);
+    };
+    select.addEventListener('change', handleChange);
+    return () => {
+      select.removeEventListener('change', handleChange);
+    };
+  }, []);
+
+  useEffect(() => {
+    const select = document.getElementById('nonogramDifficulty');
+    if(select && select.value !== difficulty){
+      select.value = difficulty;
+    }
+  }, [difficulty]);
+
+  useEffect(() => {
+    const button = document.getElementById('nonogramStart');
+    if(!button){
+      return undefined;
+    }
+    const handleClick = () => setResetKey(key => key + 1);
+    button.addEventListener('click', handleClick);
+    return () => {
+      button.removeEventListener('click', handleClick);
+    };
+  }, []);
 
   const clampSupported = useMemo(() => {
     if(typeof window === 'undefined' || typeof window.CSS === 'undefined' || typeof window.CSS.supports !== 'function'){
@@ -742,28 +561,34 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialPuzzleId }, r
     '--clue-gap': '4px'
   }), [cellSize]);
 
+  const timerLabel = formatNonogramTime(Math.floor(elapsed / 1000));
+  const bestLabel = personalBest ? formatNonogramTime(personalBest) : '--';
+  const topLabel = leaderboardBest ? formatNonogramTime(leaderboardBest) : '--';
+  const progressPercent = Math.round(derived.progress * 100);
+  const statusClass = statusTone === 'warning'
+    ? 'nonogram-status nonogram-status--warning'
+    : statusTone === 'success'
+      ? 'nonogram-status nonogram-status--success'
+      : 'nonogram-status';
+
+  const toolButtons = [
+    { id: 'mark', icon: '✕', label: 'Leerfeld markieren' },
+    { id: 'fill', icon: '⬛', label: 'Feld füllen' },
+    { id: 'clear', icon: '🧽', label: 'Radieren' }
+  ];
+
   return html`
-    <div className="flex flex-col gap-6">
-      <${NonogramControls}
-        puzzleId=${puzzleId}
-        onPuzzleChange=${id => startPuzzle(id, { reset: true })}
-        onRandomPuzzle=${handleRandomPuzzle}
-        onReset=${() => startPuzzle(puzzleId, { reset: true })}
-        onGiveUp=${handleGiveUp}
-        onPauseToggle=${togglePause}
-        paused=${paused}
-        timerLabel=${formatNonogramTime(Math.floor(elapsed / 1000))}
-        personalBest=${personalBest}
-        leaderboardBest=${leaderboardBest}
-        progress=${derived.progress}
-        activeTool=${activeTool}
-        onToolChange=${setActiveTool}
-      />
-      <div className="flex flex-col gap-6 xl:flex-row">
-        <div className="flex flex-col items-center gap-4">
+    <div>
+      <div className="panel nonogram-panel">
+        <div className="controls" style=${{ justifyContent: 'center', margin: '0 0 12px', gap: '16px' }}>
+          <span className="timer">Zeit: ${timerLabel}</span>
+          <span className="timer">Best: ${bestLabel}</span>
+          <span className="timer">Fortschritt: ${progressPercent}%</span>
+        </div>
+        <div className="nonogram-board" style=${{ display: 'flex', justifyContent: 'center' }}>
           <div className="relative inline-grid gap-2" style=${boardStyle}>
             <div
-              className="rounded-lg bg-slate-100"
+              className="rounded-lg"
               style=${{
                 width: 'var(--cell-size)',
                 height: 'var(--cell-size)'
@@ -795,31 +620,38 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialPuzzleId }, r
               `))}
             </div>
           </div>
-          <div className=${`w-full max-w-lg rounded-3xl px-5 py-4 text-center text-sm font-medium ${statusTone === 'warning' ? 'bg-amber-100 text-amber-800' : statusTone === 'success' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-700'}`}>
-            ${status}
-          </div>
         </div>
-        <aside className="flex-1 space-y-4 rounded-3xl border border-slate-200 bg-white/80 p-6 shadow-sm backdrop-blur">
-          <div>
-            <h3 className="text-lg font-semibold text-slate-900">Wie du spielst</h3>
-            <p className="mt-2 text-sm leading-relaxed text-slate-600">
-              Die Zahlen am Rand verraten, wie viele zusammenhängende Felder pro Zeile oder Spalte gefüllt werden müssen. Mehrere Zahlen bedeuten, dass dazwischen mindestens ein Feld frei bleibt.
-            </p>
-            <p className="mt-2 text-sm leading-relaxed text-slate-600">
-              Nutze Markierungen für sichere Leerfelder und arbeite systematisch Zeile für Zeile. Der Fortschrittsbalken zeigt dir, wie nah du der Lösung bist.
-            </p>
-          </div>
-          <div className="rounded-2xl bg-slate-50 p-4">
-            <h4 className="text-sm font-semibold uppercase tracking-wide text-slate-500">Aktuelles Rätsel</h4>
-            <p className="mt-1 text-lg font-semibold text-slate-900">${puzzle.title}</p>
-            <p className="text-sm text-slate-600">${rows} × ${cols} Zellen • ${requiredCells} Felder ausfüllen</p>
-          </div>
-          <div className="rounded-2xl bg-slate-900/90 p-4 text-white">
-            <h4 className="text-sm font-semibold uppercase tracking-wide text-white/70">Leaderboard</h4>
-            <p className="mt-2 text-sm text-white/80">Die schnellsten Zeiten findest du im globalen Scoreboard-Menü.</p>
-            <p className="mt-1 text-sm text-white/80">Aktuelle Top-Zeit: <span className="font-semibold">${leaderboardBest ? formatNonogramTime(leaderboardBest) : '--'}</span></p>
-          </div>
-        </aside>
+        <div className="nonogram-tools" style=${{ marginTop: '18px' }}>
+          ${toolButtons.map(tool => html`
+            <button
+              key=${tool.id}
+              type="button"
+              className=${`nonogram-tool${activeTool === tool.id ? ' selected' : ''}`}
+              onClick=${() => setActiveTool(tool.id)}
+              aria-pressed=${activeTool === tool.id ? 'true' : 'false'}
+              aria-label=${tool.label}
+              title=${tool.label}
+            >
+              <span className="icon" aria-hidden="true">${tool.icon}</span>
+            </button>
+          `)}
+        </div>
+        <div className=${statusClass}>
+          ${status}
+        </div>
+        <div className="nonogram-meta">
+          <strong>${puzzle.title}</strong> • ${rows} × ${cols} Zellen • ${NONOGRAM_DIFFICULTY_LABELS[difficulty] || difficulty}
+        </div>
+        <div className="nonogram-meta" style=${{ marginTop: '4px' }}>
+          Top-Zeit: ${topLabel}
+        </div>
+      </div>
+      <div className="panel panel--info" style=${{ marginTop: '16px' }}>
+        <div className="panel__header">
+          <h3>So funktioniert's</h3>
+        </div>
+        <p>Die Zahlen am Rand zeigen, wie viele aufeinanderfolgende Felder in der jeweiligen Reihe oder Spalte gefüllt werden müssen.</p>
+        <p>Tippe auf ein Werkzeug (✕, ausgefülltes Feld oder Radiergummi) und anschließend auf das Spielfeld, um Felder zu markieren, zu füllen oder zurückzusetzen.</p>
       </div>
       <${CompletionOverlay}
         visible=${overlayVisible}
@@ -827,7 +659,7 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialPuzzleId }, r
         onRestart=${() => {
           setOverlayVisible(false);
           setOverlayInfo(null);
-          startPuzzle(puzzleId, { reset: true });
+          restart();
         }}
         onClose=${() => setOverlayVisible(false)}
       />
@@ -847,11 +679,14 @@ export function initNonogram(){
       showOverlay: () => {}
     };
   }
-  const initialSelect = document.getElementById('nonogramPuzzleSelect');
-  const initialPuzzle = initialSelect ? normalizePuzzleId(initialSelect.value, DEFAULT_PUZZLE) : DEFAULT_PUZZLE;
+  const difficultySelect = document.getElementById('nonogramDifficulty');
+  const initialDifficulty = difficultySelect ? normalizeDifficulty(difficultySelect.value, DEFAULT_DIFFICULTY) : DEFAULT_DIFFICULTY;
+  if(difficultySelect && difficultySelect.value !== initialDifficulty){
+    difficultySelect.value = initialDifficulty;
+  }
   const root = createRoot(container);
   const controllerRef = React.createRef();
-  root.render(html`<${NonogramApp} initialPuzzleId=${initialPuzzle} ref=${controllerRef} />`);
+  root.render(html`<${NonogramApp} initialDifficulty=${initialDifficulty} ref=${controllerRef} />`);
 
   const controller = {
     start: () => controllerRef.current?.start?.(),
