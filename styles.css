@@ -1010,6 +1010,49 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
 .nonogram-tool[aria-pressed="true"].button-primary{
   box-shadow:var(--button-primary-hover-shadow);
 }
+.nonogram-status{
+  margin:18px auto 0;
+  padding:12px 18px;
+  border-radius:14px;
+  background:color-mix(in srgb,var(--panel-bg),transparent 15%);
+  border:1px solid color-mix(in srgb,var(--panel-border),transparent 35%);
+  text-align:center;
+  font-weight:600;
+  max-width:360px;
+  color:var(--fg);
+}
+.nonogram-status--warning{
+  background:color-mix(in srgb,#f97316,transparent 78%);
+  border-color:color-mix(in srgb,#f97316,transparent 60%);
+  color:#ffd7a3;
+}
+.nonogram-status--success{
+  background:color-mix(in srgb,#22c55e,transparent 80%);
+  border-color:color-mix(in srgb,#22c55e,transparent 55%);
+  color:#bbf7d0;
+}
+.theme-light .nonogram-status--warning{
+  background:#fff4e5;
+  border-color:#fbd1a2;
+  color:#b45309;
+}
+.theme-light .nonogram-status--success{
+  background:#dcfce7;
+  border-color:#86efac;
+  color:#166534;
+}
+.nonogram-meta{
+  margin-top:12px;
+  text-align:center;
+  font-size:0.95rem;
+  color:var(--muted);
+}
+.nonogram-meta strong{
+  color:var(--fg);
+}
+.theme-light .nonogram-meta strong{
+  color:#111827;
+}
 @media (max-width:640px){
   .sudoku-panel{gap:14px;}
 }
