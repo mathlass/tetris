@@ -32,6 +32,32 @@ import {
 const html = htm.bind(React.createElement);
 const LONG_PRESS_MS = 420;
 const DEFAULT_PUZZLE = NONOGRAM_PUZZLES[0] || 'classic';
+const MIN_CELL_SIZE = 22;
+const MAX_CELL_SIZE = 52;
+const BOARD_PADDING_CELLS = 6;
+const BOARD_WIDTH_RATIO = 0.7;
+
+function calculateFallbackCellSize(rows, cols){
+  if(typeof window === 'undefined'){
+    return `${MIN_CELL_SIZE}px`;
+  }
+  const denominator = Math.max(rows, cols) + BOARD_PADDING_CELLS;
+  if(denominator <= 0){
+    return `${MIN_CELL_SIZE}px`;
+  }
+  const viewportWidth = Math.max(
+    window.innerWidth || 0,
+    (window.document && window.document.documentElement && window.document.documentElement.clientWidth) || 0,
+    (window.screen && window.screen.width) || 0
+  );
+  if(viewportWidth <= 0){
+    return `${MIN_CELL_SIZE}px`;
+  }
+  const raw = (viewportWidth * BOARD_WIDTH_RATIO) / denominator;
+  const clamped = Math.min(MAX_CELL_SIZE, Math.max(MIN_CELL_SIZE, raw));
+  const rounded = Math.round(clamped * 100) / 100;
+  return `${rounded}px`;
+}
 
 function bestKey(puzzleId){
   return `${NONOGRAM_BEST_KEY_BASE}_${puzzleId}`;
@@ -670,7 +696,38 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialPuzzleId }, r
     }
   }), [startPuzzle, puzzleId, stopGame, overlayInfo, completed, running, elapsed]);
 
-  const cellSize = useMemo(() => `clamp(22px, calc(70vw / ${Math.max(rows, cols) + 6}), 52px)`, [rows, cols]);
+  const clampSupported = useMemo(() => {
+    if(typeof window === 'undefined' || typeof window.CSS === 'undefined' || typeof window.CSS.supports !== 'function'){
+      return false;
+    }
+    return window.CSS.supports('width', 'clamp(1px, 2px, 3px)');
+  }, []);
+
+  const [fallbackCellSize, setFallbackCellSize] = useState(() => (
+    clampSupported ? null : calculateFallbackCellSize(rows, cols)
+  ));
+
+  useEffect(() => {
+    if(clampSupported || typeof window === 'undefined'){
+      return;
+    }
+    const updateSize = () => {
+      setFallbackCellSize(calculateFallbackCellSize(rows, cols));
+    };
+    updateSize();
+    window.addEventListener('resize', updateSize);
+    window.addEventListener('orientationchange', updateSize);
+    return () => {
+      window.removeEventListener('resize', updateSize);
+      window.removeEventListener('orientationchange', updateSize);
+    };
+  }, [clampSupported, rows, cols]);
+
+  const cellSize = useMemo(() => (
+    clampSupported
+      ? `clamp(${MIN_CELL_SIZE}px, calc(${BOARD_WIDTH_RATIO * 100}vw / ${Math.max(rows, cols) + BOARD_PADDING_CELLS}), ${MAX_CELL_SIZE}px)`
+      : fallbackCellSize || `${MIN_CELL_SIZE}px`
+  ), [clampSupported, fallbackCellSize, rows, cols]);
 
   const boardStyle = useMemo(() => ({
     '--cell-size': cellSize,
