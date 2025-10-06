@@ -1,41 +1,130 @@
 export const NONOGRAM_DIFFICULTY_DATA = {
-  easy: {
-    title: 'Kreuz',
-    grid: [
-      [0,1,0,1,0],
-      [1,1,1,1,1],
-      [0,1,1,1,0],
-      [1,1,1,1,1],
-      [0,1,0,1,0]
-    ]
-  },
-  medium: {
-    title: 'Pfeil',
-    grid: [
-      [0,0,1,0,0,0,0],
-      [0,1,1,1,0,0,0],
-      [1,1,1,1,1,0,0],
-      [0,0,1,1,1,1,0],
-      [0,0,0,1,1,1,1],
-      [0,0,0,0,1,1,0],
-      [0,0,0,0,0,1,0]
-    ]
-  },
-  hard: {
-    title: 'Pixel-Herz',
-    grid: [
-      [0,1,1,0,0,0,0,1,1,0],
-      [1,1,1,1,0,0,1,1,1,1],
-      [1,1,1,1,1,1,1,1,1,1],
-      [1,1,1,1,1,1,1,1,1,1],
-      [0,1,1,1,1,1,1,1,1,0],
-      [0,0,1,1,1,1,1,1,0,0],
-      [0,0,0,1,1,1,1,0,0,0],
-      [0,0,0,0,1,1,0,0,0,0],
-      [0,0,0,0,1,0,0,0,0,0],
-      [0,0,0,0,1,0,0,0,0,0]
-    ]
-  }
+  easy: [
+    {
+      id: 'cross',
+      title: 'Kreuz',
+      grid: [
+        [0,1,0,1,0],
+        [1,1,1,1,1],
+        [0,1,1,1,0],
+        [1,1,1,1,1],
+        [0,1,0,1,0]
+      ]
+    },
+    {
+      id: 'smile',
+      title: 'Smiley',
+      grid: [
+        [0,1,0,1,0],
+        [0,1,0,1,0],
+        [0,0,0,0,0],
+        [1,0,0,0,1],
+        [0,1,1,1,0]
+      ]
+    },
+    {
+      id: 'house',
+      title: 'Haus',
+      grid: [
+        [0,0,1,0,0],
+        [0,1,1,1,0],
+        [1,1,1,1,1],
+        [1,0,1,0,1],
+        [1,1,1,1,1]
+      ]
+    }
+  ],
+  medium: [
+    {
+      id: 'arrow',
+      title: 'Pfeil',
+      grid: [
+        [0,0,1,0,0,0,0],
+        [0,1,1,1,0,0,0],
+        [1,1,1,1,1,0,0],
+        [0,0,1,1,1,1,0],
+        [0,0,0,1,1,1,1],
+        [0,0,0,0,1,1,0],
+        [0,0,0,0,0,1,0]
+      ]
+    },
+    {
+      id: 'key',
+      title: 'Schlüssel',
+      grid: [
+        [0,1,1,1,0,0,0],
+        [0,0,1,0,0,0,0],
+        [1,1,1,1,1,1,1],
+        [0,0,1,0,0,0,0],
+        [0,0,1,0,0,0,0],
+        [0,1,1,1,0,0,0],
+        [0,0,1,0,0,0,0]
+      ]
+    },
+    {
+      id: 'heart-small',
+      title: 'Mini-Herz',
+      grid: [
+        [0,1,0,0,0,1,0],
+        [1,1,1,0,1,1,1],
+        [1,1,1,1,1,1,1],
+        [1,1,1,1,1,1,1],
+        [0,1,1,1,1,1,0],
+        [0,0,1,1,1,0,0],
+        [0,0,0,1,0,0,0]
+      ]
+    }
+  ],
+  hard: [
+    {
+      id: 'pixel-heart',
+      title: 'Pixel-Herz',
+      grid: [
+        [0,1,1,0,0,0,0,1,1,0],
+        [1,1,1,1,0,0,1,1,1,1],
+        [1,1,1,1,1,1,1,1,1,1],
+        [1,1,1,1,1,1,1,1,1,1],
+        [0,1,1,1,1,1,1,1,1,0],
+        [0,0,1,1,1,1,1,1,0,0],
+        [0,0,0,1,1,1,1,0,0,0],
+        [0,0,0,0,1,1,0,0,0,0],
+        [0,0,0,0,1,0,0,0,0,0],
+        [0,0,0,0,1,0,0,0,0,0]
+      ]
+    },
+    {
+      id: 'spaceship',
+      title: 'Raumschiff',
+      grid: [
+        [0,0,0,0,1,0,0,0,0,0],
+        [0,0,0,1,1,1,0,0,0,0],
+        [0,0,1,1,1,1,1,0,0,0],
+        [0,1,1,1,1,1,1,1,0,0],
+        [1,1,1,1,1,1,1,1,1,0],
+        [0,0,0,1,1,1,1,0,0,0],
+        [0,0,0,0,1,1,0,0,0,0],
+        [0,0,0,0,1,1,0,0,0,0],
+        [0,0,0,1,0,0,1,0,0,0],
+        [0,0,1,0,0,0,0,1,0,0]
+      ]
+    },
+    {
+      id: 'diamond',
+      title: 'Diamant',
+      grid: [
+        [0,0,0,0,1,1,1,0,0,0],
+        [0,0,0,1,1,1,1,1,0,0],
+        [0,0,1,1,1,1,1,1,1,0],
+        [0,1,1,1,1,1,1,1,1,1],
+        [1,1,1,1,1,1,1,1,1,1],
+        [0,1,1,1,1,1,1,1,1,1],
+        [0,0,1,1,1,1,1,1,1,0],
+        [0,0,0,1,1,1,1,1,0,0],
+        [0,0,0,0,1,1,1,0,0,0],
+        [0,0,0,0,0,1,0,0,0,0]
+      ]
+    }
+  ]
 };
 
 export function normalizeDifficulty(id, fallback = 'easy'){
@@ -73,18 +162,27 @@ const GRID_VARIANTS = [
   grid => rotateClockwise(rotateClockwise(rotateClockwise(flipHorizontal(grid))))
 ];
 
+function deriveSeed(base, multiplier, increment){
+  return (base * multiplier + increment) % 1;
+}
+
 export function getNonogramPuzzle(id, variationSeed = Math.random()){
   const normalized = normalizeDifficulty(id);
-  const base = NONOGRAM_DIFFICULTY_DATA[normalized];
-  if(!base){
+  const list = NONOGRAM_DIFFICULTY_DATA[normalized];
+  if(!list || list.length === 0){
     throw new Error(`Unknown nonogram difficulty: ${id}`);
   }
   const seed = Number.isFinite(variationSeed) ? Math.abs(variationSeed % 1) : Math.random();
-  const variantIndex = Math.floor(seed * GRID_VARIANTS.length);
+  const variantSeed = deriveSeed(seed, 7919, 0.215);
+  const puzzleSeed = deriveSeed(seed, 104729, 0.481);
+  const variantIndex = Math.floor(variantSeed * GRID_VARIANTS.length);
+  const puzzleIndex = Math.floor(puzzleSeed * list.length);
+  const selected = list[puzzleIndex] || list[0];
   const transform = GRID_VARIANTS[variantIndex] || GRID_VARIANTS[0];
-  const transformedGrid = transform(base.grid);
+  const transformedGrid = transform(selected.grid);
   return {
-    title: base.title,
+    id: `${normalized}-${selected.id || puzzleIndex}-v${variantIndex}`,
+    title: selected.title,
     grid: transformedGrid
   };
 }

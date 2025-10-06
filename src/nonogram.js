@@ -35,6 +35,35 @@ const MIN_CELL_SIZE = 22;
 const MAX_CELL_SIZE = 52;
 const BOARD_PADDING_CELLS = 6;
 const BOARD_WIDTH_RATIO = 0.7;
+const PROGRESS_KEY_PREFIX = 'nonogram_board_v1';
+const VALID_CELL_STATES = new Set(['empty', 'filled', 'marked']);
+
+function progressKeyForPuzzle(puzzle){
+  if(!puzzle || !puzzle.id){
+    return null;
+  }
+  return `${PROGRESS_KEY_PREFIX}_${puzzle.id}`;
+}
+
+function sanitizeStoredBoard(value, rows, cols){
+  if(!Array.isArray(value) || value.length !== rows){
+    return null;
+  }
+  const board = [];
+  for(let r = 0; r < rows; r++){
+    const row = value[r];
+    if(!Array.isArray(row) || row.length !== cols){
+      return null;
+    }
+    const sanitizedRow = [];
+    for(let c = 0; c < cols; c++){
+      const cell = row[c];
+      sanitizedRow.push(VALID_CELL_STATES.has(cell) ? cell : 'empty');
+    }
+    board.push(sanitizedRow);
+  }
+  return board;
+}
 
 function calculateFallbackCellSize(rows, cols){
   if(typeof window === 'undefined'){
@@ -262,7 +291,26 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialDifficulty },
   const [puzzle, setPuzzle] = useState(() => getNonogramPuzzle(difficulty));
   const rows = puzzle.grid.length;
   const cols = puzzle.grid[0].length;
-  const [board, setBoard] = useState(() => createEmptyBoard(rows, cols));
+  const [board, setBoard] = useState(() => {
+    const key = progressKeyForPuzzle(puzzle);
+    if(key && typeof window !== 'undefined'){
+      try {
+        const raw = localStorage.getItem(key);
+        if(raw){
+          const parsed = JSON.parse(raw);
+          const sanitized = sanitizeStoredBoard(parsed, rows, cols);
+          if(sanitized){
+            return sanitized.map(line => line.slice());
+          }
+          localStorage.removeItem(key);
+        }
+      }catch(error){
+        console.warn('Fehler beim Laden des gespeicherten Nonogramms:', error);
+        localStorage.removeItem(key);
+      }
+    }
+    return createEmptyBoard(rows, cols);
+  });
   const [activeTool, setActiveTool] = useState('fill');
   const [running, setRunning] = useState(true);
   const [paused, setPaused] = useState(false);
@@ -275,6 +323,8 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialDifficulty },
 
   const [personalBest, setPersonalBest] = useState(() => readPersonalBest(difficulty));
   const [leaderboardBest, setLeaderboardBest] = useState(() => getBestTime(difficulty));
+
+  const progressKey = useMemo(() => progressKeyForPuzzle(puzzle), [puzzle]);
 
   const rowClues = useMemo(() => puzzle.grid.map(computeLineClues), [puzzle]);
   const colClues = useMemo(() => {
@@ -289,7 +339,25 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialDifficulty },
   const requiredCells = useMemo(() => countFilledCells(puzzle.grid), [puzzle]);
 
   useEffect(() => {
-    setBoard(createEmptyBoard(rows, cols));
+    let nextBoard = createEmptyBoard(rows, cols);
+    if(progressKey && typeof window !== 'undefined'){
+      try {
+        const raw = localStorage.getItem(progressKey);
+        if(raw){
+          const parsed = JSON.parse(raw);
+          const sanitized = sanitizeStoredBoard(parsed, rows, cols);
+          if(sanitized){
+            nextBoard = sanitized.map(line => line.slice());
+          }else{
+            localStorage.removeItem(progressKey);
+          }
+        }
+      }catch(error){
+        console.warn('Fehler beim Laden des gespeicherten Nonogramms:', error);
+        localStorage.removeItem(progressKey);
+      }
+    }
+    setBoard(nextBoard);
     setRunning(true);
     setPaused(false);
     setCompleted(false);
@@ -298,7 +366,7 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialDifficulty },
     setOverlayInfo(null);
     setActiveTool('fill');
     startedAtRef.current = Date.now();
-  }, [puzzle, rows, cols]);
+  }, [puzzle, rows, cols, progressKey]);
 
   useEffect(() => {
     setPuzzle(getNonogramPuzzle(difficulty));
@@ -309,6 +377,21 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialDifficulty },
     setLeaderboardBest(getBestTime(difficulty));
     renderHS(difficulty, { tableSelector: '#nonogramScoreTable' });
   }, [difficulty]);
+
+  useEffect(() => {
+    if(typeof window === 'undefined' || !progressKey){
+      return;
+    }
+    if(completed){
+      localStorage.removeItem(progressKey);
+      return;
+    }
+    try {
+      localStorage.setItem(progressKey, JSON.stringify(board));
+    }catch(error){
+      console.warn('Fehler beim Speichern des Nonogramms:', error);
+    }
+  }, [board, completed, progressKey]);
 
   useEffect(() => {
     if(timerRef.current){
@@ -384,6 +467,9 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialDifficulty },
       const seconds = Math.max(1, Math.round(elapsed / 1000));
       setRunning(false);
       setCompleted(true);
+      if(progressKey && typeof window !== 'undefined'){
+        localStorage.removeItem(progressKey);
+      }
       const playerName = localStorage.getItem(PLAYER_KEY) || 'Player';
       const payload = {
         name: playerName,
@@ -412,7 +498,7 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialDifficulty },
         setPersonalBest(previousBest);
       }
     }
-  }, [derived, elapsed, running, paused, completed, difficulty]);
+  }, [derived, elapsed, running, paused, completed, difficulty, progressKey]);
 
   const handleAction = useCallback((row, col, action) => {
     if(!running || paused || completed){
@@ -438,8 +524,11 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialDifficulty },
   }, [running, paused, completed]);
 
   const restart = useCallback(() => {
+    if(progressKey && typeof window !== 'undefined'){
+      localStorage.removeItem(progressKey);
+    }
     setResetKey(key => key + 1);
-  }, []);
+  }, [progressKey]);
 
   const stopGame = useCallback(() => {
     setRunning(false);
@@ -556,7 +645,7 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialDifficulty },
 
   const toolButtons = [
     { id: 'mark', icon: '✕', label: 'Leerfeld markieren' },
-    { id: 'fill', icon: '⬛', label: 'Feld füllen' },
+    { id: 'fill', icon: '🟦', label: 'Feld füllen' },
     { id: 'clear', icon: '🧽', label: 'Radieren' }
   ];
 
