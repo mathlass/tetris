@@ -190,7 +190,7 @@ function NonogramCell({
   rowComplete,
   colComplete
 }){
-  const pointerRef = useRef({ timeout: null, longPressFired: false });
+  const pointerRef = useRef({ timeout: null, longPressFired: false, ignoreClick: false });
 
   const clearTimer = () => {
     const { timeout } = pointerRef.current;
@@ -220,6 +220,10 @@ function NonogramCell({
       onAction(row, col, activeTool);
     }
     pointerRef.current.longPressFired = false;
+    pointerRef.current.ignoreClick = true;
+    setTimeout(() => {
+      pointerRef.current.ignoreClick = false;
+    }, 0);
   }, [disabled, row, col, onAction, activeTool]);
 
   const handlePointerLeave = useCallback(() => {
@@ -231,6 +235,11 @@ function NonogramCell({
     if(disabled) return;
     if(pointerRef.current.longPressFired){
       pointerRef.current.longPressFired = false;
+      event.preventDefault();
+      return;
+    }
+    if(pointerRef.current.ignoreClick){
+      pointerRef.current.ignoreClick = false;
       event.preventDefault();
       return;
     }
