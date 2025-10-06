@@ -266,15 +266,17 @@ function GridHints({ orientation, clues }){
   const style = orientation === 'cols'
     ? {
         gridTemplateColumns: `repeat(${clues.length}, var(--cell-size))`,
-        fontSize: 'var(--clue-font)' 
+        fontSize: 'var(--clue-font)',
+        gap: 'var(--clue-gap)'
       }
     : {
         gridTemplateRows: `repeat(${clues.length}, var(--cell-size))`,
-        fontSize: 'var(--clue-font)'
+        fontSize: 'var(--clue-font)',
+        gap: 'var(--clue-gap)'
       };
   return html`
     <div
-      className=${`grid gap-[var(--clue-gap)] ${orientation === 'cols' ? 'items-end justify-items-center px-1 pb-1' : 'items-center justify-items-end pr-1'}`}
+      className=${`grid ${orientation === 'cols' ? 'items-end justify-items-center px-1 pb-1' : 'items-center justify-items-end pr-1'}`}
       style=${style}
     >
       ${clues.map((line, index) => html`
@@ -376,7 +378,7 @@ function NonogramCell({
   return html`
     <button
       type="button"
-      className=${`relative flex h-[var(--cell-size)] w-[var(--cell-size)] select-none items-center justify-center rounded-lg ${stateClasses} ${borderClasses} transition duration-150 ease-out focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 ${error ? 'ring-2 ring-rose-400' : ''}`}
+      className=${`relative flex select-none items-center justify-center rounded-lg ${stateClasses} ${borderClasses} transition duration-150 ease-out focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400 ${error ? 'ring-2 ring-rose-400' : ''}`}
       data-state=${state}
       aria-label=${`Feld ${row + 1},${col + 1} – ${state === 'filled' ? 'gefüllt' : state === 'marked' ? 'markiert' : 'leer'}`}
       disabled=${disabled}
@@ -387,6 +389,10 @@ function NonogramCell({
       onPointerUp=${handlePointerUp}
       onPointerLeave=${handlePointerLeave}
       onPointerCancel=${handlePointerLeave}
+      style=${{
+        width: 'var(--cell-size)',
+        height: 'var(--cell-size)'
+      }}
     >
       ${state === 'marked' ? html`<span className="text-xl font-semibold text-slate-400">✕</span>` : null}
     </button>
@@ -693,13 +699,21 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialPuzzleId }, r
       <div className="flex flex-col gap-6 xl:flex-row">
         <div className="flex flex-col items-center gap-4">
           <div className="relative inline-grid gap-2" style=${boardStyle}>
-            <div className="h-[var(--cell-size)] w-[var(--cell-size)] rounded-lg bg-slate-100"></div>
+            <div
+              className="rounded-lg bg-slate-100"
+              style=${{
+                width: 'var(--cell-size)',
+                height: 'var(--cell-size)'
+              }}
+            ></div>
             <GridHints orientation="cols" clues=${colClues} />
             <GridHints orientation="rows" clues=${rowClues} />
             <div
-              className="grid gap-[var(--cell-gap)] rounded-3xl border border-slate-200 bg-slate-300/60 p-[var(--cell-gap)] shadow-inner"
+              className="grid rounded-3xl border border-slate-200 bg-slate-300/60 shadow-inner"
               style=${{
-                gridTemplateColumns: `repeat(${cols}, var(--cell-size))`
+                gridTemplateColumns: `repeat(${cols}, var(--cell-size))`,
+                gap: 'var(--cell-gap)',
+                padding: 'var(--cell-gap)'
               }}
             >
               ${board.map((rowCells, rowIndex) => rowCells.map((cell, colIndex) => html`
