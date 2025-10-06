@@ -12,7 +12,6 @@ import htm from 'https://esm.sh/htm@3.1.1';
 import {
   PLAYER_KEY,
   NONOGRAM_DIFFICULTIES,
-  NONOGRAM_DIFFICULTY_LABELS,
   NONOGRAM_BEST_KEY_BASE
 } from './constants.js';
 import {
@@ -153,7 +152,7 @@ function NonogramCell({
   row,
   col,
   state,
-  touchTool,
+  activeTool,
   disabled,
   onAction,
   error,
@@ -189,10 +188,10 @@ function NonogramCell({
     const fired = pointerRef.current.longPressFired;
     clearTimer();
     if(!fired){
-      onAction(row, col, touchTool);
+      onAction(row, col, activeTool);
     }
     pointerRef.current.longPressFired = false;
-  }, [disabled, row, col, onAction, touchTool]);
+  }, [disabled, row, col, onAction, activeTool]);
 
   const handlePointerLeave = useCallback(() => {
     clearTimer();
@@ -206,8 +205,8 @@ function NonogramCell({
       event.preventDefault();
       return;
     }
-    onAction(row, col, 'fill');
-  }, [disabled, row, col, onAction]);
+    onAction(row, col, activeTool);
+  }, [disabled, row, col, onAction, activeTool]);
 
   const handleContextMenu = useCallback(event => {
     event.preventDefault();
@@ -260,7 +259,7 @@ function NonogramCell({
 const NonogramApp = React.forwardRef(function NonogramApp({ initialDifficulty }, ref){
   const [difficulty, setDifficulty] = useState(() => normalizeDifficulty(initialDifficulty, DEFAULT_DIFFICULTY));
   const [resetKey, setResetKey] = useState(0);
-  const puzzle = useMemo(() => getNonogramPuzzle(difficulty), [difficulty]);
+  const [puzzle, setPuzzle] = useState(() => getNonogramPuzzle(difficulty));
   const rows = puzzle.grid.length;
   const cols = puzzle.grid[0].length;
   const [board, setBoard] = useState(() => createEmptyBoard(rows, cols));
@@ -271,8 +270,6 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialDifficulty },
   const [elapsed, setElapsed] = useState(0);
   const [overlayVisible, setOverlayVisible] = useState(false);
   const [overlayInfo, setOverlayInfo] = useState(null);
-  const [status, setStatus] = useState('Wähle ein Werkzeug und starte mit den Hinweisen.');
-  const [statusTone, setStatusTone] = useState('neutral');
   const timerRef = useRef(null);
   const startedAtRef = useRef(Date.now());
 
@@ -301,9 +298,11 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialDifficulty },
     setOverlayInfo(null);
     setActiveTool('fill');
     startedAtRef.current = Date.now();
-    setStatus('Wähle ein Werkzeug und starte mit den Hinweisen.');
-    setStatusTone('neutral');
-  }, [difficulty, rows, cols, resetKey]);
+  }, [puzzle, rows, cols]);
+
+  useEffect(() => {
+    setPuzzle(getNonogramPuzzle(difficulty));
+  }, [difficulty, resetKey]);
 
   useEffect(() => {
     setPersonalBest(readPersonalBest(difficulty));
@@ -385,8 +384,6 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialDifficulty },
       const seconds = Math.max(1, Math.round(elapsed / 1000));
       setRunning(false);
       setCompleted(true);
-      setStatus('Perfekt gelöst! 🎉');
-      setStatusTone('success');
       const playerName = localStorage.getItem(PLAYER_KEY) || 'Player';
       const payload = {
         name: playerName,
@@ -414,15 +411,6 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialDifficulty },
       }else{
         setPersonalBest(previousBest);
       }
-    }else if(derived.errors.size > 0){
-      setStatus('Es gibt Fehler – korrigiere rot markierte Felder.');
-      setStatusTone('warning');
-    }else if(derived.progress > 0){
-      setStatus('Guter Fortschritt – die Hinweise passen.');
-      setStatusTone('success');
-    }else{
-      setStatus('Wähle ein Werkzeug und starte mit den Hinweisen.');
-      setStatusTone('neutral');
     }
   }, [derived, elapsed, running, paused, completed, difficulty]);
 
@@ -554,7 +542,7 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialDifficulty },
 
   const boardStyle = useMemo(() => ({
     '--nonogram-cell-size': cellSize,
-    '--nonogram-cell-gap': '2px',
+    '--nonogram-cell-gap': '4px',
     '--nonogram-layout-gap': '12px',
     '--nonogram-clue-gap': '8px',
     '--nonogram-clue-number-gap': '6px',
@@ -565,13 +553,6 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialDifficulty },
 
   const timerLabel = formatNonogramTime(Math.floor(elapsed / 1000));
   const bestLabel = personalBest ? formatNonogramTime(personalBest) : '--';
-  const topLabel = leaderboardBest ? formatNonogramTime(leaderboardBest) : '--';
-  const progressPercent = Math.round(derived.progress * 100);
-  const statusClass = statusTone === 'warning'
-    ? 'nonogram-status nonogram-status--warning'
-    : statusTone === 'success'
-      ? 'nonogram-status nonogram-status--success'
-      : 'nonogram-status';
 
   const toolButtons = [
     { id: 'mark', icon: '✕', label: 'Leerfeld markieren' },
@@ -585,7 +566,6 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialDifficulty },
         <div className="controls" style=${{ justifyContent: 'center', margin: '0 0 12px', gap: '16px' }}>
           <span className="timer">Zeit: ${timerLabel}</span>
           <span className="timer">Best: ${bestLabel}</span>
-          <span className="timer">Fortschritt: ${progressPercent}%</span>
         </div>
         <div className="nonogram-board">
           <div className="nonogram-grid" style=${boardStyle}>
@@ -599,7 +579,7 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialDifficulty },
                   row=${rowIndex}
                   col=${colIndex}
                   state=${cell}
-                  touchTool=${activeTool}
+                  activeTool=${activeTool}
                   disabled=${!running || paused || completed}
                   onAction=${handleAction}
                   error=${derived.errors.has(`${rowIndex}-${colIndex}`)}
@@ -626,15 +606,6 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialDifficulty },
               <span className="icon" aria-hidden="true">${tool.icon}</span>
             </button>
           `)}
-        </div>
-        <div className=${statusClass}>
-          ${status}
-        </div>
-        <div className="nonogram-meta">
-          <strong>${puzzle.title}</strong> • ${rows} × ${cols} Zellen • ${NONOGRAM_DIFFICULTY_LABELS[difficulty] || difficulty}
-        </div>
-        <div className="nonogram-meta" style=${{ marginTop: '4px' }}>
-          Top-Zeit: ${topLabel}
         </div>
       </div>
       <div className="panel panel--info" style=${{ marginTop: '16px' }}>

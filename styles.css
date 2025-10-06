@@ -934,34 +934,39 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
   display:grid;
   grid-template-columns:repeat(var(--nonogram-columns),var(--nonogram-cell-size));
   grid-template-rows:repeat(var(--nonogram-rows),var(--nonogram-cell-size));
-  gap:var(--nonogram-cell-gap,1px);
-  padding:var(--nonogram-cell-gap,1px);
-  border:3px solid color-mix(in srgb,var(--nonogram-cell-border),transparent 10%);
-  background:color-mix(in srgb,var(--nonogram-cell-border),transparent 10%);
+  gap:var(--nonogram-cell-gap,4px);
+  padding:var(--nonogram-cell-gap,4px);
+  border-radius:18px;
+  border:1px solid color-mix(in srgb,var(--nonogram-cell-border),transparent 35%);
+  background:color-mix(in srgb,var(--canvas-bg),transparent 10%);
+  box-shadow:0 18px 32px color-mix(in srgb,var(--bg),#000 45%),0 8px 14px color-mix(in srgb,var(--accent),transparent 82%);
 }
 .nonogram-cell{
   box-sizing:border-box;
   width:var(--nonogram-cell-size);
   height:var(--nonogram-cell-size);
-  border:1px solid var(--nonogram-cell-border);
+  border-radius:10px;
+  border:1px solid color-mix(in srgb,var(--nonogram-cell-border),transparent 25%);
   background:var(--nonogram-cell-bg);
   display:flex;
   align-items:center;
   justify-content:center;
   color:var(--fg);
   cursor:pointer;
-  transition:background .12s ease,border-color .12s ease,box-shadow .12s ease;
+  transition:background .12s ease,border-color .12s ease,box-shadow .12s ease,transform .12s ease;
 }
 .nonogram-cell:hover{
   border-color:color-mix(in srgb,var(--accent),transparent 45%);
+  box-shadow:0 6px 12px color-mix(in srgb,var(--bg),#000 55%);
+  transform:translateY(-1px);
 }
 .nonogram-cell:focus-visible{
-  outline:2px solid color-mix(in srgb,var(--accent),transparent 35%);
-  outline-offset:-2px;
+  outline:none;
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--accent),transparent 55%),0 10px 20px color-mix(in srgb,var(--accent),transparent 75%);
 }
 .nonogram-cell--filled{
   background:var(--nonogram-cell-filled);
-  border-color:color-mix(in srgb,var(--accent),transparent 35%);
+  border-color:color-mix(in srgb,var(--accent),transparent 25%);
 }
 .nonogram-cell--marked{
   background:var(--nonogram-cell-bg);
@@ -973,15 +978,8 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
   line-height:1;
   color:var(--nonogram-cell-mark);
 }
-.nonogram-cell--major-col{
-  border-right-width:2px;
-}
-.nonogram-cell--major-row{
-  border-bottom-width:2px;
-}
 .nonogram-cell--error{
-  outline:2px solid color-mix(in srgb,#f43f5e,transparent 30%);
-  outline-offset:-2px;
+  box-shadow:0 0 0 3px color-mix(in srgb,#f43f5e,transparent 20%),0 12px 20px color-mix(in srgb,#f43f5e,transparent 75%);
 }
 .nonogram-cell--row-complete,
 .nonogram-cell--col-complete{
