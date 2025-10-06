@@ -42,8 +42,51 @@ export function normalizeDifficulty(id, fallback = 'easy'){
   return NONOGRAM_DIFFICULTY_DATA[id] ? id : fallback;
 }
 
-export function getNonogramPuzzle(id){
-  return NONOGRAM_DIFFICULTY_DATA[normalizeDifficulty(id)];
+function cloneGrid(grid){
+  return grid.map(row => row.slice());
+}
+
+function rotateClockwise(grid){
+  const rows = grid.length;
+  const cols = grid[0].length;
+  const rotated = Array.from({ length: cols }, () => Array(rows).fill(0));
+  for(let r = 0; r < rows; r++){
+    for(let c = 0; c < cols; c++){
+      rotated[c][rows - 1 - r] = grid[r][c];
+    }
+  }
+  return rotated;
+}
+
+function flipHorizontal(grid){
+  return grid.map(row => row.slice().reverse());
+}
+
+const GRID_VARIANTS = [
+  grid => cloneGrid(grid),
+  grid => rotateClockwise(grid),
+  grid => rotateClockwise(rotateClockwise(grid)),
+  grid => rotateClockwise(rotateClockwise(rotateClockwise(grid))),
+  grid => flipHorizontal(grid),
+  grid => rotateClockwise(flipHorizontal(grid)),
+  grid => rotateClockwise(rotateClockwise(flipHorizontal(grid))),
+  grid => rotateClockwise(rotateClockwise(rotateClockwise(flipHorizontal(grid))))
+];
+
+export function getNonogramPuzzle(id, variationSeed = Math.random()){
+  const normalized = normalizeDifficulty(id);
+  const base = NONOGRAM_DIFFICULTY_DATA[normalized];
+  if(!base){
+    throw new Error(`Unknown nonogram difficulty: ${id}`);
+  }
+  const seed = Number.isFinite(variationSeed) ? Math.abs(variationSeed % 1) : Math.random();
+  const variantIndex = Math.floor(seed * GRID_VARIANTS.length);
+  const transform = GRID_VARIANTS[variantIndex] || GRID_VARIANTS[0];
+  const transformedGrid = transform(base.grid);
+  return {
+    title: base.title,
+    grid: transformedGrid
+  };
 }
 
 export function createEmptyBoard(rows, cols){
