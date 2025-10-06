@@ -38,6 +38,71 @@ const BOARD_WIDTH_RATIO = 0.7;
 const PROGRESS_KEY_PREFIX = 'nonogram_board_v1';
 const VALID_CELL_STATES = new Set(['empty', 'filled', 'marked']);
 
+const globalPointerDragState = {
+  active: false,
+  pointerId: null,
+  pointerType: null,
+  action: null,
+  targetState: null
+};
+
+function startGlobalPointerDrag({ pointerId, pointerType, action, targetState }){
+  globalPointerDragState.active = true;
+  globalPointerDragState.pointerId = pointerId;
+  globalPointerDragState.pointerType = pointerType;
+  globalPointerDragState.action = action;
+  globalPointerDragState.targetState = targetState;
+}
+
+function endGlobalPointerDrag(pointerId){
+  if(!globalPointerDragState.active){
+    return;
+  }
+  if(pointerId !== undefined && globalPointerDragState.pointerId !== pointerId){
+    return;
+  }
+  globalPointerDragState.active = false;
+  globalPointerDragState.pointerId = null;
+  globalPointerDragState.pointerType = null;
+  globalPointerDragState.action = null;
+  globalPointerDragState.targetState = null;
+}
+
+function nextStateForAction(current, action){
+  if(action === 'fill'){
+    return current === 'filled' ? 'empty' : 'filled';
+  }
+  if(action === 'mark'){
+    return current === 'marked' ? 'empty' : 'marked';
+  }
+  if(action === 'clear'){
+    return 'empty';
+  }
+  return current;
+}
+
+function actionFromMouseButton(button, activeTool){
+  if(button === 0){
+    return activeTool;
+  }
+  if(button === 1){
+    return 'clear';
+  }
+  if(button === 2){
+    return 'mark';
+  }
+  return null;
+}
+
+if(typeof window !== 'undefined' && !window.__nonogramPointerDragListeners){
+  const resetDrag = event => {
+    endGlobalPointerDrag(event?.pointerId);
+  };
+  window.addEventListener('pointerup', resetDrag);
+  window.addEventListener('pointercancel', resetDrag);
+  window.__nonogramPointerDragListeners = true;
+}
+
 function progressKeyForPuzzle(puzzle){
   if(!puzzle || !puzzle.id){
     return null;
@@ -190,7 +255,12 @@ function NonogramCell({
   rowComplete,
   colComplete
 }){
-  const pointerRef = useRef({ timeout: null, longPressFired: false });
+  const pointerRef = useRef({
+    timeout: null,
+    longPressFired: false,
+    skipClick: false,
+    skipContextMenu: false
+  });
 
   const clearTimer = () => {
     const { timeout } = pointerRef.current;
@@ -202,17 +272,50 @@ function NonogramCell({
 
   const handlePointerDown = useCallback(event => {
     if(disabled) return;
-    if(event.pointerType === 'mouse') return;
     pointerRef.current.longPressFired = false;
+    if(event.pointerType === 'mouse'){
+      const baseAction = actionFromMouseButton(event.button, activeTool);
+      if(!baseAction){
+        return;
+      }
+      pointerRef.current.skipClick = true;
+      if(event.button === 2){
+        pointerRef.current.skipContextMenu = true;
+      }
+      const nextState = nextStateForAction(state, baseAction);
+      let dragAction = baseAction;
+      let targetState = nextState;
+      if(baseAction === 'fill' || baseAction === 'mark'){
+        if(nextState === 'empty'){
+          dragAction = 'clear';
+          targetState = 'empty';
+        }
+      }
+      if(baseAction === 'clear'){
+        dragAction = 'clear';
+        targetState = 'empty';
+      }
+      startGlobalPointerDrag({
+        pointerId: event.pointerId,
+        pointerType: 'mouse',
+        action: dragAction,
+        targetState
+      });
+      onAction(row, col, baseAction);
+      return;
+    }
     clearTimer();
     pointerRef.current.timeout = setTimeout(() => {
       pointerRef.current.longPressFired = true;
       onAction(row, col, 'mark');
     }, LONG_PRESS_MS);
-  }, [disabled, row, col, onAction]);
+  }, [disabled, row, col, onAction, activeTool, state]);
 
   const handlePointerUp = useCallback(event => {
     if(disabled) return;
+    if(globalPointerDragState.active && globalPointerDragState.pointerId === event.pointerId){
+      endGlobalPointerDrag(event.pointerId);
+    }
     if(event.pointerType === 'mouse') return;
     const fired = pointerRef.current.longPressFired;
     clearTimer();
@@ -227,8 +330,29 @@ function NonogramCell({
     pointerRef.current.longPressFired = false;
   }, []);
 
+  const handlePointerEnter = useCallback(event => {
+    if(disabled) return;
+    if(!globalPointerDragState.active || globalPointerDragState.pointerType !== 'mouse'){
+      return;
+    }
+    if(globalPointerDragState.pointerId !== event.pointerId){
+      return;
+    }
+    pointerRef.current.skipClick = true;
+    const desiredState = globalPointerDragState.targetState;
+    if(desiredState && state === desiredState){
+      return;
+    }
+    onAction(row, col, globalPointerDragState.action);
+  }, [disabled, row, col, onAction, state]);
+
   const handleClick = useCallback(event => {
     if(disabled) return;
+    if(pointerRef.current.skipClick){
+      pointerRef.current.skipClick = false;
+      event.preventDefault();
+      return;
+    }
     if(pointerRef.current.longPressFired){
       pointerRef.current.longPressFired = false;
       event.preventDefault();
@@ -240,6 +364,10 @@ function NonogramCell({
   const handleContextMenu = useCallback(event => {
     event.preventDefault();
     if(disabled) return;
+    if(pointerRef.current.skipContextMenu){
+      pointerRef.current.skipContextMenu = false;
+      return;
+    }
     onAction(row, col, 'mark');
   }, [disabled, row, col, onAction]);
 
@@ -247,10 +375,17 @@ function NonogramCell({
     if(event.button !== 1) return;
     event.preventDefault();
     if(disabled) return;
+    if(pointerRef.current.skipClick){
+      pointerRef.current.skipClick = false;
+      return;
+    }
     onAction(row, col, 'clear');
   }, [disabled, row, col, onAction]);
 
-  useEffect(() => () => clearTimer(), []);
+  useEffect(() => () => {
+    clearTimer();
+    endGlobalPointerDrag();
+  }, []);
 
   const majorCol = (col + 1) % 5 === 0 && col + 1 !== maxCols;
   const majorRow = (row + 1) % 5 === 0 && row + 1 !== maxRows;
@@ -279,6 +414,7 @@ function NonogramCell({
       onPointerUp=${handlePointerUp}
       onPointerLeave=${handlePointerLeave}
       onPointerCancel=${handlePointerLeave}
+      onPointerEnter=${handlePointerEnter}
     >
       ${state === 'marked' ? html`<span className="nonogram-cell__mark" aria-hidden="true">✕</span>` : null}
     </button>
