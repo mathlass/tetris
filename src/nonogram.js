@@ -730,10 +730,10 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialDifficulty },
 
   const boardStyle = useMemo(() => ({
     '--nonogram-cell-size': cellSize,
-    '--nonogram-cell-gap': '4px',
-    '--nonogram-layout-gap': '12px',
-    '--nonogram-clue-gap': '8px',
-    '--nonogram-clue-number-gap': '6px',
+    '--nonogram-cell-gap': '8px',
+    '--nonogram-layout-gap': '18px',
+    '--nonogram-clue-gap': '10px',
+    '--nonogram-clue-number-gap': '8px',
     '--nonogram-clue-font': 'clamp(0.7rem, 1.4vw, 0.95rem)',
     '--nonogram-columns': String(cols),
     '--nonogram-rows': String(rows)

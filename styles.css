@@ -869,6 +869,7 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
   width:100%;
   display:flex;
   justify-content:center;
+  padding:clamp(12px,2.5vw,28px);
 }
 .nonogram-grid{
   position:relative;
@@ -876,10 +877,14 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
   grid-template-columns:auto minmax(0,1fr);
   grid-template-rows:auto minmax(0,1fr);
   gap:var(--nonogram-layout-gap,12px);
-  background:transparent;
   max-width:100%;
   max-height:100%;
   overflow:auto;
+  padding:clamp(16px,3vw,32px);
+  border-radius:32px;
+  background:linear-gradient(155deg,color-mix(in srgb,var(--canvas-bg),transparent 5%),color-mix(in srgb,var(--accent),transparent 90%));
+  border:1px solid color-mix(in srgb,var(--canvas-border),transparent 25%);
+  box-shadow:0 32px 55px color-mix(in srgb,var(--bg),#000 55%),0 18px 32px color-mix(in srgb,var(--accent),transparent 82%);
 }
 .nonogram-grid__corner{
   grid-column:1;
@@ -895,6 +900,7 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
   font-size:var(--nonogram-clue-font,.9rem);
   letter-spacing:.02em;
   background:transparent;
+  gap:var(--nonogram-clue-gap,8px);
 }
 .nonogram-clues--cols{
   grid-column:2;
@@ -920,14 +926,20 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
   align-items:center;
   justify-content:center;
   white-space:nowrap;
+  background:color-mix(in srgb,var(--canvas-bg),transparent 25%);
+  border-radius:20px;
+  padding:6px 12px;
+  box-shadow:0 10px 18px color-mix(in srgb,var(--bg),#000 65%);
 }
 .nonogram-clue--col{
   flex-direction:column;
   justify-content:flex-end;
   min-height:100%;
+  padding:12px 8px;
 }
 .nonogram-clue--row{
   justify-content:flex-end;
+  padding:8px 12px;
 }
 .nonogram-clue__number{
   display:inline-flex;
@@ -946,45 +958,44 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
   display:grid;
   grid-template-columns:repeat(var(--nonogram-columns),var(--nonogram-cell-size));
   grid-template-rows:repeat(var(--nonogram-rows),var(--nonogram-cell-size));
-  gap:var(--nonogram-cell-gap,4px);
-  padding:var(--nonogram-cell-gap,4px);
-  border-radius:18px;
-  border:1px solid color-mix(in srgb,var(--nonogram-cell-border),transparent 35%);
-  background:color-mix(in srgb,var(--canvas-bg),transparent 10%);
-  box-shadow:0 18px 32px color-mix(in srgb,var(--bg),#000 45%),0 8px 14px color-mix(in srgb,var(--accent),transparent 82%);
+  gap:var(--nonogram-cell-gap,8px);
+  padding:var(--nonogram-cell-gap,8px);
+  border-radius:24px;
+  background:color-mix(in srgb,var(--canvas-bg),transparent 2%);
+  border:1px solid color-mix(in srgb,var(--canvas-border),transparent 45%);
+  box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--canvas-border),transparent 70%),0 22px 34px color-mix(in srgb,var(--bg),#000 52%);
 }
 .nonogram-cell{
   box-sizing:border-box;
   width:var(--nonogram-cell-size);
   height:var(--nonogram-cell-size);
-  border-radius:4px;
-  border:1px solid color-mix(in srgb,var(--nonogram-cell-border),transparent 25%);
-  background:var(--nonogram-cell-bg);
+  border-radius:10px;
+  border:0;
+  background:color-mix(in srgb,var(--nonogram-cell-bg),#fff 10%);
   display:flex;
   align-items:center;
   justify-content:center;
   color:var(--fg);
   cursor:pointer;
-  transition:background .12s ease,border-color .12s ease,box-shadow .12s ease;
+  transition:background .12s ease,box-shadow .12s ease,transform .12s ease;
+  box-shadow:0 6px 12px color-mix(in srgb,var(--bg),#000 65%),inset 0 0 0 1px color-mix(in srgb,var(--nonogram-cell-border),transparent 10%);
 }
 .nonogram-cell:hover{
-  border-color:color-mix(in srgb,var(--accent),transparent 45%);
-  box-shadow:0 6px 12px color-mix(in srgb,var(--bg),#000 55%);
+  box-shadow:0 10px 20px color-mix(in srgb,var(--bg),#000 60%),inset 0 0 0 1px color-mix(in srgb,var(--accent),transparent 55%);
+  transform:translateY(-2px);
 }
 .nonogram-cell:focus-visible{
   outline:none;
-  box-shadow:0 0 0 3px color-mix(in srgb,var(--accent),transparent 55%),0 10px 20px color-mix(in srgb,var(--accent),transparent 75%);
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--accent),transparent 45%),0 12px 24px color-mix(in srgb,var(--accent),transparent 75%);
 }
 .nonogram-cell--filled{
   background:var(--nonogram-cell-filled-fallback);
-  border-color:var(--nonogram-cell-filled-border-fallback);
   background:var(--nonogram-cell-filled);
-  border-color:color-mix(in srgb,var(--accent),transparent 25%);
+  box-shadow:0 10px 22px color-mix(in srgb,var(--accent),transparent 70%),inset 0 0 0 1px color-mix(in srgb,var(--accent),transparent 35%);
 }
 .nonogram-cell--marked{
   background:var(--nonogram-cell-bg);
-  border-color:var(--nonogram-cell-mark-border-fallback);
-  border-color:color-mix(in srgb,var(--nonogram-cell-mark),transparent 40%);
+  box-shadow:0 6px 12px color-mix(in srgb,var(--accent-strong),transparent 80%),inset 0 0 0 1px color-mix(in srgb,var(--nonogram-cell-mark),transparent 30%);
 }
 .nonogram-cell__mark{
   font-size:1.1em;
@@ -994,14 +1005,14 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
   color:var(--nonogram-cell-mark);
 }
 .nonogram-cell--error{
-  box-shadow:0 0 0 3px color-mix(in srgb,#f43f5e,transparent 20%),0 12px 20px color-mix(in srgb,#f43f5e,transparent 75%);
+  box-shadow:0 0 0 3px color-mix(in srgb,#f43f5e,transparent 20%),0 16px 28px color-mix(in srgb,#f43f5e,transparent 75%);
 }
 .nonogram-cell--row-complete,
 .nonogram-cell--col-complete{
-  box-shadow:inset 0 0 0 999px color-mix(in srgb,var(--nonogram-cell-border),transparent 55%);
+  box-shadow:inset 0 0 0 999px color-mix(in srgb,var(--nonogram-cell-border),transparent 55%),0 6px 12px color-mix(in srgb,var(--accent),transparent 80%);
 }
 .nonogram-cell--row-complete.nonogram-cell--col-complete{
-  box-shadow:inset 0 0 0 999px color-mix(in srgb,var(--nonogram-cell-filled),transparent 70%);
+  box-shadow:inset 0 0 0 999px color-mix(in srgb,var(--nonogram-cell-filled),transparent 70%),0 8px 16px color-mix(in srgb,var(--accent),transparent 70%);
 }
 .nonogram-tools{
   display:flex;
