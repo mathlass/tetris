@@ -957,7 +957,7 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
   box-sizing:border-box;
   width:var(--nonogram-cell-size);
   height:var(--nonogram-cell-size);
-  border-radius:10px;
+  border-radius:4px;
   border:1px solid color-mix(in srgb,var(--nonogram-cell-border),transparent 25%);
   background:var(--nonogram-cell-bg);
   display:flex;
@@ -965,12 +965,11 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
   justify-content:center;
   color:var(--fg);
   cursor:pointer;
-  transition:background .12s ease,border-color .12s ease,box-shadow .12s ease,transform .12s ease;
+  transition:background .12s ease,border-color .12s ease,box-shadow .12s ease;
 }
 .nonogram-cell:hover{
   border-color:color-mix(in srgb,var(--accent),transparent 45%);
   box-shadow:0 6px 12px color-mix(in srgb,var(--bg),#000 55%);
-  transform:translateY(-1px);
 }
 .nonogram-cell:focus-visible{
   outline:none;
