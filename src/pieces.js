@@ -1,6 +1,47 @@
 // Utility functions for Tetromino handling
 import { SHAPES, COLS } from './constants.js';
 
+// Precompute preview data for the primary rotation of each tetromino so that
+// the side-panel rendering can avoid repeatedly walking the matrices. The data
+// is tiny (7 pieces * up to 4 cells) but saves a noticeable amount of work
+// because the preview is redrawn every time the queue changes.
+const PREVIEW_DATA = Object.entries(SHAPES).reduce((acc, [type, rotations]) => {
+  const matrix = rotations[0];
+  const cells = [];
+  let minX = Infinity;
+  let minY = Infinity;
+  let maxX = -Infinity;
+  let maxY = -Infinity;
+
+  for (let y = 0; y < matrix.length; y++) {
+    for (let x = 0; x < matrix[y].length; x++) {
+      if (!matrix[y][x]) continue;
+      cells.push([x, y]);
+      if (x < minX) minX = x;
+      if (x > maxX) maxX = x;
+      if (y < minY) minY = y;
+      if (y > maxY) maxY = y;
+    }
+  }
+
+  if (cells.length === 0) {
+    acc[type] = { cells: [], width: 0, height: 0 };
+    return acc;
+  }
+
+  const normalizedCells = cells.map(([x, y]) => [x - minX, y - minY]);
+  acc[type] = {
+    cells: normalizedCells,
+    width: maxX - minX + 1,
+    height: maxY - minY + 1
+  };
+  return acc;
+}, {});
+
+export function getPreviewData(type) {
+  return PREVIEW_DATA[type];
+}
+
 /**
  * Create a new Tetromino piece at the spawn position
  * @param {string} type Piece identifier (I, J, L, O, S, T, Z)
