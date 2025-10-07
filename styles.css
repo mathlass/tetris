@@ -1020,6 +1020,10 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
   flex-wrap:wrap;
   justify-content:center;
 }
+.nonogram-tools--touch{
+  flex-direction:column;
+  align-items:center;
+}
 .nonogram-tool{
   display:flex;
   align-items:center;
@@ -1052,6 +1056,74 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
 .nonogram-tool.selected.button-primary,
 .nonogram-tool[aria-pressed="true"].button-primary{
   box-shadow:var(--button-primary-hover-shadow);
+}
+.nonogram-touch-actions{
+  margin-top:12px;
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+  gap:12px;
+}
+.nonogram-touch-button{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  padding:12px 18px;
+  border-radius:9999px;
+  font-weight:600;
+  font-size:.9rem;
+  border:1px solid var(--button-border);
+  background:var(--button-bg);
+  color:var(--fg);
+  box-shadow:0 12px 22px color-mix(in srgb,var(--bg),#000 65%);
+  transition:transform .18s ease,box-shadow .18s ease,background .18s ease,color .18s ease;
+}
+.nonogram-touch-button:focus-visible{
+  outline:2px solid color-mix(in srgb,var(--accent),transparent 30%);
+  outline-offset:2px;
+}
+.nonogram-touch-button:active{
+  transform:translateY(1px) scale(.98);
+}
+.nonogram-touch-button--primary{
+  background:var(--button-primary-bg);
+  border-color:var(--button-primary-border);
+  color:var(--button-primary-color);
+  box-shadow:var(--button-primary-shadow);
+}
+.nonogram-touch-button--ghost{
+  background:color-mix(in srgb,var(--button-bg),transparent 10%);
+}
+.nonogram-touch-button--active{
+  box-shadow:0 16px 28px color-mix(in srgb,var(--accent),transparent 62%);
+  background:color-mix(in srgb,var(--accent),transparent 80%);
+  color:var(--nonogram-clue-accent);
+}
+.nonogram-touch-button[disabled]{
+  opacity:.6;
+  box-shadow:none;
+  cursor:not-allowed;
+  transform:none;
+}
+.nonogram-touch-button__icon{
+  font-size:1.1em;
+}
+.nonogram-touch-hint{
+  margin-top:10px;
+  text-align:center;
+  font-size:.85rem;
+  color:var(--muted);
+  line-height:1.45;
+}
+@media (max-width:768px){
+  .nonogram-touch-actions{
+    gap:10px;
+  }
+  .nonogram-touch-button{
+    flex:1 1 calc(50% - 10px);
+    min-width:0;
+  }
 }
 .nonogram-status{
   margin:18px auto 0;

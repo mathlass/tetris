@@ -38,6 +38,31 @@ const BOARD_WIDTH_RATIO = 0.7;
 const PROGRESS_KEY_PREFIX = 'nonogram_board_v1';
 const VALID_CELL_STATES = new Set(['empty', 'filled', 'marked']);
 
+function detectTouchDevice(){
+  if(typeof window === 'undefined'){
+    return false;
+  }
+  if('ontouchstart' in window){
+    return true;
+  }
+  const nav = window.navigator || {};
+  const points = nav.maxTouchPoints || nav.msMaxTouchPoints || 0;
+  if(points > 0){
+    return true;
+  }
+  if(typeof window.matchMedia === 'function'){
+    try {
+      const coarse = window.matchMedia('(pointer: coarse)');
+      if(coarse && typeof coarse.matches === 'boolean' && coarse.matches){
+        return true;
+      }
+    }catch(error){
+      // ignore matchMedia errors and fall through to default false
+    }
+  }
+  return false;
+}
+
 function progressKeyForPuzzle(puzzle){
   if(!puzzle || !puzzle.id){
     return null;
@@ -187,6 +212,7 @@ function NonogramCell({
   onDragStart,
   onDragEnter,
   onDragEnd,
+  touchOptimized,
   error,
   maxRows,
   maxCols,
@@ -210,7 +236,8 @@ function NonogramCell({
 
   const handlePointerDown = useCallback(event => {
     if(disabled) return;
-    if(event.pointerType !== 'touch'){
+    const isTouch = event.pointerType === 'touch';
+    if(!isTouch){
       if(event.button !== 0) return;
       pointerRef.current.draggingTool = activeTool;
       onAction(row, col, activeTool, 'toggle');
@@ -221,19 +248,38 @@ function NonogramCell({
       }, 0);
       return;
     }
+    if(touchOptimized){
+      pointerRef.current.longPressFired = false;
+      clearTimer();
+      pointerRef.current.draggingTool = activeTool;
+      onAction(row, col, activeTool, 'toggle');
+      onDragStart(activeTool);
+      pointerRef.current.ignoreClick = true;
+      event.preventDefault();
+      return;
+    }
     pointerRef.current.longPressFired = false;
     clearTimer();
     pointerRef.current.timeout = setTimeout(() => {
       pointerRef.current.longPressFired = true;
       onAction(row, col, 'mark', 'toggle');
     }, LONG_PRESS_MS);
-  }, [disabled, row, col, onAction, activeTool, onDragStart]);
+  }, [disabled, row, col, onAction, activeTool, onDragStart, touchOptimized]);
 
   const handlePointerUp = useCallback(event => {
     if(disabled) return;
     if(event.pointerType !== 'touch'){
       pointerRef.current.draggingTool = null;
       onDragEnd();
+      return;
+    }
+    if(touchOptimized){
+      pointerRef.current.draggingTool = null;
+      onDragEnd();
+      pointerRef.current.ignoreClick = true;
+      setTimeout(() => {
+        pointerRef.current.ignoreClick = false;
+      }, 0);
       return;
     }
     const fired = pointerRef.current.longPressFired;
@@ -250,7 +296,13 @@ function NonogramCell({
 
   const handlePointerEnter = useCallback(event => {
     if(disabled) return;
-    if(event.pointerType !== 'touch' && pointerRef.current.draggingTool){
+    if(event.pointerType === 'touch'){
+      if(touchOptimized && pointerRef.current.draggingTool){
+        onDragEnter(row, col, pointerRef.current.draggingTool);
+      }
+      return;
+    }
+    if(pointerRef.current.draggingTool){
       if(event.buttons === 0){
         pointerRef.current.draggingTool = null;
         onDragEnd();
@@ -258,7 +310,7 @@ function NonogramCell({
       }
       onDragEnter(row, col, pointerRef.current.draggingTool);
     }
-  }, [disabled, row, col, onDragEnter, onDragEnd]);
+  }, [disabled, row, col, onDragEnter, onDragEnd, touchOptimized]);
 
   const handlePointerLeave = useCallback(() => {
     clearTimer();
@@ -371,6 +423,9 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialDifficulty },
   const [overlayInfo, setOverlayInfo] = useState(null);
   const timerRef = useRef(null);
   const startedAtRef = useRef(Date.now());
+  const [touchOptimized, setTouchOptimized] = useState(() => detectTouchDevice());
+  const [momentaryTool, setMomentaryTool] = useState(null);
+  const momentaryBaseRef = useRef('fill');
 
   const [personalBest, setPersonalBest] = useState(() => readPersonalBest(difficulty));
   const [leaderboardBest, setLeaderboardBest] = useState(() => getBestTime(difficulty));
@@ -388,6 +443,84 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialDifficulty },
   }, [puzzle, cols]);
 
   const requiredCells = useMemo(() => countFilledCells(puzzle.grid), [puzzle]);
+
+  useEffect(() => {
+    if(typeof window === 'undefined'){
+      return undefined;
+    }
+    const media = typeof window.matchMedia === 'function' ? window.matchMedia('(pointer: coarse)') : null;
+    const update = () => {
+      const coarse = media && typeof media.matches === 'boolean' ? media.matches : false;
+      setTouchOptimized(detectTouchDevice() || coarse);
+    };
+    update();
+    const handleResize = () => update();
+    window.addEventListener('orientationchange', handleResize);
+    window.addEventListener('resize', handleResize);
+    let cleanupMedia = () => {};
+    if(media){
+      const listener = () => update();
+      if(typeof media.addEventListener === 'function'){
+        media.addEventListener('change', listener);
+        cleanupMedia = () => media.removeEventListener('change', listener);
+      }else if(typeof media.addListener === 'function'){
+        media.addListener(listener);
+        cleanupMedia = () => media.removeListener(listener);
+      }
+    }
+    return () => {
+      window.removeEventListener('orientationchange', handleResize);
+      window.removeEventListener('resize', handleResize);
+      cleanupMedia();
+    };
+  }, []);
+
+  useEffect(() => {
+    if(momentaryTool === null){
+      momentaryBaseRef.current = activeTool;
+    }
+  }, [activeTool, momentaryTool]);
+
+  useEffect(() => {
+    if(!touchOptimized && momentaryTool !== null){
+      const revertTo = momentaryBaseRef.current || 'fill';
+      setMomentaryTool(null);
+      setActiveTool(revertTo);
+    }
+  }, [touchOptimized, momentaryTool]);
+
+  const handleToolSelect = useCallback(tool => {
+    setMomentaryTool(null);
+    setActiveTool(tool);
+  }, []);
+
+  const handleQuickSwap = useCallback(() => {
+    setMomentaryTool(null);
+    setActiveTool(prev => (prev === 'fill' ? 'mark' : 'fill'));
+  }, []);
+
+  const handleMomentaryToolDown = useCallback(tool => {
+    if(!touchOptimized){
+      return;
+    }
+    if(momentaryTool === tool && activeTool === tool){
+      return;
+    }
+    if(momentaryTool === null){
+      momentaryBaseRef.current = activeTool;
+    }
+    setMomentaryTool(tool);
+    setActiveTool(tool);
+  }, [touchOptimized, momentaryTool, activeTool]);
+
+  const releaseMomentaryTool = useCallback(() => {
+    if(momentaryTool === null){
+      return;
+    }
+    const revertTo = momentaryBaseRef.current || 'fill';
+    setMomentaryTool(null);
+    setActiveTool(revertTo);
+  }, [momentaryTool]);
 
   useEffect(() => {
     let nextBoard = createEmptyBoard(rows, cols);
@@ -773,6 +906,7 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialDifficulty },
                   onDragStart=${beginDrag}
                   onDragEnter=${dragOver}
                   onDragEnd=${endDrag}
+                  touchOptimized=${touchOptimized}
                   error=${derived.errors.has(`${rowIndex}-${colIndex}`)}
                   maxRows=${rows}
                   maxCols=${cols}
@@ -783,13 +917,13 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialDifficulty },
             </div>
           </div>
         </div>
-        <div className="nonogram-tools" style=${{ marginTop: '18px' }}>
+        <div className=${`nonogram-tools${touchOptimized ? ' nonogram-tools--touch' : ''}`} style=${{ marginTop: '18px' }}>
           ${toolButtons.map(tool => html`
             <button
               key=${tool.id}
               type="button"
               className=${`nonogram-tool${activeTool === tool.id ? ' selected' : ''}`}
-              onClick=${() => setActiveTool(tool.id)}
+              onClick=${() => handleToolSelect(tool.id)}
               aria-pressed=${activeTool === tool.id ? 'true' : 'false'}
               aria-label=${tool.label}
               title=${tool.label}
@@ -798,13 +932,87 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialDifficulty },
             </button>
           `)}
         </div>
+        ${touchOptimized ? html`
+          <div className="nonogram-touch-actions" role="group" aria-label="Schnellwerkzeuge für Touch-Geräte">
+            <button
+              type="button"
+              className="nonogram-touch-button nonogram-touch-button--primary"
+              onClick=${handleQuickSwap}
+              disabled=${momentaryTool !== null}
+              aria-disabled=${momentaryTool !== null ? 'true' : 'false'}
+              title="Zwischen Füllen und Markieren wechseln"
+            >
+              <span className="nonogram-touch-button__icon" aria-hidden="true">🔁</span>
+              Werkzeug wechseln
+            </button>
+            <button
+              type="button"
+              className=${`nonogram-touch-button nonogram-touch-button--ghost${momentaryTool === 'mark' ? ' nonogram-touch-button--active' : ''}`}
+              onPointerDown=${event => { event.preventDefault(); handleMomentaryToolDown('mark'); }}
+              onPointerUp=${releaseMomentaryTool}
+              onPointerCancel=${releaseMomentaryTool}
+              onPointerLeave=${releaseMomentaryTool}
+              onKeyDown=${event => {
+                if(event.code === 'Space' || event.code === 'Enter'){
+                  event.preventDefault();
+                  handleMomentaryToolDown('mark');
+                }
+              }}
+              onKeyUp=${event => {
+                if(event.code === 'Space' || event.code === 'Enter'){
+                  event.preventDefault();
+                  releaseMomentaryTool();
+                }
+              }}
+              aria-pressed=${momentaryTool === 'mark' ? 'true' : 'false'}
+              title="Gedrückt halten, um ✕ zu markieren"
+            >
+              <span className="nonogram-touch-button__icon" aria-hidden="true">✕</span>
+              ✕ halten
+            </button>
+            <button
+              type="button"
+              className=${`nonogram-touch-button nonogram-touch-button--ghost${momentaryTool === 'clear' ? ' nonogram-touch-button--active' : ''}`}
+              onPointerDown=${event => { event.preventDefault(); handleMomentaryToolDown('clear'); }}
+              onPointerUp=${releaseMomentaryTool}
+              onPointerCancel=${releaseMomentaryTool}
+              onPointerLeave=${releaseMomentaryTool}
+              onKeyDown=${event => {
+                if(event.code === 'Space' || event.code === 'Enter'){
+                  event.preventDefault();
+                  handleMomentaryToolDown('clear');
+                }
+              }}
+              onKeyUp=${event => {
+                if(event.code === 'Space' || event.code === 'Enter'){
+                  event.preventDefault();
+                  releaseMomentaryTool();
+                }
+              }}
+              aria-pressed=${momentaryTool === 'clear' ? 'true' : 'false'}
+              title="Gedrückt halten, um zu radieren"
+            >
+              <span className="nonogram-touch-button__icon" aria-hidden="true">🧽</span>
+              🧽 halten
+            </button>
+          </div>
+          <p className="nonogram-touch-hint">
+            Ziehe mit dem Finger über das Spielfeld, um mehrere Felder hintereinander zu bearbeiten. Die Schnellwerkzeuge aktivieren ✕ oder 🧽 nur solange du sie gedrückt hältst – ideal für kurze Wechsel unterwegs.
+          </p>
+        ` : null}
       </div>
       <div className="panel panel--info" style=${{ marginTop: '16px' }}>
         <div className="panel__header">
           <h3>So funktioniert's</h3>
         </div>
         <p>Die Zahlen am Rand zeigen, wie viele aufeinanderfolgende Felder in der jeweiligen Reihe oder Spalte gefüllt werden müssen.</p>
-        <p>Tippe auf ein Werkzeug (✕, ausgefülltes Feld oder Radiergummi) und anschließend auf das Spielfeld, um Felder zu markieren, zu füllen oder zurückzusetzen.</p>
+        ${touchOptimized ? html`
+          <p>Tippe auf ein Werkzeug und ziehe mit dem Finger über das Raster, um mehrere Felder zu bearbeiten. Halte die Schnellknöpfe ✕ oder 🧽 gedrückt, wenn du die Aktion nur kurzzeitig wechseln möchtest.</p>
+          <p>Mit „Werkzeug wechseln" lässt sich das aktive Werkzeug mit einem Daumentipp umschalten – perfekt, wenn du das Gerät in einer Hand hältst.</p>
+        ` : html`
+          <p>Klicke auf ein Werkzeug (✕, ausgefülltes Feld oder Radiergummi) und anschließend auf das Spielfeld, um Felder zu markieren, zu füllen oder zurückzusetzen.</p>
+          <p>Mit Rechtsklick markierst du ein leeres Feld, die mittlere Maustaste löscht ein Feld.</p>
+        `}
       </div>
       <${CompletionOverlay}
         visible=${overlayVisible}
