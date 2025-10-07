@@ -12,7 +12,7 @@ import {
   ULTRA_SECONDS,
   PLAYER_KEY
 } from './constants.js';
-import { newPiece, refillBag } from './pieces.js';
+import { getPreviewData, newPiece, refillBag } from './pieces.js';
 import { createSfx } from './audio.js';
 import { collides, clearLines as clearBoardLines, rotate, getDropY } from './logic.js';
 import { addHS, renderHS, sanitizeName, bestKey } from './highscores.js';
@@ -77,6 +77,9 @@ export function initGame(){
   const timerMeterEl = document.getElementById('timerMeter');
   const timerTrackEl = document.getElementById('timerProgressTrack');
   const timerFillEl = document.getElementById('timerProgressFill');
+  const scoreTopEl = document.getElementById('topScore');
+  const bestTopEl = document.getElementById('topBest');
+  const comboEl = document.getElementById('comboTag');
 
   let board, cur, bag=[], queue=[];
   let score=0, lines=0, level=1, best=0;
@@ -217,56 +220,52 @@ export function initGame(){
   function drawMini(ctx2, piece){
     clearCanvas(ctx2);
     if(!piece) return;
-    const m = piece.shape[0];
-
-    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
-    for(let y=0; y<m.length; y++){
-      for(let x=0; x<m[y].length; x++){
-        if(!m[y][x]) continue;
-        if(x < minX) minX = x;
-        if(x > maxX) maxX = x;
-        if(y < minY) minY = y;
-        if(y > maxY) maxY = y;
-      }
-    }
-
-    if(maxX === -Infinity || maxY === -Infinity) return;
+    const preview = getPreviewData(piece.type);
+    if(!preview) return;
 
     let size = Math.floor(Math.min(ctx2.canvas.width, ctx2.canvas.height) / 4);
     if(size <= 0) size = 1;
 
     const cellsX = ctx2.canvas.width / size;
     const cellsY = ctx2.canvas.height / size;
-    const pieceWidth = (maxX - minX) + 1;
-    const pieceHeight = (maxY - minY) + 1;
-    const offX = (cellsX - pieceWidth) / 2;
-    const offY = (cellsY - pieceHeight) / 2;
+    const offX = (cellsX - preview.width) / 2;
+    const offY = (cellsY - preview.height) / 2;
 
-    for(let y=0; y<m.length; y++){
-      for(let x=0; x<m[y].length; x++){
-        if(!m[y][x]) continue;
-        const drawX = offX + (x - minX);
-        const drawY = offY + (y - minY);
-        drawCell(drawX, drawY, COLORS[piece.type], ctx2, size);
-      }
+    for(const [x, y] of preview.cells){
+      drawCell(offX + x, offY + y, COLORS[piece.type], ctx2, size);
     }
   }
 
-  function updateSide(){
-    const scoreTop = document.getElementById('topScore');
-    if(scoreTop) scoreTop.textContent = `Score: ${score}`;
-    const bestTop = document.getElementById('topBest');
-    if(bestTop) bestTop.textContent = `Best: ${best}`;
+  let lastScore = null;
+  let lastBest = null;
+  let lastComboText = null;
+  let lastQueueSignature = '';
 
-    const comboEl = document.getElementById('comboTag');
+  function updateSide(forceQueue=false){
+    if(scoreTopEl && score !== lastScore){
+      scoreTopEl.textContent = `Score: ${score}`;
+      lastScore = score;
+    }
+    if(bestTopEl && best !== lastBest){
+      bestTopEl.textContent = `Best: ${best}`;
+      lastBest = best;
+    }
+
     if(comboEl){
       let t = '';
       if(combo>=1) t += `Combo x${combo+1}`;
       if(backToBack) t += (t?' • ':'')+`Back‑to‑Back`;
-      comboEl.textContent = t;
+      if(t !== lastComboText){
+        comboEl.textContent = t;
+        lastComboText = t;
+      }
     }
 
-    nextCtx.forEach((c,i)=> c && drawMini(c, queue[i]));
+    const queueSignature = queue.map(p => p?.type ?? '').join('');
+    if(forceQueue || queueSignature !== lastQueueSignature){
+      nextCtx.forEach((c,i)=> c && drawMini(c, queue[i]));
+      lastQueueSignature = queueSignature;
+    }
   }
 
   // ==== Logik
@@ -326,7 +325,7 @@ export function initGame(){
     cur = queue.shift();
     queue.push(pullNext());
     if(collides(board, cur)) { gameOver(); return; }
-    updateSide();
+    updateSide(true);
   }
 
   function gameOver(){
@@ -512,13 +511,13 @@ export function initGame(){
       COLORS = applyPalette(settings);
       saveSettings(settings);
       drawBoard();
-      updateSide();
+      updateSide(true);
     });
   }
 
   // Initiale Anzeige
   void renderHS(mode);
-  updateSide();
+  updateSide(true);
 
   const start = () => { reset(); update(); };
   const pause = () => { if(running) setPaused(true); };
