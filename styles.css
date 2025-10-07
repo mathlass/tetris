@@ -54,6 +54,10 @@
   --nonogram-cell-size:34px;
   --nonogram-cell-border:color-mix(in srgb,var(--canvas-border),transparent 20%);
   --nonogram-cell-bg:#ffffff;
+  --nonogram-cell-filled-fallback:#dbf9ff;
+  --nonogram-cell-filled-border-fallback:var(--accent);
+  --nonogram-cell-mark-fallback:#cdbfff;
+  --nonogram-cell-mark-border-fallback:var(--accent-strong);
   --nonogram-cell-filled:color-mix(in srgb,var(--accent) 25%,#ffffff 75%);
   --nonogram-cell-mark:color-mix(in srgb,var(--accent-strong) 55%,#ffffff 45%);
   --nonogram-cell-mark-symbol:var(--fg);
@@ -113,6 +117,10 @@
   --snake-board-shadow:0 18px 34px color-mix(in srgb,var(--accent),transparent 86%);
   --nonogram-cell-border:color-mix(in srgb,var(--canvas-border),transparent 35%);
   --nonogram-cell-bg:#ffffff;
+  --nonogram-cell-filled-fallback:#d9e7ff;
+  --nonogram-cell-filled-border-fallback:var(--accent);
+  --nonogram-cell-mark-fallback:#b7aeff;
+  --nonogram-cell-mark-border-fallback:var(--accent-strong);
   --nonogram-cell-filled:color-mix(in srgb,var(--accent) 18%,#ffffff 82%);
   --nonogram-cell-mark:color-mix(in srgb,var(--accent-strong) 45%,#ffffff 55%);
   --nonogram-cell-mark-symbol:var(--fg);
@@ -172,6 +180,10 @@
   --snake-board-shadow:0 24px 52px color-mix(in srgb,var(--accent-strong),transparent 78%);
   --nonogram-cell-border:color-mix(in srgb,var(--canvas-border),transparent 18%);
   --nonogram-cell-bg:#ffffff;
+  --nonogram-cell-filled-fallback:#dafff3;
+  --nonogram-cell-filled-border-fallback:var(--accent);
+  --nonogram-cell-mark-fallback:#c8b7ff;
+  --nonogram-cell-mark-border-fallback:var(--accent-strong);
   --nonogram-cell-filled:color-mix(in srgb,var(--accent) 28%,#ffffff 72%);
   --nonogram-cell-mark:color-mix(in srgb,var(--accent-strong) 55%,#ffffff 45%);
   --nonogram-cell-mark-symbol:var(--fg);
@@ -965,17 +977,21 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
   box-shadow:0 0 0 3px color-mix(in srgb,var(--accent),transparent 55%),0 10px 20px color-mix(in srgb,var(--accent),transparent 75%);
 }
 .nonogram-cell--filled{
+  background:var(--nonogram-cell-filled-fallback);
+  border-color:var(--nonogram-cell-filled-border-fallback);
   background:var(--nonogram-cell-filled);
   border-color:color-mix(in srgb,var(--accent),transparent 25%);
 }
 .nonogram-cell--marked{
   background:var(--nonogram-cell-bg);
+  border-color:var(--nonogram-cell-mark-border-fallback);
   border-color:color-mix(in srgb,var(--nonogram-cell-mark),transparent 40%);
 }
 .nonogram-cell__mark{
   font-size:1.1em;
   font-weight:700;
   line-height:1;
+  color:var(--nonogram-cell-mark-fallback);
   color:var(--nonogram-cell-mark);
 }
 .nonogram-cell--error{
