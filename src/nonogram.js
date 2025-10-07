@@ -184,13 +184,21 @@ function NonogramCell({
   activeTool,
   disabled,
   onAction,
+  onDragStart,
+  onDragEnter,
+  onDragEnd,
   error,
   maxRows,
   maxCols,
   rowComplete,
   colComplete
 }){
-  const pointerRef = useRef({ timeout: null, longPressFired: false, ignoreClick: false });
+  const pointerRef = useRef({
+    timeout: null,
+    longPressFired: false,
+    ignoreClick: false,
+    draggingTool: null
+  });
 
   const clearTimer = () => {
     const { timeout } = pointerRef.current;
@@ -202,34 +210,67 @@ function NonogramCell({
 
   const handlePointerDown = useCallback(event => {
     if(disabled) return;
-    if(event.pointerType === 'mouse') return;
+    if(event.pointerType !== 'touch'){
+      if(event.button !== 0) return;
+      pointerRef.current.draggingTool = activeTool;
+      onAction(row, col, activeTool, 'toggle');
+      onDragStart(activeTool);
+      pointerRef.current.ignoreClick = true;
+      setTimeout(() => {
+        pointerRef.current.ignoreClick = false;
+      }, 0);
+      return;
+    }
     pointerRef.current.longPressFired = false;
     clearTimer();
     pointerRef.current.timeout = setTimeout(() => {
       pointerRef.current.longPressFired = true;
-      onAction(row, col, 'mark');
+      onAction(row, col, 'mark', 'toggle');
     }, LONG_PRESS_MS);
-  }, [disabled, row, col, onAction]);
+  }, [disabled, row, col, onAction, activeTool, onDragStart]);
 
   const handlePointerUp = useCallback(event => {
     if(disabled) return;
-    if(event.pointerType === 'mouse') return;
+    if(event.pointerType !== 'touch'){
+      pointerRef.current.draggingTool = null;
+      onDragEnd();
+      return;
+    }
     const fired = pointerRef.current.longPressFired;
     clearTimer();
     if(!fired){
-      onAction(row, col, activeTool);
+      onAction(row, col, activeTool, 'toggle');
     }
     pointerRef.current.longPressFired = false;
     pointerRef.current.ignoreClick = true;
     setTimeout(() => {
       pointerRef.current.ignoreClick = false;
     }, 0);
-  }, [disabled, row, col, onAction, activeTool]);
+  }, [disabled, row, col, onAction, activeTool, onDragEnd]);
+
+  const handlePointerEnter = useCallback(event => {
+    if(disabled) return;
+    if(event.pointerType !== 'touch' && pointerRef.current.draggingTool){
+      if(event.buttons === 0){
+        pointerRef.current.draggingTool = null;
+        onDragEnd();
+        return;
+      }
+      onDragEnter(row, col, pointerRef.current.draggingTool);
+    }
+  }, [disabled, row, col, onDragEnter, onDragEnd]);
 
   const handlePointerLeave = useCallback(() => {
     clearTimer();
     pointerRef.current.longPressFired = false;
   }, []);
+
+  const handlePointerCancel = useCallback(() => {
+    pointerRef.current.draggingTool = null;
+    clearTimer();
+    pointerRef.current.longPressFired = false;
+    onDragEnd();
+  }, [onDragEnd]);
 
   const handleClick = useCallback(event => {
     if(disabled) return;
@@ -243,20 +284,20 @@ function NonogramCell({
       event.preventDefault();
       return;
     }
-    onAction(row, col, activeTool);
+    onAction(row, col, activeTool, 'toggle');
   }, [disabled, row, col, onAction, activeTool]);
 
   const handleContextMenu = useCallback(event => {
     event.preventDefault();
     if(disabled) return;
-    onAction(row, col, 'mark');
+    onAction(row, col, 'mark', 'toggle');
   }, [disabled, row, col, onAction]);
 
   const handleAuxClick = useCallback(event => {
     if(event.button !== 1) return;
     event.preventDefault();
     if(disabled) return;
-    onAction(row, col, 'clear');
+    onAction(row, col, 'clear', 'toggle');
   }, [disabled, row, col, onAction]);
 
   useEffect(() => () => clearTimer(), []);
@@ -286,8 +327,9 @@ function NonogramCell({
       onAuxClick=${handleAuxClick}
       onPointerDown=${handlePointerDown}
       onPointerUp=${handlePointerUp}
+      onPointerEnter=${handlePointerEnter}
       onPointerLeave=${handlePointerLeave}
-      onPointerCancel=${handlePointerLeave}
+      onPointerCancel=${handlePointerCancel}
     >
       ${state === 'marked' ? html`<span className="nonogram-cell__mark" aria-hidden="true">✕</span>` : null}
     </button>
@@ -509,7 +551,7 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialDifficulty },
     }
   }, [derived, elapsed, running, paused, completed, difficulty, progressKey]);
 
-  const handleAction = useCallback((row, col, action) => {
+  const handleAction = useCallback((row, col, action, mode = 'toggle') => {
     if(!running || paused || completed){
       return;
     }
@@ -517,9 +559,21 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialDifficulty },
       const current = prev[row]?.[col];
       let next = current;
       if(action === 'fill'){
-        next = current === 'filled' ? 'empty' : 'filled';
+        if(mode === 'set'){
+          next = 'filled';
+        }else if(mode === 'clear'){
+          next = 'empty';
+        }else{
+          next = current === 'filled' ? 'empty' : 'filled';
+        }
       }else if(action === 'mark'){
-        next = current === 'marked' ? 'empty' : 'marked';
+        if(mode === 'set'){
+          next = 'marked';
+        }else if(mode === 'clear'){
+          next = 'empty';
+        }else{
+          next = current === 'marked' ? 'empty' : 'marked';
+        }
       }else if(action === 'clear'){
         next = 'empty';
       }
@@ -531,6 +585,42 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialDifficulty },
       return clone;
     });
   }, [running, paused, completed]);
+
+  const dragStateRef = useRef({ active: false, tool: null });
+
+  const beginDrag = useCallback(tool => {
+    if(!running || paused || completed){
+      return;
+    }
+    dragStateRef.current.active = true;
+    dragStateRef.current.tool = tool;
+  }, [running, paused, completed]);
+
+  const dragOver = useCallback((row, col, tool) => {
+    const state = dragStateRef.current;
+    const currentTool = tool || state.tool;
+    if(!state.active || !currentTool){
+      return;
+    }
+    handleAction(row, col, currentTool, 'set');
+  }, [handleAction]);
+
+  const endDrag = useCallback(() => {
+    dragStateRef.current.active = false;
+    dragStateRef.current.tool = null;
+  }, []);
+
+  useEffect(() => {
+    const handlePointerUp = () => {
+      endDrag();
+    };
+    window.addEventListener('pointerup', handlePointerUp);
+    window.addEventListener('pointercancel', handlePointerUp);
+    return () => {
+      window.removeEventListener('pointerup', handlePointerUp);
+      window.removeEventListener('pointercancel', handlePointerUp);
+    };
+  }, [endDrag]);
 
   const restart = useCallback(() => {
     if(progressKey && typeof window !== 'undefined'){
@@ -680,6 +770,9 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialDifficulty },
                   activeTool=${activeTool}
                   disabled=${!running || paused || completed}
                   onAction=${handleAction}
+                  onDragStart=${beginDrag}
+                  onDragEnter=${dragOver}
+                  onDragEnd=${endDrag}
                   error=${derived.errors.has(`${rowIndex}-${colIndex}`)}
                   maxRows=${rows}
                   maxCols=${cols}
