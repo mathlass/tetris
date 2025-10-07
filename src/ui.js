@@ -1,14 +1,17 @@
 import { THEME_KEY, PLAYER_KEY } from './constants.js';
 
 export function initUI(){
-  const prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
-  const storedTheme = localStorage.getItem(THEME_KEY);
-  const themeOrder = ['dark','light','aurora'];
+  let storedTheme = localStorage.getItem(THEME_KEY);
+  const themeOrder = ['beige','light','aurora'];
   const themeConfig = {
-    dark:{ className:'', icon:'🌙', label:'Dunkel' },
+    beige:{ className:'', icon:'🌓', label:'Beige' },
     light:{ className:'theme-light', icon:'🌞', label:'Hell' },
     aurora:{ className:'theme-aurora', icon:'⚡', label:'Aurora' }
   };
+  if(storedTheme === 'dark'){
+    storedTheme = 'beige';
+    localStorage.setItem(THEME_KEY, storedTheme);
+  }
   const removableClasses = themeOrder
     .map(key => themeConfig[key]?.className)
     .filter(Boolean);
@@ -24,7 +27,7 @@ export function initUI(){
 
   let currentTheme = themeOrder.includes(storedTheme)
     ? storedTheme
-    : (storedTheme === null && prefersLight ? 'light' : 'dark');
+    : 'beige';
   applyTheme(currentTheme);
 
   const btnThemes = document.querySelectorAll('#themeToggle');
@@ -57,7 +60,7 @@ export function initUI(){
     document.dispatchEvent(evt);
   }
   function updateThemeIcon(){
-    const config = themeConfig[currentTheme] ?? themeConfig.dark;
+    const config = themeConfig[currentTheme] ?? themeConfig.beige;
     themeIcons.forEach(icon => {
       icon.textContent = config.icon;
     });
