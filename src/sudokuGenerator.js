@@ -198,20 +198,3 @@ export function generateSudoku(difficulty = 'easy'){
   return { puzzle, solution: solved };
 }
 
-export function gridToString(grid){
-  return grid.map(row => row.join('')).join('');
-}
-
-export function stringToGrid(str){
-  const grid = createGrid();
-  for(let i = 0; i < str.length && i < SIZE * SIZE; i++){
-    const row = Math.floor(i / SIZE);
-    const col = i % SIZE;
-    grid[row][col] = Number(str[i]) || 0;
-  }
-  return grid;
-}
-
-export function clone(grid){
-  return cloneGrid(grid);
-}
