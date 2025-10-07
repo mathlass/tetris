@@ -27,8 +27,8 @@ if (!JSDOM) {
     const btn = document.getElementById('themeToggle');
     const icon = document.querySelector('[data-theme-icon]');
 
-    assert.strictEqual(icon.textContent, '🌙');
-    assert.strictEqual(document.body.dataset.theme, 'dark');
+    assert.strictEqual(icon.textContent, '🌓');
+    assert.strictEqual(document.body.dataset.theme, 'beige');
 
     btn.dispatchEvent(new window.Event('click'));
 
@@ -44,9 +44,9 @@ if (!JSDOM) {
 
     btn.dispatchEvent(new window.Event('click'));
 
-    assert.strictEqual(localStorage.getItem(THEME_KEY), 'dark');
-    assert.strictEqual(document.body.dataset.theme, 'dark');
-    assert.strictEqual(icon.textContent, '🌙');
+    assert.strictEqual(localStorage.getItem(THEME_KEY), 'beige');
+    assert.strictEqual(document.body.dataset.theme, 'beige');
+    assert.strictEqual(icon.textContent, '🌓');
 
     delete global.window;
     delete global.document;
