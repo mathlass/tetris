@@ -2,6 +2,8 @@
 import { SUDOKU_HS_KEY_BASE } from './constants.js';
 import {
   createHighscoreStore,
+  formatDuration,
+  renderHighscoreTable,
   sanitizeName
 } from './highscoreStore.js';
 
@@ -21,14 +23,7 @@ const store = createHighscoreStore({
 });
 
 export function formatTime(totalSeconds){
-  const seconds = Math.max(0, Math.floor(totalSeconds));
-  const hrs = Math.floor(seconds / 3600);
-  const mins = Math.floor((seconds % 3600) / 60);
-  const secs = seconds % 60;
-  if(hrs > 0){
-    return `${hrs}:${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
-  }
-  return `${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
+  return formatDuration(totalSeconds, { allowHours: true });
 }
 
 export function addHS(entry, difficulty){
@@ -41,27 +36,19 @@ export function clearHS(difficulty){
 
 export function renderHS(difficulty, options = {}){
   const { tableSelector = '#sudokuScoreTable' } = options;
-  const table = document.querySelector(tableSelector);
-  const tbody = table ? table.querySelector('tbody') : null;
-  if(!tbody) return;
-  const list = store.sanitizeList(store.load(difficulty), difficulty);
-  while(tbody.firstChild) tbody.removeChild(tbody.firstChild);
-  list.forEach((entry, index) => {
-    const tr = document.createElement('tr');
-    const tdRank = document.createElement('td');
-    tdRank.textContent = String(index + 1);
-    const tdName = document.createElement('td');
-    tdName.textContent = entry.name;
-    const tdTime = document.createElement('td');
-    tdTime.textContent = formatTime(entry.time);
-    const tdDate = document.createElement('td');
-    tdDate.textContent = entry.date || '';
-    tr.append(tdRank, tdName, tdTime, tdDate);
-    tbody.appendChild(tr);
+  return renderHighscoreTable({
+    store,
+    mode: difficulty,
+    tableSelector,
+    formatRow: entry => [
+      entry.name,
+      formatDuration(entry.time, { allowHours: true }),
+      entry.date || ''
+    ]
   });
 }
 
 export function getBestTime(difficulty){
-  const list = store.sanitizeList(store.load(difficulty), difficulty);
+  const list = store.getListSync(difficulty);
   return list.length ? list[0].time : null;
 }

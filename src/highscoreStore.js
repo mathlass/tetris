@@ -71,9 +71,13 @@ export function createHighscoreStore({
     return sanitized;
   }
 
-  async function getList(mode) {
+  function getListSync(mode) {
     const list = load(mode);
     return sanitizeList(list, mode);
+  }
+
+  async function getList(mode) {
+    return getListSync(mode);
   }
 
   async function add(entry, mode) {
@@ -101,8 +105,56 @@ export function createHighscoreStore({
     add,
     clear,
     getList,
+    getListSync,
     sanitizeEntry,
     sanitizeList,
     storageKey: getStorageKey
   };
+}
+
+export async function renderHighscoreTable({
+  store,
+  mode,
+  tableSelector,
+  formatRow = entry => [entry.name, entry.score, entry.date || ''],
+  includeRank = true
+} = {}) {
+  const table = document.querySelector(tableSelector);
+  const tbody = table ? table.querySelector('tbody') : null;
+  if (!tbody || !store) return;
+  const list = await store.getList(mode);
+  const fragment = document.createDocumentFragment();
+  list.forEach((entry, index) => {
+    const tr = document.createElement('tr');
+    if (includeRank) {
+      const tdRank = document.createElement('td');
+      tdRank.textContent = String(index + 1);
+      tr.appendChild(tdRank);
+    }
+    const cells = formatRow(entry, index, mode) || [];
+    cells.forEach(value => {
+      const td = document.createElement('td');
+      td.textContent = value != null ? String(value) : '';
+      tr.appendChild(td);
+    });
+    fragment.appendChild(tr);
+  });
+  tbody.textContent = '';
+  tbody.appendChild(fragment);
+}
+
+export function formatDuration(totalSeconds, { allowHours = false } = {}) {
+  const seconds = Math.max(0, Math.floor(totalSeconds || 0));
+  if (allowHours) {
+    const hrs = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+    if (hrs > 0) {
+      return `${hrs}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    }
+    return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+  }
+  const minutes = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  return `${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
 }
