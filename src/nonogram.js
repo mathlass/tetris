@@ -43,6 +43,7 @@ const BOARD_WIDTH_RATIO = 0.7;
 const BOARD_HEIGHT_RATIO = 0.8;
 const PROGRESS_KEY_PREFIX = 'nonogram_board_v1';
 const VALID_CELL_STATES = new Set(['empty', 'filled', 'marked']);
+const AVAILABLE_TOOLS = ['mark', 'fill'];
 
 function progressKeyForPuzzle(puzzle){
   if(!puzzle || !puzzle.id){
@@ -353,7 +354,7 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialDifficulty },
 
   const requiredCells = useMemo(() => countFilledCells(puzzle.grid), [puzzle]);
   const handleToolSelect = useCallback(tool => {
-    setActiveTool(tool);
+    setActiveTool(AVAILABLE_TOOLS.includes(tool) ? tool : 'fill');
   }, []);
 
   useEffect(() => {
@@ -727,8 +728,7 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialDifficulty },
 
   const toolButtons = [
     { id: 'mark', icon: '✕', label: 'Leerfeld markieren' },
-    { id: 'fill', icon: '🟦', label: 'Feld füllen' },
-    { id: 'clear', icon: '🧽', label: 'Radieren' }
+    { id: 'fill', icon: '🟦', label: 'Feld füllen oder leeren' }
   ];
 
   return html`
@@ -787,8 +787,8 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialDifficulty },
           <h3>So funktioniert's</h3>
         </div>
         <p>Die Zahlen am Rand zeigen, wie viele aufeinanderfolgende Felder in der jeweiligen Reihe oder Spalte gefüllt werden müssen.</p>
-        <p>Tippe oder klicke auf ein Werkzeug (✕, ausgefülltes Feld oder Radiergummi) und anschließend auf das Spielfeld, um Felder zu markieren, zu füllen oder zurückzusetzen.</p>
-        <p>Mit Rechtsklick markierst du ein leeres Feld, die mittlere Maustaste löscht ein Feld.</p>
+        <p>Tippe oder klicke auf ein Werkzeug (✕ oder ausgefülltes Feld) und anschließend auf das Spielfeld, um Felder zu markieren oder zu füllen. Ein erneuter Klick mit demselben Werkzeug setzt das Feld zurück.</p>
+        <p>Mit Rechtsklick markierst du ein leeres Feld, die mittlere Maustaste löscht ein Feld. Falsche Einträge werden sofort rot hervorgehoben – genau wie im Sudoku.</p>
       </div>
       <${CompletionOverlay}
         visible=${overlayVisible}
