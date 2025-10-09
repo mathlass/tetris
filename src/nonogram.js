@@ -193,7 +193,6 @@ function NonogramCell({
   colComplete
 }){
   const pointerRef = useRef({
-    ignoreClick: false,
     draggingTool: null
   });
 
@@ -204,10 +203,6 @@ function NonogramCell({
     pointerRef.current.draggingTool = activeTool;
     onAction(row, col, activeTool, 'toggle');
     onDragStart(activeTool);
-    pointerRef.current.ignoreClick = true;
-    setTimeout(() => {
-      pointerRef.current.ignoreClick = false;
-    }, 0);
     if(isTouch){
       event.preventDefault();
     }
@@ -238,8 +233,7 @@ function NonogramCell({
 
   const handleClick = useCallback(event => {
     if(disabled) return;
-    if(pointerRef.current.ignoreClick){
-      pointerRef.current.ignoreClick = false;
+    if(event.detail !== 0){
       event.preventDefault();
       return;
     }
