@@ -96,61 +96,48 @@ function readPersonalBest(puzzleId){
 }
 
 function CompletionOverlay({ visible, info, onRestart, onClose }){
-  if(!visible || !info){
+  if(typeof document === 'undefined'){
     return null;
   }
-  const { time, personalBest, leaderboardBest, gaveUp } = info;
+  const gaveUp = info?.gaveUp ?? false;
+  const time = Number.isFinite(info?.time) ? info.time : null;
+  const personalBest = Number.isFinite(info?.personalBest) ? info.personalBest : null;
+  const leaderboardBest = Number.isFinite(info?.leaderboardBest) ? info.leaderboardBest : null;
+  const showTime = !gaveUp && Number.isFinite(time);
+  const personalBestLabel = personalBest ? formatNonogramTime(personalBest) : '--';
+  const leaderboardLabel = leaderboardBest ? formatNonogramTime(leaderboardBest) : '--';
+  const timeLabel = showTime ? formatNonogramTime(time) : '--';
+
   return createPortal(html`
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 px-4 py-6">
-      <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-xl ring-1 ring-slate-200">
-        <div className="flex items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-sky-100 text-2xl">
-            ${gaveUp ? '🧩' : '🎉'}
-          </div>
-          <div>
-            <h2 className="text-xl font-semibold text-slate-900">
-              ${gaveUp ? 'Rätsel angezeigt' : 'Nonogramm gelöst!'}
-            </h2>
-            <p className="text-sm text-slate-600">
-              ${gaveUp ? 'Du kannst jederzeit ein neues Rätsel starten.' : 'Starke Leistung – weiter so!'}
-            </p>
-          </div>
+    <div
+      id="nonogramOverlay"
+      className=${visible ? 'show' : ''}
+      aria-hidden=${visible ? 'false' : 'true'}
+    >
+      <div className="overlay-card" role="dialog" aria-modal="true" aria-labelledby="nonogramOvTitle">
+        <h2 id="nonogramOvTitle">${gaveUp ? '🧩 Rätsel angezeigt' : '🎉 Nonogramm gelöst!'}</h2>
+        <p>${gaveUp ? 'Du kannst jederzeit ein neues Rätsel starten.' : 'Starke Leistung – weiter so!'}</p>
+        ${showTime ? html`<p>Deine Zeit: <b id="nonogramOvTime">${timeLabel}</b></p>` : null}
+        <p>Beste Zeit: <b id="nonogramOvBest">${personalBestLabel}</b></p>
+        ${leaderboardBest ? html`<p>Top-Zeit (Leaderboard): <b>${leaderboardLabel}</b></p>` : null}
+        <div className="buttons" style=${{ justifyContent: 'center', marginTop: '12px' }}>
+          <button type="button" className="button-primary" onClick=${onRestart}>
+            <span className="icon" aria-hidden="true">↻</span> ${gaveUp ? 'Neues Rätsel' : 'Noch einmal'}
+          </button>
+          <button type="button" onClick=${onClose}>
+            <span className="icon" aria-hidden="true">✕</span> Schließen
+          </button>
         </div>
-        <dl className="mt-6 space-y-3">
-          ${gaveUp ? null : html`
-            <div className="flex items-center justify-between rounded-xl bg-slate-100 px-4 py-3">
-              <dt className="text-sm font-medium text-slate-600">Deine Zeit</dt>
-              <dd className="text-lg font-semibold text-slate-900">${formatNonogramTime(time)}</dd>
-            </div>
-          `}
-          ${personalBest ? html`
-            <div className="flex items-center justify-between rounded-xl bg-slate-50 px-4 py-3">
-              <dt className="text-sm font-medium text-slate-600">Persönliche Bestzeit</dt>
-              <dd className="text-lg font-semibold text-slate-900">${formatNonogramTime(personalBest)}</dd>
-            </div>
-          ` : null}
-          ${leaderboardBest ? html`
-            <div className="flex items-center justify-between rounded-xl bg-slate-50 px-4 py-3">
-              <dt className="text-sm font-medium text-slate-600">Top-Zeit (Leaderboard)</dt>
-              <dd className="text-lg font-semibold text-slate-900">${formatNonogramTime(leaderboardBest)}</dd>
-            </div>
-          ` : null}
-        </dl>
-        <div className="mt-8 grid gap-3 sm:grid-cols-2">
-          <button
-            type="button"
-            className="inline-flex items-center justify-center rounded-full bg-sky-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2"
-            onClick=${onRestart}
-          >
-            ${gaveUp ? 'Neues Rätsel' : 'Noch einmal'}
-          </button>
-          <button
-            type="button"
-            className="inline-flex items-center justify-center rounded-full bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 ring-1 ring-inset ring-slate-200 transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-500"
-            onClick=${onClose}
-          >
-            Weiter spielen
-          </button>
+        <div className="panel panel--info" style=${{ marginTop: '16px' }}>
+          <div className="panel__header">
+            <h3>Top-Zeiten</h3>
+          </div>
+          <table className="table" id="nonogramOvTable">
+            <thead>
+              <tr><th>#</th><th>Name</th><th>Zeit</th><th>Datum</th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
         </div>
       </div>
     </div>
@@ -379,6 +366,7 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialDifficulty },
     setPersonalBest(readPersonalBest(difficulty));
     setLeaderboardBest(getBestTime(difficulty));
     renderHS(difficulty, { tableSelector: '#nonogramScoreTable' });
+    renderHS(difficulty, { tableSelector: '#nonogramOvTable' });
   }, [difficulty]);
 
   useEffect(() => {
@@ -483,6 +471,7 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialDifficulty },
         const leaderboardTime = getBestTime(difficulty);
         setLeaderboardBest(leaderboardTime);
         renderHS(difficulty, { tableSelector: '#nonogramScoreTable' });
+        renderHS(difficulty, { tableSelector: '#nonogramOvTable' });
         const stored = readPersonalBest(difficulty);
         setOverlayInfo({
           time: seconds,
@@ -609,6 +598,8 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialDifficulty },
     syncScores: () => {
       setPersonalBest(readPersonalBest(difficulty));
       setLeaderboardBest(getBestTime(difficulty));
+      renderHS(difficulty, { tableSelector: '#nonogramScoreTable' });
+      renderHS(difficulty, { tableSelector: '#nonogramOvTable' });
     }
   }), [restart, stopGame, overlayInfo, completed, running, elapsed, difficulty]);
 
