@@ -453,6 +453,10 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialDifficulty },
           errorSet.add(key);
           rowComplete[r] = false;
           colComplete[c] = false;
+        }else if(current !== 'marked'){
+          hasMissing = true;
+          rowComplete[r] = false;
+          colComplete[c] = false;
         }
       }
     }
