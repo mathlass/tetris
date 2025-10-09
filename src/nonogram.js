@@ -29,11 +29,15 @@ import {
 } from './nonogramData.js';
 
 const html = htm.bind(React.createElement);
-const DEFAULT_DIFFICULTY = NONOGRAM_DIFFICULTIES[0] || 'easy';
+const PREFERRED_DEFAULT_DIFFICULTY = 'hard';
+const DEFAULT_DIFFICULTY = NONOGRAM_DIFFICULTIES.includes(PREFERRED_DEFAULT_DIFFICULTY)
+  ? PREFERRED_DEFAULT_DIFFICULTY
+  : NONOGRAM_DIFFICULTIES[0] || 'easy';
 const MIN_CELL_SIZE = 22;
 const MAX_CELL_SIZE = 52;
 const BOARD_PADDING_CELLS = 6;
 const BOARD_WIDTH_RATIO = 0.7;
+const BOARD_HEIGHT_RATIO = 0.8;
 const PROGRESS_KEY_PREFIX = 'nonogram_board_v1';
 const VALID_CELL_STATES = new Set(['empty', 'filled', 'marked']);
 
@@ -68,8 +72,9 @@ function calculateFallbackCellSize(rows, cols){
   if(typeof window === 'undefined'){
     return `${MIN_CELL_SIZE}px`;
   }
-  const denominator = Math.max(rows, cols) + BOARD_PADDING_CELLS;
-  if(denominator <= 0){
+  const widthDenominator = Math.max(rows, cols) + BOARD_PADDING_CELLS;
+  const heightDenominator = rows + BOARD_PADDING_CELLS;
+  if(widthDenominator <= 0 || heightDenominator <= 0){
     return `${MIN_CELL_SIZE}px`;
   }
   const viewportWidth = Math.max(
@@ -77,10 +82,22 @@ function calculateFallbackCellSize(rows, cols){
     (window.document && window.document.documentElement && window.document.documentElement.clientWidth) || 0,
     (window.screen && window.screen.width) || 0
   );
-  if(viewportWidth <= 0){
+  const viewportHeight = Math.max(
+    window.innerHeight || 0,
+    (window.document && window.document.documentElement && window.document.documentElement.clientHeight) || 0,
+    (window.screen && window.screen.height) || 0
+  );
+  const widthBased = viewportWidth > 0
+    ? (viewportWidth * BOARD_WIDTH_RATIO) / widthDenominator
+    : Number.POSITIVE_INFINITY;
+  const heightBased = viewportHeight > 0
+    ? (viewportHeight * BOARD_HEIGHT_RATIO) / heightDenominator
+    : Number.POSITIVE_INFINITY;
+  const candidates = [widthBased, heightBased].filter(value => Number.isFinite(value) && value > 0);
+  if(candidates.length === 0){
     return `${MIN_CELL_SIZE}px`;
   }
-  const raw = (viewportWidth * BOARD_WIDTH_RATIO) / denominator;
+  const raw = Math.min(...candidates);
   const clamped = Math.min(MAX_CELL_SIZE, Math.max(MIN_CELL_SIZE, raw));
   const rounded = Math.round(clamped * 100) / 100;
   return `${rounded}px`;
@@ -665,19 +682,32 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialDifficulty },
     };
   }, [clampSupported, rows, cols]);
 
-  const cellSize = useMemo(() => (
-    clampSupported
-      ? `clamp(${MIN_CELL_SIZE}px, calc(${BOARD_WIDTH_RATIO * 100}vw / ${Math.max(rows, cols) + BOARD_PADDING_CELLS}), ${MAX_CELL_SIZE}px)`
-      : fallbackCellSize || `${MIN_CELL_SIZE}px`
-  ), [clampSupported, fallbackCellSize, rows, cols]);
+  const cellSize = useMemo(() => {
+    if(!clampSupported){
+      return fallbackCellSize || `${MIN_CELL_SIZE}px`;
+    }
+    const widthDivisor = Math.max(rows, cols) + BOARD_PADDING_CELLS;
+    const heightDivisor = rows + BOARD_PADDING_CELLS;
+    const widthFactor = (BOARD_WIDTH_RATIO * 100).toFixed(2);
+    const heightFactor = (BOARD_HEIGHT_RATIO * 100).toFixed(2);
+    const widthExpression = `calc(${widthFactor}vw / ${widthDivisor})`;
+    const heightExpression = `calc(${heightFactor}vh / ${heightDivisor})`;
+    return `clamp(${MIN_CELL_SIZE}px, min(${widthExpression}, ${heightExpression}), ${MAX_CELL_SIZE}px)`;
+  }, [clampSupported, fallbackCellSize, rows, cols]);
 
   const boardStyle = useMemo(() => ({
     '--nonogram-cell-size': cellSize,
-    '--nonogram-cell-gap': '8px',
-    '--nonogram-layout-gap': '18px',
-    '--nonogram-clue-gap': '10px',
-    '--nonogram-clue-number-gap': '8px',
-    '--nonogram-clue-font': 'clamp(0.7rem, 1.4vw, 0.95rem)',
+    '--nonogram-cell-gap': '6px',
+    '--nonogram-layout-gap': '12px',
+    '--nonogram-clue-gap': '8px',
+    '--nonogram-clue-number-gap': '6px',
+    '--nonogram-clue-font': 'clamp(0.7rem, 1.2vw, 0.9rem)',
+    '--nonogram-clue-padding': '6px 10px',
+    '--nonogram-clue-radius': '14px',
+    '--nonogram-grid-padding': 'clamp(12px, 2.2vw, 24px)',
+    '--nonogram-grid-radius': '22px',
+    '--nonogram-cells-radius': '18px',
+    '--nonogram-cells-padding': '6px',
     '--nonogram-columns': String(cols),
     '--nonogram-rows': String(rows)
   }), [cellSize, rows, cols]);
