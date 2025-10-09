@@ -34,13 +34,13 @@ const DEFAULT_DIFFICULTY = NONOGRAM_DIFFICULTIES.includes(PREFERRED_DEFAULT_DIFF
   ? PREFERRED_DEFAULT_DIFFICULTY
   : NONOGRAM_DIFFICULTIES[0] || 'easy';
 const MIN_CELL_SIZE = 20;
-const MIN_CELL_SIZE_COMPACT = 14;
+const MIN_CELL_SIZE_COMPACT = 12;
 const MAX_CELL_SIZE = 52;
 const BOARD_PADDING_CELLS = 6;
 const BOARD_PADDING_CELLS_COMPACT = 10;
 const COMPACT_BREAKPOINT = 640;
-const BOARD_WIDTH_RATIO = 0.7;
-const BOARD_HEIGHT_RATIO = 0.8;
+const BOARD_WIDTH_RATIO = 0.72;
+const BOARD_HEIGHT_RATIO = 0.82;
 const PROGRESS_KEY_PREFIX = 'nonogram_board_v1';
 const VALID_CELL_STATES = new Set(['empty', 'filled', 'marked']);
 const AVAILABLE_TOOLS = ['mark', 'fill'];
@@ -76,7 +76,53 @@ function isCompactViewport(width){
   return Number.isFinite(width) && width > 0 && width <= COMPACT_BREAKPOINT;
 }
 
-function calculateResponsiveCellSize(rows, cols){
+function sumDigits(values){
+  if(!Array.isArray(values) || values.length === 0){
+    return 0;
+  }
+  return values.reduce((total, value) => {
+    const safe = Math.max(0, Number.isFinite(value) ? Math.floor(value) : 0);
+    return total + String(safe).length;
+  }, 0);
+}
+
+function estimateRowHintUnits(rowClues){
+  if(!Array.isArray(rowClues) || rowClues.length === 0){
+    return 2;
+  }
+  let maxUnits = 2;
+  for(const clues of rowClues){
+    if(!Array.isArray(clues) || clues.length === 0){
+      maxUnits = Math.max(maxUnits, 1.6);
+      continue;
+    }
+    const digits = sumDigits(clues);
+    const separators = Math.max(0, clues.length - 1);
+    const units = 1.6 + digits * 0.55 + separators * 0.35;
+    maxUnits = Math.max(maxUnits, units);
+  }
+  return maxUnits;
+}
+
+function estimateColumnHintUnits(colClues){
+  if(!Array.isArray(colClues) || colClues.length === 0){
+    return 2;
+  }
+  let maxUnits = 2;
+  for(const clues of colClues){
+    if(!Array.isArray(clues) || clues.length === 0){
+      maxUnits = Math.max(maxUnits, 1.6);
+      continue;
+    }
+    const digits = sumDigits(clues);
+    const separators = Math.max(0, clues.length - 1);
+    const units = 1.6 + digits * 0.5 + separators * 0.3;
+    maxUnits = Math.max(maxUnits, units);
+  }
+  return maxUnits;
+}
+
+function calculateResponsiveCellSize(rows, cols, rowClues, colClues){
   if(typeof window === 'undefined'){
     return `${MIN_CELL_SIZE}px`;
   }
@@ -93,8 +139,10 @@ function calculateResponsiveCellSize(rows, cols){
   const compact = isCompactViewport(viewportWidth);
   const widthPadding = compact ? BOARD_PADDING_CELLS_COMPACT : BOARD_PADDING_CELLS;
   const heightPadding = compact ? BOARD_PADDING_CELLS_COMPACT : BOARD_PADDING_CELLS;
-  const widthDenominator = Math.max(rows, cols) + widthPadding;
-  const heightDenominator = rows + heightPadding;
+  const rowHintUnits = estimateRowHintUnits(rowClues);
+  const colHintUnits = estimateColumnHintUnits(colClues);
+  const widthDenominator = cols + rowHintUnits + widthPadding;
+  const heightDenominator = rows + colHintUnits + heightPadding;
   if(widthDenominator <= 0 || heightDenominator <= 0){
     return `${MIN_CELL_SIZE}px`;
   }
@@ -671,7 +719,7 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialDifficulty },
     };
   }, []);
 
-  const [cellSize, setCellSize] = useState(() => calculateResponsiveCellSize(rows, cols));
+  const [cellSize, setCellSize] = useState(() => calculateResponsiveCellSize(rows, cols, rowClues, colClues));
   const [compactLayout, setCompactLayout] = useState(() => {
     if(typeof window === 'undefined'){
       return false;
@@ -689,7 +737,7 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialDifficulty },
       return undefined;
     }
     const updateLayout = () => {
-      setCellSize(calculateResponsiveCellSize(rows, cols));
+      setCellSize(calculateResponsiveCellSize(rows, cols, rowClues, colClues));
       const width = Math.max(
         window.innerWidth || 0,
         (window.document && window.document.documentElement && window.document.documentElement.clientWidth) || 0,
@@ -704,7 +752,7 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialDifficulty },
       window.removeEventListener('resize', updateLayout);
       window.removeEventListener('orientationchange', updateLayout);
     };
-  }, [rows, cols]);
+  }, [rows, cols, rowClues, colClues]);
 
   const boardStyle = useMemo(() => ({
     '--nonogram-cell-size': cellSize,
