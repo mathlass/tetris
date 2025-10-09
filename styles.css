@@ -63,6 +63,20 @@
   --nonogram-cell-mark-symbol:var(--fg);
   --nonogram-clue-color:color-mix(in srgb,var(--muted),transparent 26%);
   --nonogram-clue-accent:var(--fg);
+  --nonogram-grid-surface:linear-gradient(155deg,color-mix(in srgb,var(--canvas-bg),transparent 4%),color-mix(in srgb,var(--accent),transparent 88%));
+  --nonogram-grid-overlay:radial-gradient(120% 140% at 82% 12%,color-mix(in srgb,var(--accent-strong),transparent 78%),transparent 72%),radial-gradient(140% 160% at 8% 0%,color-mix(in srgb,var(--accent),transparent 82%),transparent 70%);
+  --nonogram-grid-border:color-mix(in srgb,var(--accent),transparent 70%);
+  --nonogram-grid-shadow:0 28px 48px color-mix(in srgb,var(--bg),#000 58%),0 16px 32px color-mix(in srgb,var(--accent),transparent 84%);
+  --nonogram-grid-glare:radial-gradient(120% 65% at 0% 0%,color-mix(in srgb,var(--accent),transparent 82%),transparent 72%);
+  --nonogram-clue-surface:color-mix(in srgb,var(--canvas-bg),transparent 12%);
+  --nonogram-clue-border:color-mix(in srgb,var(--accent),transparent 68%);
+  --nonogram-clue-shadow:0 16px 26px color-mix(in srgb,var(--bg),#000 60%);
+  --nonogram-cells-surface:color-mix(in srgb,var(--canvas-bg),transparent 8%);
+  --nonogram-cells-border:color-mix(in srgb,var(--canvas-border),transparent 45%);
+  --nonogram-cells-shadow:inset 0 0 0 1px color-mix(in srgb,var(--canvas-border),transparent 70%),0 24px 38px color-mix(in srgb,var(--bg),#000 55%);
+  --nonogram-cell-shadow:0 10px 20px color-mix(in srgb,var(--bg),#000 60%);
+  --nonogram-cell-outline:color-mix(in srgb,var(--accent),transparent 55%);
+  --nonogram-cell-highlight:radial-gradient(90% 90% at 30% 25%,color-mix(in srgb,#ffffff,transparent 60%) 0%,transparent 70%);
 }
 .theme-light {
   --bg:#f8fbff;
@@ -125,6 +139,20 @@
   --nonogram-cell-mark:color-mix(in srgb,var(--accent-strong) 45%,#ffffff 55%);
   --nonogram-cell-mark-symbol:var(--fg);
   --nonogram-clue-color:color-mix(in srgb,var(--muted),transparent 35%);
+  --nonogram-grid-surface:linear-gradient(155deg,color-mix(in srgb,#ffffff,transparent 6%),color-mix(in srgb,var(--accent),transparent 78%));
+  --nonogram-grid-overlay:radial-gradient(135% 150% at 80% 8%,color-mix(in srgb,var(--accent-strong),transparent 70%),transparent 68%),radial-gradient(150% 170% at 10% 0%,color-mix(in srgb,var(--accent),transparent 75%),transparent 70%);
+  --nonogram-grid-border:color-mix(in srgb,var(--accent),transparent 55%);
+  --nonogram-grid-shadow:0 32px 52px color-mix(in srgb,var(--accent),transparent 78%),0 18px 34px color-mix(in srgb,var(--accent-strong),transparent 84%);
+  --nonogram-grid-glare:radial-gradient(120% 65% at 0% 0%,color-mix(in srgb,var(--accent),transparent 65%),transparent 72%);
+  --nonogram-clue-surface:color-mix(in srgb,#ffffff,transparent 10%);
+  --nonogram-clue-border:color-mix(in srgb,var(--accent),transparent 55%);
+  --nonogram-clue-shadow:0 18px 28px color-mix(in srgb,var(--accent),transparent 78%);
+  --nonogram-cells-surface:color-mix(in srgb,#ffffff,transparent 12%);
+  --nonogram-cells-border:color-mix(in srgb,var(--canvas-border),transparent 38%);
+  --nonogram-cells-shadow:inset 0 0 0 1px color-mix(in srgb,var(--canvas-border),transparent 62%),0 22px 36px color-mix(in srgb,var(--accent),transparent 78%);
+  --nonogram-cell-shadow:0 12px 20px color-mix(in srgb,var(--accent),transparent 75%);
+  --nonogram-cell-outline:color-mix(in srgb,var(--accent),transparent 42%);
+  --nonogram-cell-highlight:radial-gradient(100% 90% at 28% 20%,color-mix(in srgb,#ffffff,transparent 40%) 0%,transparent 68%);
 }
 
 .theme-aurora {
@@ -188,6 +216,20 @@
   --nonogram-cell-mark:color-mix(in srgb,var(--accent-strong) 55%,#ffffff 45%);
   --nonogram-cell-mark-symbol:var(--fg);
   --nonogram-clue-color:color-mix(in srgb,var(--muted),transparent 22%);
+  --nonogram-grid-surface:linear-gradient(165deg,color-mix(in srgb,#050f24,transparent 15%),color-mix(in srgb,var(--accent-strong),transparent 65%));
+  --nonogram-grid-overlay:radial-gradient(140% 170% at 78% 12%,color-mix(in srgb,var(--accent),transparent 65%),transparent 70%),radial-gradient(160% 180% at 12% 0%,color-mix(in srgb,var(--accent-strong),transparent 72%),transparent 72%);
+  --nonogram-grid-border:color-mix(in srgb,var(--accent-strong),transparent 55%);
+  --nonogram-grid-shadow:0 32px 58px color-mix(in srgb,#020713,transparent 20%),0 24px 46px color-mix(in srgb,var(--accent),transparent 70%);
+  --nonogram-grid-glare:radial-gradient(140% 70% at 0% 0%,color-mix(in srgb,var(--accent-strong),transparent 60%),transparent 70%);
+  --nonogram-clue-surface:color-mix(in srgb,#0f1a36,transparent 25%);
+  --nonogram-clue-border:color-mix(in srgb,var(--accent),transparent 55%);
+  --nonogram-clue-shadow:0 24px 38px color-mix(in srgb,#01040c,transparent 25%);
+  --nonogram-cells-surface:color-mix(in srgb,#060d22,transparent 20%);
+  --nonogram-cells-border:color-mix(in srgb,var(--canvas-border),transparent 32%);
+  --nonogram-cells-shadow:inset 0 0 0 1px color-mix(in srgb,var(--canvas-border),transparent 55%),0 28px 44px color-mix(in srgb,#000510,transparent 35%);
+  --nonogram-cell-shadow:0 14px 28px color-mix(in srgb,var(--accent-strong),transparent 62%);
+  --nonogram-cell-outline:color-mix(in srgb,var(--accent),transparent 45%);
+  --nonogram-cell-highlight:radial-gradient(90% 90% at 32% 18%,color-mix(in srgb,#ffffff,transparent 55%) 0%,transparent 65%);
 }
 *,*::before,*::after{box-sizing:border-box}
 
@@ -881,11 +923,36 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
   max-width:100%;
   max-height:100%;
   overflow:auto;
-  padding:clamp(16px,3vw,32px);
-  border-radius:32px;
-  background:linear-gradient(155deg,color-mix(in srgb,var(--canvas-bg),transparent 5%),color-mix(in srgb,var(--accent),transparent 90%));
-  border:1px solid color-mix(in srgb,var(--canvas-border),transparent 25%);
-  box-shadow:0 32px 55px color-mix(in srgb,var(--bg),#000 55%),0 18px 32px color-mix(in srgb,var(--accent),transparent 82%);
+  padding:clamp(18px,3.2vw,36px);
+  border-radius:36px;
+  background:var(--nonogram-grid-surface);
+  border:1px solid var(--nonogram-grid-border);
+  box-shadow:var(--nonogram-grid-shadow);
+  isolation:isolate;
+}
+.nonogram-grid::before{
+  content:"";
+  position:absolute;
+  inset:12px;
+  border-radius:28px;
+  background:var(--nonogram-grid-overlay);
+  opacity:.75;
+  pointer-events:none;
+  filter:saturate(115%);
+}
+.nonogram-grid::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius:inherit;
+  background:var(--nonogram-grid-glare);
+  mix-blend-mode:screen;
+  opacity:.55;
+  pointer-events:none;
+}
+.nonogram-grid > *{
+  position:relative;
+  z-index:1;
 }
 .nonogram-grid__corner{
   grid-column:1;
@@ -927,20 +994,23 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
   align-items:center;
   justify-content:center;
   white-space:nowrap;
-  background:color-mix(in srgb,var(--canvas-bg),transparent 25%);
-  border-radius:20px;
-  padding:6px 12px;
-  box-shadow:0 10px 18px color-mix(in srgb,var(--bg),#000 65%);
+  background:var(--nonogram-clue-surface);
+  border-radius:22px;
+  padding:8px 14px;
+  border:1px solid var(--nonogram-clue-border);
+  box-shadow:var(--nonogram-clue-shadow);
+  backdrop-filter:blur(12px) saturate(120%);
+  transition:transform .2s ease,box-shadow .2s ease;
 }
 .nonogram-clue--col{
   flex-direction:column;
   justify-content:flex-end;
   min-height:100%;
-  padding:12px 8px;
+  padding:14px 10px;
 }
 .nonogram-clue--row{
   justify-content:flex-end;
-  padding:8px 12px;
+  padding:10px 14px;
 }
 .nonogram-clue__number{
   display:inline-flex;
@@ -953,6 +1023,10 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
   color:color-mix(in srgb,var(--nonogram-clue-color),transparent 25%);
   opacity:.65;
 }
+.nonogram-clue:not(.nonogram-clue--complete):hover{
+  transform:translateY(-3px);
+  box-shadow:0 20px 28px color-mix(in srgb,var(--accent),transparent 78%);
+}
 .nonogram-cells{
   grid-column:2;
   grid-row:2;
@@ -961,42 +1035,71 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
   grid-template-rows:repeat(var(--nonogram-rows),var(--nonogram-cell-size));
   gap:var(--nonogram-cell-gap,8px);
   padding:var(--nonogram-cell-gap,8px);
-  border-radius:24px;
-  background:color-mix(in srgb,var(--canvas-bg),transparent 2%);
-  border:1px solid color-mix(in srgb,var(--canvas-border),transparent 45%);
-  box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--canvas-border),transparent 70%),0 22px 34px color-mix(in srgb,var(--bg),#000 52%);
+  border-radius:26px;
+  background:var(--nonogram-cells-surface);
+  border:1px solid var(--nonogram-cells-border);
+  box-shadow:var(--nonogram-cells-shadow);
+  position:relative;
+  isolation:isolate;
+}
+.nonogram-cells::before{
+  content:"";
+  position:absolute;
+  inset:calc(var(--nonogram-cell-gap,8px) * .6);
+  border-radius:20px;
+  background-image:linear-gradient(90deg,color-mix(in srgb,var(--nonogram-cell-border),transparent 70%) 0,transparent 55%),linear-gradient(color-mix(in srgb,var(--nonogram-cell-border),transparent 72%) 0,transparent 55%);
+  background-size:calc(var(--nonogram-cell-size) + var(--nonogram-cell-gap,8px)) calc(var(--nonogram-cell-size) + var(--nonogram-cell-gap,8px));
+  opacity:.35;
+  mix-blend-mode:soft-light;
+  pointer-events:none;
+  z-index:0;
 }
 .nonogram-cell{
   box-sizing:border-box;
   width:var(--nonogram-cell-size);
   height:var(--nonogram-cell-size);
-  border-radius:10px;
+  border-radius:12px;
   border:0;
-  background:color-mix(in srgb,var(--nonogram-cell-bg),#fff 10%);
+  background:color-mix(in srgb,var(--nonogram-cell-bg),#fff 8%);
   display:flex;
   align-items:center;
   justify-content:center;
   color:var(--fg);
   cursor:pointer;
-  transition:background .12s ease,box-shadow .12s ease,transform .12s ease;
-  box-shadow:0 6px 12px color-mix(in srgb,var(--bg),#000 65%),inset 0 0 0 1px color-mix(in srgb,var(--nonogram-cell-border),transparent 10%);
+  position:relative;
+  box-shadow:var(--nonogram-cell-shadow);
+  transition:transform .2s ease,box-shadow .2s ease,background .2s ease;
 }
 .nonogram-cell:hover{
-  box-shadow:0 10px 20px color-mix(in srgb,var(--bg),#000 60%),inset 0 0 0 1px color-mix(in srgb,var(--accent),transparent 55%);
-  transform:translateY(-2px);
+  transform:translateY(-2px) scale(1.01);
+  box-shadow:0 16px 26px color-mix(in srgb,var(--accent),transparent 70%);
 }
 .nonogram-cell:focus-visible{
   outline:none;
-  box-shadow:0 0 0 3px color-mix(in srgb,var(--accent),transparent 45%),0 12px 24px color-mix(in srgb,var(--accent),transparent 75%);
+  box-shadow:0 0 0 3px var(--nonogram-cell-outline) inset,0 18px 30px color-mix(in srgb,var(--accent),transparent 65%);
+}
+.nonogram-cell::after{
+  content:"";
+  position:absolute;
+  inset:2px;
+  border-radius:inherit;
+  background:var(--nonogram-cell-highlight);
+  opacity:0;
+  transition:opacity .25s ease;
+  pointer-events:none;
+}
+.nonogram-cell:hover::after,
+.nonogram-cell:focus-visible::after{
+  opacity:.85;
 }
 .nonogram-cell--filled{
   background:var(--nonogram-cell-filled-fallback);
   background:var(--nonogram-cell-filled);
-  box-shadow:0 10px 22px color-mix(in srgb,var(--accent),transparent 70%),inset 0 0 0 1px color-mix(in srgb,var(--accent),transparent 35%);
+  box-shadow:0 14px 28px color-mix(in srgb,var(--accent),transparent 60%),inset 0 0 0 1px color-mix(in srgb,var(--accent),transparent 35%);
 }
 .nonogram-cell--marked{
   background:var(--nonogram-cell-bg);
-  box-shadow:0 6px 12px color-mix(in srgb,var(--accent-strong),transparent 80%),inset 0 0 0 1px color-mix(in srgb,var(--nonogram-cell-mark),transparent 30%);
+  box-shadow:0 12px 20px color-mix(in srgb,var(--accent-strong),transparent 70%),inset 0 0 0 1px color-mix(in srgb,var(--nonogram-cell-mark),transparent 30%);
 }
 .nonogram-cell__mark{
   font-size:1.1em;
@@ -1010,10 +1113,10 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
 }
 .nonogram-cell--row-complete,
 .nonogram-cell--col-complete{
-  box-shadow:inset 0 0 0 999px color-mix(in srgb,var(--nonogram-cell-border),transparent 55%),0 6px 12px color-mix(in srgb,var(--accent),transparent 80%);
+  box-shadow:inset 0 0 0 999px color-mix(in srgb,var(--nonogram-cell-border),transparent 45%),0 14px 26px color-mix(in srgb,var(--accent),transparent 70%);
 }
 .nonogram-cell--row-complete.nonogram-cell--col-complete{
-  box-shadow:inset 0 0 0 999px color-mix(in srgb,var(--nonogram-cell-filled),transparent 70%),0 8px 16px color-mix(in srgb,var(--accent),transparent 70%);
+  box-shadow:inset 0 0 0 999px color-mix(in srgb,var(--nonogram-cell-filled),transparent 60%),0 18px 34px color-mix(in srgb,var(--accent),transparent 65%);
 }
 .nonogram-tools{
   display:flex;
