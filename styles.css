@@ -58,6 +58,8 @@
   --nonogram-cell-filled-border-fallback:var(--accent);
   --nonogram-cell-mark-fallback:#d7c2b1;
   --nonogram-cell-mark-border-fallback:var(--accent-strong);
+  --nonogram-cell-mark-bg-fallback:#d4c5b7;
+  --nonogram-cell-mark-bg:color-mix(in srgb,var(--muted) 40%,var(--nonogram-cell-bg) 60%);
   --nonogram-cell-filled:color-mix(in srgb,var(--accent) 30%,#fdfaf6 70%);
   --nonogram-cell-mark:color-mix(in srgb,var(--accent-strong) 48%,#fdfaf6 52%);
   --nonogram-cell-mark-symbol:var(--fg);
@@ -135,6 +137,8 @@
   --nonogram-cell-filled-border-fallback:var(--accent);
   --nonogram-cell-mark-fallback:#b7aeff;
   --nonogram-cell-mark-border-fallback:var(--accent-strong);
+  --nonogram-cell-mark-bg-fallback:#c5ccf2;
+  --nonogram-cell-mark-bg:color-mix(in srgb,var(--muted) 38%,var(--nonogram-cell-bg) 62%);
   --nonogram-cell-filled:color-mix(in srgb,var(--accent) 18%,#ffffff 82%);
   --nonogram-cell-mark:color-mix(in srgb,var(--accent-strong) 45%,#ffffff 55%);
   --nonogram-cell-mark-symbol:var(--fg);
@@ -212,6 +216,8 @@
   --nonogram-cell-filled-border-fallback:var(--accent);
   --nonogram-cell-mark-fallback:#c8b7ff;
   --nonogram-cell-mark-border-fallback:var(--accent-strong);
+  --nonogram-cell-mark-bg-fallback:#c9d6f0;
+  --nonogram-cell-mark-bg:color-mix(in srgb,var(--muted) 42%,var(--nonogram-cell-bg) 58%);
   --nonogram-cell-filled:color-mix(in srgb,var(--accent) 28%,#ffffff 72%);
   --nonogram-cell-mark:color-mix(in srgb,var(--accent-strong) 55%,#ffffff 45%);
   --nonogram-cell-mark-symbol:var(--fg);
@@ -1103,8 +1109,9 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
   box-shadow:0 14px 28px color-mix(in srgb,var(--accent),transparent 60%),inset 0 0 0 1px color-mix(in srgb,var(--accent),transparent 35%);
 }
 .nonogram-cell--marked{
-  background:var(--nonogram-cell-bg);
-  box-shadow:0 12px 20px color-mix(in srgb,var(--accent-strong),transparent 70%),inset 0 0 0 1px color-mix(in srgb,var(--nonogram-cell-mark),transparent 30%);
+  background:var(--nonogram-cell-mark-bg-fallback);
+  background:var(--nonogram-cell-mark-bg);
+  box-shadow:0 12px 22px color-mix(in srgb,var(--accent-strong),transparent 68%),inset 0 0 0 1px color-mix(in srgb,var(--nonogram-cell-mark),transparent 24%),inset 0 0 0 999px color-mix(in srgb,var(--nonogram-cell-mark),transparent 90%);
 }
 .nonogram-cell__mark{
   font-size:1.1em;
