@@ -33,9 +33,12 @@ const PREFERRED_DEFAULT_DIFFICULTY = 'hard';
 const DEFAULT_DIFFICULTY = NONOGRAM_DIFFICULTIES.includes(PREFERRED_DEFAULT_DIFFICULTY)
   ? PREFERRED_DEFAULT_DIFFICULTY
   : NONOGRAM_DIFFICULTIES[0] || 'easy';
-const MIN_CELL_SIZE = 22;
+const MIN_CELL_SIZE = 20;
+const MIN_CELL_SIZE_COMPACT = 14;
 const MAX_CELL_SIZE = 52;
 const BOARD_PADDING_CELLS = 6;
+const BOARD_PADDING_CELLS_COMPACT = 10;
+const COMPACT_BREAKPOINT = 640;
 const BOARD_WIDTH_RATIO = 0.7;
 const BOARD_HEIGHT_RATIO = 0.8;
 const PROGRESS_KEY_PREFIX = 'nonogram_board_v1';
@@ -68,13 +71,12 @@ function sanitizeStoredBoard(value, rows, cols){
   return board;
 }
 
-function calculateFallbackCellSize(rows, cols){
+function isCompactViewport(width){
+  return Number.isFinite(width) && width > 0 && width <= COMPACT_BREAKPOINT;
+}
+
+function calculateResponsiveCellSize(rows, cols){
   if(typeof window === 'undefined'){
-    return `${MIN_CELL_SIZE}px`;
-  }
-  const widthDenominator = Math.max(rows, cols) + BOARD_PADDING_CELLS;
-  const heightDenominator = rows + BOARD_PADDING_CELLS;
-  if(widthDenominator <= 0 || heightDenominator <= 0){
     return `${MIN_CELL_SIZE}px`;
   }
   const viewportWidth = Math.max(
@@ -87,6 +89,14 @@ function calculateFallbackCellSize(rows, cols){
     (window.document && window.document.documentElement && window.document.documentElement.clientHeight) || 0,
     (window.screen && window.screen.height) || 0
   );
+  const compact = isCompactViewport(viewportWidth);
+  const widthPadding = compact ? BOARD_PADDING_CELLS_COMPACT : BOARD_PADDING_CELLS;
+  const heightPadding = compact ? BOARD_PADDING_CELLS_COMPACT : BOARD_PADDING_CELLS;
+  const widthDenominator = Math.max(rows, cols) + widthPadding;
+  const heightDenominator = rows + heightPadding;
+  if(widthDenominator <= 0 || heightDenominator <= 0){
+    return `${MIN_CELL_SIZE}px`;
+  }
   const widthBased = viewportWidth > 0
     ? (viewportWidth * BOARD_WIDTH_RATIO) / widthDenominator
     : Number.POSITIVE_INFINITY;
@@ -98,7 +108,8 @@ function calculateFallbackCellSize(rows, cols){
     return `${MIN_CELL_SIZE}px`;
   }
   const raw = Math.min(...candidates);
-  const clamped = Math.min(MAX_CELL_SIZE, Math.max(MIN_CELL_SIZE, raw));
+  const minSize = compact ? MIN_CELL_SIZE_COMPACT : MIN_CELL_SIZE;
+  const clamped = Math.min(MAX_CELL_SIZE, Math.max(minSize, raw));
   const rounded = Math.round(clamped * 100) / 100;
   return `${rounded}px`;
 }
@@ -655,62 +666,57 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialDifficulty },
     };
   }, []);
 
-  const clampSupported = useMemo(() => {
-    if(typeof window === 'undefined' || typeof window.CSS === 'undefined' || typeof window.CSS.supports !== 'function'){
+  const [cellSize, setCellSize] = useState(() => calculateResponsiveCellSize(rows, cols));
+  const [compactLayout, setCompactLayout] = useState(() => {
+    if(typeof window === 'undefined'){
       return false;
     }
-    return window.CSS.supports('width', 'clamp(1px, 2px, 3px)');
-  }, []);
-
-  const [fallbackCellSize, setFallbackCellSize] = useState(() => (
-    clampSupported ? null : calculateFallbackCellSize(rows, cols)
-  ));
+    const width = Math.max(
+      window.innerWidth || 0,
+      (window.document && window.document.documentElement && window.document.documentElement.clientWidth) || 0,
+      (window.screen && window.screen.width) || 0
+    );
+    return isCompactViewport(width);
+  });
 
   useEffect(() => {
-    if(clampSupported || typeof window === 'undefined'){
-      return;
+    if(typeof window === 'undefined'){
+      return undefined;
     }
-    const updateSize = () => {
-      setFallbackCellSize(calculateFallbackCellSize(rows, cols));
+    const updateLayout = () => {
+      setCellSize(calculateResponsiveCellSize(rows, cols));
+      const width = Math.max(
+        window.innerWidth || 0,
+        (window.document && window.document.documentElement && window.document.documentElement.clientWidth) || 0,
+        (window.screen && window.screen.width) || 0
+      );
+      setCompactLayout(isCompactViewport(width));
     };
-    updateSize();
-    window.addEventListener('resize', updateSize);
-    window.addEventListener('orientationchange', updateSize);
+    updateLayout();
+    window.addEventListener('resize', updateLayout);
+    window.addEventListener('orientationchange', updateLayout);
     return () => {
-      window.removeEventListener('resize', updateSize);
-      window.removeEventListener('orientationchange', updateSize);
+      window.removeEventListener('resize', updateLayout);
+      window.removeEventListener('orientationchange', updateLayout);
     };
-  }, [clampSupported, rows, cols]);
-
-  const cellSize = useMemo(() => {
-    if(!clampSupported){
-      return fallbackCellSize || `${MIN_CELL_SIZE}px`;
-    }
-    const widthDivisor = Math.max(rows, cols) + BOARD_PADDING_CELLS;
-    const heightDivisor = rows + BOARD_PADDING_CELLS;
-    const widthFactor = (BOARD_WIDTH_RATIO * 100).toFixed(2);
-    const heightFactor = (BOARD_HEIGHT_RATIO * 100).toFixed(2);
-    const widthExpression = `calc(${widthFactor}vw / ${widthDivisor})`;
-    const heightExpression = `calc(${heightFactor}vh / ${heightDivisor})`;
-    return `clamp(${MIN_CELL_SIZE}px, min(${widthExpression}, ${heightExpression}), ${MAX_CELL_SIZE}px)`;
-  }, [clampSupported, fallbackCellSize, rows, cols]);
+  }, [rows, cols]);
 
   const boardStyle = useMemo(() => ({
     '--nonogram-cell-size': cellSize,
-    '--nonogram-cell-gap': '6px',
-    '--nonogram-layout-gap': '12px',
-    '--nonogram-clue-gap': '8px',
-    '--nonogram-clue-number-gap': '6px',
-    '--nonogram-clue-font': 'clamp(0.7rem, 1.2vw, 0.9rem)',
-    '--nonogram-clue-padding': '6px 10px',
-    '--nonogram-clue-radius': '14px',
-    '--nonogram-grid-padding': 'clamp(12px, 2.2vw, 24px)',
-    '--nonogram-grid-radius': '22px',
-    '--nonogram-cells-radius': '18px',
-    '--nonogram-cells-padding': '6px',
+    '--nonogram-cell-gap': compactLayout ? '4px' : '6px',
+    '--nonogram-layout-gap': compactLayout ? '10px' : '12px',
+    '--nonogram-clue-gap': compactLayout ? '6px' : '8px',
+    '--nonogram-clue-number-gap': compactLayout ? '4px' : '6px',
+    '--nonogram-clue-font': compactLayout ? 'clamp(0.6rem, 2.2vw, 0.85rem)' : 'clamp(0.7rem, 1.2vw, 0.9rem)',
+    '--nonogram-clue-padding': compactLayout ? '4px 8px' : '6px 10px',
+    '--nonogram-clue-radius': compactLayout ? '12px' : '14px',
+    '--nonogram-grid-padding': compactLayout ? 'clamp(8px, 1.4vw, 16px)' : 'clamp(12px, 2.2vw, 24px)',
+    '--nonogram-grid-radius': compactLayout ? '18px' : '22px',
+    '--nonogram-cells-radius': compactLayout ? '14px' : '18px',
+    '--nonogram-cells-padding': compactLayout ? '4px' : '6px',
     '--nonogram-columns': String(cols),
     '--nonogram-rows': String(rows)
-  }), [cellSize, rows, cols]);
+  }), [cellSize, compactLayout, rows, cols]);
 
   const timerLabel = formatNonogramTime(Math.floor(elapsed / 1000));
   const bestLabel = personalBest ? formatNonogramTime(personalBest) : '--';
