@@ -40,6 +40,7 @@ const BOARD_WIDTH_RATIO = 0.7;
 const BOARD_HEIGHT_RATIO = 0.8;
 const PROGRESS_KEY_PREFIX = 'nonogram_board_v1';
 const VALID_CELL_STATES = new Set(['empty', 'filled', 'marked']);
+const AVAILABLE_TOOLS = ['mark', 'fill'];
 
 function progressKeyForPuzzle(puzzle){
   if(!puzzle || !puzzle.id){
@@ -342,7 +343,7 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialDifficulty },
 
   const requiredCells = useMemo(() => countFilledCells(puzzle.grid), [puzzle]);
   const handleToolSelect = useCallback(tool => {
-    setActiveTool(tool);
+    setActiveTool(AVAILABLE_TOOLS.includes(tool) ? tool : 'fill');
   }, []);
 
   useEffect(() => {
@@ -720,9 +721,20 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialDifficulty },
   const bestLabel = personalBest ? formatNonogramTime(personalBest) : '--';
 
   const toolButtons = [
-    { id: 'mark', icon: '✕', label: 'Leerfeld markieren' },
-    { id: 'fill', icon: '🟦', label: 'Feld füllen' },
-    { id: 'clear', icon: '🧽', label: 'Radieren' }
+    {
+      id: 'mark',
+      icon: '✕',
+      label: 'Markieren',
+      caption: 'Feld ausschließen',
+      aria: 'Leerfeld markieren'
+    },
+    {
+      id: 'fill',
+      icon: '⬛',
+      label: 'Füllen',
+      caption: 'Feld einfärben',
+      aria: 'Feld füllen oder leeren'
+    }
   ];
 
   return html`
@@ -761,19 +773,26 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialDifficulty },
           </div>
         </div>
         <div className="nonogram-tools" style=${{ marginTop: '18px' }}>
-          ${toolButtons.map(tool => html`
-            <button
-              key=${tool.id}
-              type="button"
-              className=${`nonogram-tool${activeTool === tool.id ? ' selected' : ''}`}
-              onClick=${() => handleToolSelect(tool.id)}
-              aria-pressed=${activeTool === tool.id ? 'true' : 'false'}
-              aria-label=${tool.label}
-              title=${tool.label}
-            >
-              <span className="icon" aria-hidden="true">${tool.icon}</span>
-            </button>
-          `)}
+          ${toolButtons.map(tool => {
+            const selected = activeTool === tool.id;
+            return html`
+              <button
+                key=${tool.id}
+                type="button"
+                className=${`nonogram-tool nonogram-tool--${tool.id}${selected ? ' selected' : ''}`}
+                onClick=${() => handleToolSelect(tool.id)}
+                aria-pressed=${selected ? 'true' : 'false'}
+                aria-label=${tool.aria}
+                title=${tool.label}
+              >
+                <span className="nonogram-tool__icon" aria-hidden="true">${tool.icon}</span>
+                <span className="nonogram-tool__text">
+                  <span className="nonogram-tool__label">${tool.label}</span>
+                  <span className="nonogram-tool__caption">${tool.caption}</span>
+                </span>
+              </button>
+            `;
+          })}
         </div>
       </div>
       <div className="panel panel--info" style=${{ marginTop: '16px' }}>
@@ -781,8 +800,8 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialDifficulty },
           <h3>So funktioniert's</h3>
         </div>
         <p>Die Zahlen am Rand zeigen, wie viele aufeinanderfolgende Felder in der jeweiligen Reihe oder Spalte gefüllt werden müssen.</p>
-        <p>Tippe oder klicke auf ein Werkzeug (✕, ausgefülltes Feld oder Radiergummi) und anschließend auf das Spielfeld, um Felder zu markieren, zu füllen oder zurückzusetzen.</p>
-        <p>Mit Rechtsklick markierst du ein leeres Feld, die mittlere Maustaste löscht ein Feld.</p>
+        <p>Tippe oder klicke auf <b>Markieren (✕)</b> oder <b>Füllen (⬛)</b> und anschließend auf das Spielfeld, um Felder zu markieren oder zu füllen. Ein erneuter Klick mit demselben Werkzeug setzt das Feld zurück.</p>
+        <p>Mit Rechtsklick markierst du ein leeres Feld, die mittlere Maustaste löscht ein Feld. Falsche Einträge werden sofort rot hervorgehoben – genau wie im Sudoku.</p>
       </div>
       <${CompletionOverlay}
         visible=${overlayVisible}
