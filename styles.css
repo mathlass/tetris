@@ -905,14 +905,17 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
 .nonogram-panel{
   display:flex;
   flex-direction:column;
-  align-items:center;
-  gap:18px;
+  align-items:stretch;
+  gap:20px;
+  width:100%;
+  max-width:min(100%,960px);
+  margin:0 auto;
 }
 .nonogram-board{
   width:100%;
   display:flex;
   justify-content:center;
-  padding:clamp(12px,2.5vw,28px);
+  padding:clamp(8px,2vw,20px);
 }
 .nonogram-grid{
   position:relative;
@@ -920,25 +923,25 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
   grid-template-columns:auto minmax(0,1fr);
   grid-template-rows:auto minmax(0,1fr);
   gap:var(--nonogram-layout-gap,12px);
-  max-width:100%;
-  max-height:100%;
+  width:min(100%,92vw);
+  max-width:820px;
+  padding:var(--nonogram-grid-padding,clamp(12px,2.2vw,24px));
+  border-radius:var(--nonogram-grid-radius,24px);
+  background:color-mix(in srgb,var(--canvas-bg),transparent 0%);
+  border:1px solid color-mix(in srgb,var(--canvas-border),transparent 20%);
+  box-shadow:0 18px 32px color-mix(in srgb,var(--bg),#000 40%);
   overflow:auto;
-  padding:clamp(18px,3.2vw,36px);
-  border-radius:36px;
-  background:var(--nonogram-grid-surface);
-  border:1px solid var(--nonogram-grid-border);
-  box-shadow:var(--nonogram-grid-shadow);
   isolation:isolate;
 }
 .nonogram-grid::before{
   content:"";
   position:absolute;
   inset:12px;
-  border-radius:28px;
+  border-radius:calc(var(--nonogram-grid-radius,24px) - 8px);
   background:var(--nonogram-grid-overlay);
-  opacity:.75;
+  opacity:.55;
   pointer-events:none;
-  filter:saturate(115%);
+  filter:saturate(110%);
 }
 .nonogram-grid::after{
   content:"";
@@ -947,7 +950,7 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
   border-radius:inherit;
   background:var(--nonogram-grid-glare);
   mix-blend-mode:screen;
-  opacity:.55;
+  opacity:.4;
   pointer-events:none;
 }
 .nonogram-grid > *{
@@ -957,8 +960,8 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
 .nonogram-grid__corner{
   grid-column:1;
   grid-row:1;
-  min-width:calc(var(--nonogram-cell-size) * .75);
-  min-height:calc(var(--nonogram-cell-size) * .75);
+  min-width:calc(var(--nonogram-cell-size) * .6);
+  min-height:calc(var(--nonogram-cell-size) * .6);
   background:transparent;
 }
 .nonogram-clues{
@@ -995,22 +998,22 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
   justify-content:center;
   white-space:nowrap;
   background:var(--nonogram-clue-surface);
-  border-radius:22px;
-  padding:8px 14px;
+  border-radius:var(--nonogram-clue-radius,18px);
+  padding:var(--nonogram-clue-padding,6px 10px);
   border:1px solid var(--nonogram-clue-border);
-  box-shadow:var(--nonogram-clue-shadow);
-  backdrop-filter:blur(12px) saturate(120%);
+  box-shadow:0 10px 18px color-mix(in srgb,var(--bg),#000 30%);
+  backdrop-filter:blur(10px) saturate(115%);
   transition:transform .2s ease,box-shadow .2s ease;
 }
 .nonogram-clue--col{
   flex-direction:column;
   justify-content:flex-end;
   min-height:100%;
-  padding:14px 10px;
+  padding:12px 8px;
 }
 .nonogram-clue--row{
   justify-content:flex-end;
-  padding:10px 14px;
+  padding:6px 12px;
 }
 .nonogram-clue__number{
   display:inline-flex;
@@ -1024,8 +1027,8 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
   opacity:.65;
 }
 .nonogram-clue:not(.nonogram-clue--complete):hover{
-  transform:translateY(-3px);
-  box-shadow:0 20px 28px color-mix(in srgb,var(--accent),transparent 78%);
+  transform:translateY(-2px);
+  box-shadow:0 16px 24px color-mix(in srgb,var(--accent),transparent 70%);
 }
 .nonogram-cells{
   grid-column:2;
@@ -1034,8 +1037,8 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
   grid-template-columns:repeat(var(--nonogram-columns),var(--nonogram-cell-size));
   grid-template-rows:repeat(var(--nonogram-rows),var(--nonogram-cell-size));
   gap:var(--nonogram-cell-gap,8px);
-  padding:var(--nonogram-cell-gap,8px);
-  border-radius:26px;
+  padding:var(--nonogram-cells-padding,var(--nonogram-cell-gap,8px));
+  border-radius:var(--nonogram-cells-radius,24px);
   background:var(--nonogram-cells-surface);
   border:1px solid var(--nonogram-cells-border);
   box-shadow:var(--nonogram-cells-shadow);

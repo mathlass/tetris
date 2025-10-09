@@ -39,11 +39,14 @@ export function initMenu(){
   const sudokuTable = document.getElementById('sudokuScoreTable');
   const nonogramTable = document.getElementById('nonogramScoreTable');
   const hsLabel = document.getElementById('hsModeLabel');
+  const preferredNonogramDefault = NONOGRAM_DIFFICULTIES.includes('hard')
+    ? 'hard'
+    : NONOGRAM_DIFFICULTIES[0];
   const lastModeByGame = {
     tetris: TETRIS_MODES[0],
     snake: SNAKE_MODES[0],
     sudoku: SUDOKU_DIFFICULTIES[0],
-    nonogram: NONOGRAM_DIFFICULTIES[0]
+    nonogram: preferredNonogramDefault
   };
   const snakeBestKey = mode => `${SNAKE_BEST_KEY_BASE}_${mode}`;
   const sudokuBestKey = mode => `${SUDOKU_BEST_KEY_BASE}_${mode}`;
