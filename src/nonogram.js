@@ -42,6 +42,7 @@ const COMPACT_BREAKPOINT = 640;
 const BOARD_WIDTH_RATIO = 0.92;
 const BOARD_HEIGHT_RATIO = 0.82;
 const PROGRESS_KEY_PREFIX = 'nonogram_board_v1';
+const ACTIVE_PUZZLE_KEY_PREFIX = 'nonogram_active_puzzle_v1';
 const VALID_CELL_STATES = new Set(['empty', 'filled', 'marked']);
 const AVAILABLE_TOOLS = ['mark', 'fill'];
 
@@ -50,6 +51,112 @@ function progressKeyForPuzzle(puzzle){
     return null;
   }
   return `${PROGRESS_KEY_PREFIX}_${puzzle.id}`;
+}
+
+function activePuzzleKeyForDifficulty(difficulty){
+  const normalized = normalizeDifficulty(difficulty, DEFAULT_DIFFICULTY);
+  return `${ACTIVE_PUZZLE_KEY_PREFIX}_${normalized}`;
+}
+
+function sanitizeStoredPuzzleMetadata(value){
+  if(!value || typeof value !== 'object'){
+    return null;
+  }
+  const id = typeof value.id === 'string' && value.id.trim() ? value.id.trim() : null;
+  if(!id){
+    return null;
+  }
+  const normalizedDifficulty = normalizeDifficulty(value.difficulty, DEFAULT_DIFFICULTY);
+  const grid = Array.isArray(value.grid) ? value.grid : null;
+  if(!grid || grid.length === 0){
+    return null;
+  }
+  let cols = null;
+  const sanitizedGrid = [];
+  for(const row of grid){
+    if(!Array.isArray(row) || row.length === 0){
+      return null;
+    }
+    if(cols == null){
+      cols = row.length;
+      if(cols <= 0){
+        return null;
+      }
+    }else if(row.length !== cols){
+      return null;
+    }
+    const sanitizedRow = row.map(cell => Number(cell) === 1 ? 1 : 0);
+    sanitizedGrid.push(sanitizedRow);
+  }
+  const title = typeof value.title === 'string' && value.title.trim() ? value.title : null;
+  return {
+    id,
+    difficulty: normalizedDifficulty,
+    grid: sanitizedGrid,
+    title
+  };
+}
+
+function readStoredActivePuzzle(difficulty){
+  if(typeof window === 'undefined'){
+    return null;
+  }
+  const key = activePuzzleKeyForDifficulty(difficulty);
+  try {
+    const raw = localStorage.getItem(key);
+    if(!raw){
+      return null;
+    }
+    const parsed = JSON.parse(raw);
+    const sanitized = sanitizeStoredPuzzleMetadata(parsed);
+    if(!sanitized || sanitized.difficulty !== normalizeDifficulty(difficulty, DEFAULT_DIFFICULTY)){
+      localStorage.removeItem(key);
+      return null;
+    }
+    return sanitized;
+  }catch(error){
+    console.warn('Fehler beim Laden des Nonogramm-Puzzles:', error);
+    localStorage.removeItem(key);
+    return null;
+  }
+}
+
+function writeStoredActivePuzzle(puzzle, difficulty){
+  if(typeof window === 'undefined'){
+    return;
+  }
+  const key = activePuzzleKeyForDifficulty(difficulty);
+  if(!puzzle || typeof puzzle.id !== 'string' || !Array.isArray(puzzle.grid)){
+    localStorage.removeItem(key);
+    return;
+  }
+  const payload = {
+    id: puzzle.id,
+    difficulty: normalizeDifficulty(difficulty, DEFAULT_DIFFICULTY),
+    grid: puzzle.grid.map(row => Array.isArray(row) ? row.map(cell => Number(cell) === 1 ? 1 : 0) : []),
+    title: typeof puzzle.title === 'string' ? puzzle.title : null
+  };
+  const sanitized = sanitizeStoredPuzzleMetadata(payload);
+  if(!sanitized){
+    localStorage.removeItem(key);
+    return;
+  }
+  try {
+    localStorage.setItem(key, JSON.stringify(sanitized));
+  }catch(error){
+    console.warn('Fehler beim Speichern des Nonogramm-Puzzles:', error);
+  }
+}
+
+function clearStoredActivePuzzle(difficulty){
+  if(typeof window === 'undefined'){
+    return;
+  }
+  try {
+    localStorage.removeItem(activePuzzleKeyForDifficulty(difficulty));
+  }catch(error){
+    console.warn('Fehler beim Entfernen des Nonogramm-Puzzles:', error);
+  }
 }
 
 function sanitizeStoredBoard(value, rows, cols){
@@ -363,7 +470,17 @@ function NonogramCell({
 const NonogramApp = React.forwardRef(function NonogramApp({ initialDifficulty }, ref){
   const [difficulty, setDifficulty] = useState(() => normalizeDifficulty(initialDifficulty, DEFAULT_DIFFICULTY));
   const [resetKey, setResetKey] = useState(0);
-  const [puzzle, setPuzzle] = useState(() => getNonogramPuzzle(difficulty));
+  const [puzzle, setPuzzle] = useState(() => {
+    const stored = readStoredActivePuzzle(difficulty);
+    if(stored){
+      return {
+        id: stored.id,
+        title: stored.title || null,
+        grid: stored.grid.map(row => row.slice())
+      };
+    }
+    return getNonogramPuzzle(difficulty);
+  });
   const rows = puzzle.grid.length;
   const cols = puzzle.grid[0].length;
   const [board, setBoard] = useState(() => {
@@ -446,7 +563,16 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialDifficulty },
   }, [puzzle, rows, cols, progressKey]);
 
   useEffect(() => {
-    setPuzzle(getNonogramPuzzle(difficulty));
+    const stored = readStoredActivePuzzle(difficulty);
+    if(stored){
+      setPuzzle({
+        id: stored.id,
+        title: stored.title || null,
+        grid: stored.grid.map(row => row.slice())
+      });
+    }else{
+      setPuzzle(getNonogramPuzzle(difficulty));
+    }
   }, [difficulty, resetKey]);
 
   useEffect(() => {
@@ -458,10 +584,12 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialDifficulty },
 
   useEffect(() => {
     if(typeof window === 'undefined' || !progressKey){
+      clearStoredActivePuzzle(difficulty);
       return;
     }
     if(completed){
       localStorage.removeItem(progressKey);
+      clearStoredActivePuzzle(difficulty);
       return;
     }
     try {
@@ -469,7 +597,8 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialDifficulty },
     }catch(error){
       console.warn('Fehler beim Speichern des Nonogramms:', error);
     }
-  }, [board, completed, progressKey]);
+    writeStoredActivePuzzle(puzzle, difficulty);
+  }, [board, completed, progressKey, puzzle, difficulty]);
 
   useEffect(() => {
     if(timerRef.current){
@@ -552,6 +681,7 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialDifficulty },
       if(progressKey && typeof window !== 'undefined'){
         localStorage.removeItem(progressKey);
       }
+      clearStoredActivePuzzle(difficulty);
       const playerName = localStorage.getItem(PLAYER_KEY) || 'Player';
       const payload = {
         name: playerName,
@@ -658,8 +788,9 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialDifficulty },
     if(progressKey && typeof window !== 'undefined'){
       localStorage.removeItem(progressKey);
     }
+    clearStoredActivePuzzle(difficulty);
     setResetKey(key => key + 1);
-  }, [progressKey]);
+  }, [progressKey, difficulty]);
 
   const stopGame = useCallback(() => {
     setRunning(false);
@@ -722,12 +853,14 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialDifficulty },
     if(!button){
       return undefined;
     }
-    const handleClick = () => setResetKey(key => key + 1);
+    const handleClick = () => {
+      restart();
+    };
     button.addEventListener('click', handleClick);
     return () => {
       button.removeEventListener('click', handleClick);
     };
-  }, []);
+  }, [restart]);
 
   const boardContainerRef = useRef(null);
   const [cellSize, setCellSize] = useState(() => calculateResponsiveCellSize(rows, cols, rowClues, colClues));
