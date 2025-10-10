@@ -797,10 +797,10 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialDifficulty },
     '--nonogram-clue-font': compactLayout ? 'clamp(0.6rem, 2.2vw, 0.85rem)' : 'clamp(0.7rem, 1.2vw, 0.9rem)',
     '--nonogram-clue-padding': compactLayout ? '4px 8px' : '6px 10px',
     '--nonogram-clue-radius': compactLayout ? '12px' : '14px',
-    '--nonogram-grid-padding': compactLayout ? 'clamp(8px, 1.4vw, 16px)' : 'clamp(12px, 2.2vw, 24px)',
+    '--nonogram-grid-padding': compactLayout ? 'clamp(6px, 1.1vw, 14px)' : 'clamp(8px, 1.8vw, 18px)',
     '--nonogram-grid-radius': compactLayout ? '18px' : '22px',
     '--nonogram-cells-radius': compactLayout ? '14px' : '18px',
-    '--nonogram-cells-padding': compactLayout ? '4px' : '6px',
+    '--nonogram-cells-padding': compactLayout ? '3px' : '4px',
     '--nonogram-columns': String(cols),
     '--nonogram-rows': String(rows)
   }), [cellSize, compactLayout, rows, cols]);
