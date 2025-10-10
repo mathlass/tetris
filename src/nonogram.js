@@ -185,6 +185,31 @@ function isCompactViewport(width){
   return Number.isFinite(width) && width > 0 && width <= COMPACT_BREAKPOINT;
 }
 
+function readViewportWidth(){
+  if(typeof window === 'undefined'){
+    return 0;
+  }
+  const docElement = window.document && window.document.documentElement;
+  return Math.max(
+    window.innerWidth || 0,
+    (docElement && docElement.clientWidth) || 0,
+    (window.screen && window.screen.width) || 0
+  );
+}
+
+function detectTouchLayout(width){
+  if(typeof window === 'undefined'){
+    return false;
+  }
+  const hasCoarsePointer = typeof window.matchMedia === 'function'
+    ? window.matchMedia('(pointer: coarse)').matches
+    : false;
+  const hasTouchPoints = typeof navigator !== 'undefined'
+    && Number.isFinite(navigator.maxTouchPoints)
+    && navigator.maxTouchPoints > 0;
+  return hasCoarsePointer || hasTouchPoints || isCompactViewport(width);
+}
+
 function sumDigits(values){
   if(!Array.isArray(values) || values.length === 0){
     return 0;
@@ -868,17 +893,8 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialDifficulty },
 
   const boardContainerRef = useRef(null);
   const [cellSize, setCellSize] = useState(() => calculateResponsiveCellSize(rows, cols, rowClues, colClues));
-  const [compactLayout, setCompactLayout] = useState(() => {
-    if(typeof window === 'undefined'){
-      return false;
-    }
-    const width = Math.max(
-      window.innerWidth || 0,
-      (window.document && window.document.documentElement && window.document.documentElement.clientWidth) || 0,
-      (window.screen && window.screen.width) || 0
-    );
-    return isCompactViewport(width);
-  });
+  const [compactLayout, setCompactLayout] = useState(() => isCompactViewport(readViewportWidth()));
+  const [touchLayout, setTouchLayout] = useState(() => detectTouchLayout(readViewportWidth()));
 
   useEffect(() => {
     if(typeof window === 'undefined'){
@@ -900,12 +916,10 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialDifficulty },
     const updateLayout = () => {
       const { width, height } = extractAvailableSpace(boardContainerRef.current);
       setCellSize(calculateResponsiveCellSize(rows, cols, rowClues, colClues, width, height));
-      const widthViewport = Math.max(
-        window.innerWidth || 0,
-        (window.document && window.document.documentElement && window.document.documentElement.clientWidth) || 0,
-        (window.screen && window.screen.width) || 0
-      );
-      setCompactLayout(isCompactViewport(widthViewport));
+      const widthViewport = readViewportWidth();
+      const compact = isCompactViewport(widthViewport);
+      setCompactLayout(compact);
+      setTouchLayout(prev => detectTouchLayout(widthViewport) || prev);
     };
     updateLayout();
     const element = boardContainerRef.current;
@@ -924,6 +938,21 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialDifficulty },
       window.removeEventListener('orientationchange', updateLayout);
     };
   }, [rows, cols, rowClues, colClues]);
+
+  useEffect(() => {
+    if(typeof window === 'undefined'){
+      return undefined;
+    }
+    const handlePointerDown = event => {
+      if(event && event.pointerType === 'touch'){
+        setTouchLayout(true);
+      }
+    };
+    window.addEventListener('pointerdown', handlePointerDown, { passive: true });
+    return () => {
+      window.removeEventListener('pointerdown', handlePointerDown);
+    };
+  }, []);
 
   const boardStyle = useMemo(() => ({
     '--nonogram-cell-size': cellSize,
@@ -985,23 +1014,56 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialDifficulty },
             </div>
           </div>
         </div>
-        <div className="nonogram-tools" style=${{ marginTop: '18px' }}>
-          ${toolButtons.map(tool => html`
-            <button
-              key=${tool.id}
-              type="button"
-              className=${`nonogram-tool${activeTool === tool.id ? ' selected' : ''}`}
-              onClick=${() => handleToolSelect(tool.id)}
-              aria-pressed=${activeTool === tool.id ? 'true' : 'false'}
-              aria-label=${tool.label}
-              title=${tool.label}
-            >
-              <span
-                className=${`nonogram-tool-icon nonogram-tool-icon--${tool.id}`}
-                aria-hidden="true"
-              ></span>
-            </button>
-          `)}
+        <div
+          className=${`nonogram-tools${touchLayout ? ' nonogram-tools--touch' : ''}`}
+          style=${{ marginTop: '18px' }}
+        >
+          <div className="nonogram-tools__button-row">
+            ${toolButtons.map(tool => html`
+              <button
+                key=${tool.id}
+                type="button"
+                className=${`nonogram-tool${activeTool === tool.id ? ' selected' : ''}`}
+                onClick=${() => handleToolSelect(tool.id)}
+                aria-pressed=${activeTool === tool.id ? 'true' : 'false'}
+                aria-label=${tool.label}
+                title=${tool.label}
+              >
+                <span
+                  className=${`nonogram-tool-icon nonogram-tool-icon--${tool.id}`}
+                  aria-hidden="true"
+                ></span>
+              </button>
+            `)}
+          </div>
+          ${touchLayout ? html`
+            <div className="nonogram-touch-actions">
+              <button
+                type="button"
+                className=${`nonogram-touch-button nonogram-touch-button--primary${activeTool === 'fill' ? ' nonogram-touch-button--active' : ''}`}
+                onClick=${() => handleToolSelect('fill')}
+                aria-pressed=${activeTool === 'fill' ? 'true' : 'false'}
+              >
+                <span className="nonogram-touch-button__icon" aria-hidden="true">⬛</span>
+                Füllen
+              </button>
+              <button
+                type="button"
+                className=${`nonogram-touch-button nonogram-touch-button--ghost${activeTool === 'mark' ? ' nonogram-touch-button--active' : ''}`}
+                onClick=${() => handleToolSelect('mark')}
+                aria-pressed=${activeTool === 'mark' ? 'true' : 'false'}
+              >
+                <span className="nonogram-touch-button__icon" aria-hidden="true">✕</span>
+                Markieren
+              </button>
+            </div>
+          ` : null}
+          ${touchLayout ? html`
+            <p className="nonogram-touch-hint">
+              Tippe auf einen Modus und ziehe anschließend über das Gitter, um mehrere Felder in einem Zug zu bearbeiten.
+              Ein zweiter Tipp auf ein Feld setzt es mit dem aktiven Werkzeug zurück.
+            </p>
+          ` : null}
         </div>
       </div>
       <div className="panel panel--info" style=${{ marginTop: '16px' }}>

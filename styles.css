@@ -1123,9 +1123,20 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
   flex-wrap:wrap;
   justify-content:center;
 }
+.nonogram-tools__button-row{
+  display:flex;
+  gap:12px;
+  flex-wrap:wrap;
+  justify-content:center;
+  width:100%;
+}
 .nonogram-tools--touch{
   flex-direction:column;
   align-items:center;
+  gap:16px;
+}
+.nonogram-tools--touch .nonogram-tools__button-row{
+  justify-content:center;
 }
 .nonogram-tool{
   display:flex;
