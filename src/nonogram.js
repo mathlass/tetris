@@ -305,6 +305,10 @@ function CompletionOverlay({ visible, info, onRestart, onClose }){
   const personalBestLabel = personalBest ? formatNonogramTime(personalBest) : '--';
   const leaderboardLabel = leaderboardBest ? formatNonogramTime(leaderboardBest) : '--';
   const timeLabel = showTime ? formatNonogramTime(time) : '--';
+  const puzzleTitle = typeof info?.title === 'string' && info.title.trim() ? info.title.trim() : null;
+  const solvedHeading = puzzleTitle ? `🎉 ${puzzleTitle} gelöst!` : '🎉 Nonogramm gelöst!';
+  const revealHeading = puzzleTitle ? `🧩 ${puzzleTitle}` : '🧩 Rätsel angezeigt';
+  const headingText = gaveUp ? revealHeading : solvedHeading;
 
   return createPortal(html`
     <div
@@ -313,7 +317,8 @@ function CompletionOverlay({ visible, info, onRestart, onClose }){
       aria-hidden=${visible ? 'false' : 'true'}
     >
       <div className="overlay-card" role="dialog" aria-modal="true" aria-labelledby="nonogramOvTitle">
-        <h2 id="nonogramOvTitle">${gaveUp ? '🧩 Rätsel angezeigt' : '🎉 Nonogramm gelöst!'}</h2>
+        <h2 id="nonogramOvTitle">${headingText}</h2>
+        ${puzzleTitle ? html`<p className="nonogram-overlay__puzzle">Rätsel: <b>${puzzleTitle}</b></p>` : null}
         <p>${gaveUp ? 'Du kannst jederzeit ein neues Rätsel starten.' : 'Starke Leistung – weiter so!'}</p>
         ${showTime ? html`<p>Deine Zeit: <b id="nonogramOvTime">${timeLabel}</b></p>` : null}
         <p>Beste Zeit: <b id="nonogramOvBest">${personalBestLabel}</b></p>
@@ -674,6 +679,17 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialDifficulty },
     };
   }, [board, puzzle, rows, cols, requiredCells]);
 
+  const puzzleTitle = useMemo(() => {
+    const raw = puzzle?.title;
+    if(typeof raw === 'string'){
+      const trimmed = raw.trim();
+      if(trimmed){
+        return trimmed;
+      }
+    }
+    return 'Nonogramm';
+  }, [puzzle]);
+
   useEffect(() => {
     if(!running || paused || completed){
       return;
@@ -702,7 +718,8 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialDifficulty },
           time: seconds,
           personalBest: stored,
           leaderboardBest: leaderboardTime,
-          gaveUp: false
+          gaveUp: false,
+          title: puzzleTitle
         });
         setOverlayVisible(true);
       };
@@ -715,7 +732,7 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialDifficulty },
         setPersonalBest(previousBest);
       }
     }
-  }, [derived, elapsed, running, paused, completed, difficulty, progressKey]);
+  }, [derived, elapsed, running, paused, completed, difficulty, progressKey, puzzleTitle]);
 
   const handleAction = useCallback((row, col, action, mode = 'toggle') => {
     if(!running || paused || completed){
@@ -944,6 +961,11 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialDifficulty },
 
   const timerLabel = formatNonogramTime(Math.floor(elapsed / 1000));
   const bestLabel = personalBest ? formatNonogramTime(personalBest) : '--';
+  const progressPercent = Math.round(
+    Math.max(0, Math.min(1, Number.isFinite(derived.progress) ? derived.progress : 0)) * 100
+  );
+  const progressLabel = `${progressPercent}%`;
+  const gridSizeLabel = `${rows} × ${cols}`;
 
   const toolButtons = [
     { id: 'mark', label: 'Leerfeld markieren' },
@@ -953,9 +975,24 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialDifficulty },
   return html`
     <div>
       <div className="panel nonogram-panel">
-        <div className="controls" style=${{ justifyContent: 'center', margin: '0 0 12px', gap: '16px' }}>
-          <span className="timer">Zeit: ${timerLabel}</span>
-          <span className="timer">Best: ${bestLabel}</span>
+        <div className="nonogram-panel__top">
+          <div className="controls nonogram-panel__timers">
+            <span className="timer">Zeit: ${timerLabel}</span>
+            <span className="timer">Best: ${bestLabel}</span>
+          </div>
+          <section className="nonogram-info-card" aria-label="Rätselinformationen">
+            <h3 className="nonogram-info-card__title">${puzzleTitle}</h3>
+            <dl className="nonogram-info-card__stats">
+              <div className="nonogram-info-card__item">
+                <dt className="nonogram-info-card__label">Raster</dt>
+                <dd className="nonogram-info-card__value" aria-live="off">${gridSizeLabel}</dd>
+              </div>
+              <div className="nonogram-info-card__item">
+                <dt className="nonogram-info-card__label">Fortschritt</dt>
+                <dd className="nonogram-info-card__value" aria-live="polite">${progressLabel}</dd>
+              </div>
+            </dl>
+          </section>
         </div>
         <div className="nonogram-board" ref=${boardContainerRef}>
           <div className="nonogram-grid" style=${boardStyle}>
