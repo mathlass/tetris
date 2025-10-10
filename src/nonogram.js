@@ -36,11 +36,13 @@ const DEFAULT_DIFFICULTY = NONOGRAM_DIFFICULTIES.includes(PREFERRED_DEFAULT_DIFF
 const MIN_CELL_SIZE = 20;
 const MIN_CELL_SIZE_COMPACT = 12;
 const MAX_CELL_SIZE = 52;
-const BOARD_PADDING_CELLS = 6;
-const BOARD_PADDING_CELLS_COMPACT = 10;
+const BOARD_PADDING_CELLS = 3;
+const BOARD_PADDING_CELLS_COMPACT = 5;
 const COMPACT_BREAKPOINT = 640;
-const BOARD_WIDTH_RATIO = 0.92;
-const BOARD_HEIGHT_RATIO = 0.82;
+const DESKTOP_HORIZONTAL_MARGIN = 120;
+const COMPACT_HORIZONTAL_MARGIN = 32;
+const DESKTOP_VERTICAL_MARGIN = 260;
+const COMPACT_VERTICAL_MARGIN = 200;
 const PROGRESS_KEY_PREFIX = 'nonogram_board_v1';
 const VALID_CELL_STATES = new Set(['empty', 'filled', 'marked']);
 const AVAILABLE_TOOLS = ['mark', 'fill'];
@@ -139,6 +141,8 @@ function calculateResponsiveCellSize(rows, cols, rowClues, colClues, availableWi
   const compact = isCompactViewport(viewportWidth);
   const widthPadding = compact ? BOARD_PADDING_CELLS_COMPACT : BOARD_PADDING_CELLS;
   const heightPadding = compact ? BOARD_PADDING_CELLS_COMPACT : BOARD_PADDING_CELLS;
+  const horizontalMargin = compact ? COMPACT_HORIZONTAL_MARGIN : DESKTOP_HORIZONTAL_MARGIN;
+  const verticalMargin = compact ? COMPACT_VERTICAL_MARGIN : DESKTOP_VERTICAL_MARGIN;
   const rowHintUnits = estimateRowHintUnits(rowClues);
   const colHintUnits = estimateColumnHintUnits(colClues);
   const widthDenominator = cols + rowHintUnits + widthPadding;
@@ -149,12 +153,12 @@ function calculateResponsiveCellSize(rows, cols, rowClues, colClues, availableWi
   const effectiveWidth = Number.isFinite(availableWidth) && availableWidth > 0
     ? availableWidth
     : viewportWidth > 0
-      ? viewportWidth * BOARD_WIDTH_RATIO
+      ? Math.max(0, viewportWidth - horizontalMargin)
       : null;
   const effectiveHeight = Number.isFinite(availableHeight) && availableHeight > 0
     ? availableHeight
     : viewportHeight > 0
-      ? viewportHeight * BOARD_HEIGHT_RATIO
+      ? Math.max(0, viewportHeight - verticalMargin)
       : null;
   const widthBased = Number.isFinite(effectiveWidth) && effectiveWidth > 0
     ? effectiveWidth / widthDenominator
@@ -790,17 +794,17 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialDifficulty },
 
   const boardStyle = useMemo(() => ({
     '--nonogram-cell-size': cellSize,
-    '--nonogram-cell-gap': compactLayout ? '4px' : '6px',
-    '--nonogram-layout-gap': compactLayout ? '10px' : '12px',
-    '--nonogram-clue-gap': compactLayout ? '6px' : '8px',
+    '--nonogram-cell-gap': '0px',
+    '--nonogram-layout-gap': compactLayout ? '12px' : '18px',
+    '--nonogram-clue-gap': compactLayout ? '8px' : '12px',
     '--nonogram-clue-number-gap': compactLayout ? '4px' : '6px',
-    '--nonogram-clue-font': compactLayout ? 'clamp(0.6rem, 2.2vw, 0.85rem)' : 'clamp(0.7rem, 1.2vw, 0.9rem)',
-    '--nonogram-clue-padding': compactLayout ? '4px 8px' : '6px 10px',
+    '--nonogram-clue-font': compactLayout ? 'clamp(0.6rem, 2.4vw, 0.85rem)' : 'clamp(0.7rem, 1.4vw, 1rem)',
+    '--nonogram-clue-padding': compactLayout ? '6px 10px' : '8px 14px',
     '--nonogram-clue-radius': compactLayout ? '12px' : '14px',
-    '--nonogram-grid-padding': compactLayout ? 'clamp(6px, 1.1vw, 14px)' : 'clamp(8px, 1.8vw, 18px)',
+    '--nonogram-grid-padding': compactLayout ? 'clamp(14px, 6vw, 26px)' : 'clamp(18px, 4vw, 36px)',
     '--nonogram-grid-radius': compactLayout ? '18px' : '22px',
-    '--nonogram-cells-radius': compactLayout ? '14px' : '18px',
-    '--nonogram-cells-padding': compactLayout ? '3px' : '4px',
+    '--nonogram-cells-radius': compactLayout ? '12px' : '16px',
+    '--nonogram-cells-padding': '0px',
     '--nonogram-columns': String(cols),
     '--nonogram-rows': String(rows)
   }), [cellSize, compactLayout, rows, cols]);
