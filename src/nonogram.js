@@ -820,7 +820,7 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialDifficulty },
           <span className="timer">Zeit: ${timerLabel}</span>
           <span className="timer">Best: ${bestLabel}</span>
         </div>
-        <div className="nonogram-board" ref={boardContainerRef}>
+        <div className="nonogram-board" ref=${boardContainerRef}>
           <div className="nonogram-grid" style=${boardStyle}>
             <div className="nonogram-grid__corner" aria-hidden="true"></div>
             <${GridHints} orientation="cols" clues=${colClues} completed=${derived.colComplete} />
