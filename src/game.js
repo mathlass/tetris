@@ -2,7 +2,7 @@
 import {
   COLS,
   ROWS,
-  SIZE,
+  SIZE as DEFAULT_CELL_SIZE,
   FALL_BASE_MS,
   LINES_PER_LEVEL,
   SCORE_LINE,
@@ -69,6 +69,7 @@ export function initGame(){
   // ==== State
   const canvas = document.getElementById('game');
   const ctx = canvas.getContext('2d');
+  const boardContainer = canvas?.parentElement ?? null;
   const nextCtx = [1,2,3].map(n => {
     const c = document.getElementById(`next${n}`);
     return c ? c.getContext('2d') : null;
@@ -87,6 +88,37 @@ export function initGame(){
   let mode = MODE_CLASSIC;
   let timeLeft = null; // in Sekunden für Ultra
   let dropTimer=0, dropInterval=FALL_BASE_MS, lastTime=0, paused=false, running=false;
+  let cellSize = DEFAULT_CELL_SIZE;
+
+  function updateCanvasSize(){
+    if(!canvas) return false;
+    const fallbackWidth = DEFAULT_CELL_SIZE * COLS;
+    const measuredWidth = boardContainer?.clientWidth ?? canvas.clientWidth ?? 0;
+    const availableWidth = measuredWidth > 0 ? measuredWidth : fallbackWidth;
+    const newSize = Math.max(1, Math.floor(availableWidth / COLS));
+    const width = newSize * COLS;
+    const height = newSize * ROWS;
+    const changed = newSize !== cellSize || canvas.width !== width || canvas.height !== height;
+    cellSize = newSize;
+    canvas.width = width;
+    canvas.height = height;
+    return changed;
+  }
+
+  const handleResize = () => {
+    const changed = updateCanvasSize();
+    if(changed && board && cur){
+      drawBoard();
+    }
+  };
+
+  if(typeof ResizeObserver !== 'undefined' && boardContainer){
+    const resizeObserver = new ResizeObserver(() => handleResize());
+    resizeObserver.observe(boardContainer);
+  } else {
+    window.addEventListener('resize', handleResize);
+  }
+  handleResize();
 
   function setPaused(val){
     paused = val;
@@ -109,6 +141,7 @@ export function initGame(){
 
   function reset(){
     hideOverlay();
+    updateCanvasSize();
     board = emptyBoard();
     score=0; lines=0; level=1; dropInterval = FALL_BASE_MS; dropTimer=0; lastTime = performance.now();
     bag=[]; queue = [pullNext(), pullNext(), pullNext()];
@@ -147,24 +180,24 @@ export function initGame(){
   }
 
   // ==== Rendering
-  function drawCell(gx, gy, color, targetCtx=ctx, cellSize=SIZE, alpha=1){
+  function drawCell(gx, gy, color, targetCtx=ctx, renderSize=cellSize, alpha=1){
     if(color===0 || alpha<=0) return;
-    const x = gx*cellSize, y = gy*cellSize;
-    const grad = targetCtx.createLinearGradient(x, y, x, y+cellSize);
+    const x = gx*renderSize, y = gy*renderSize;
+    const grad = targetCtx.createLinearGradient(x, y, x, y+renderSize);
     grad.addColorStop(0, shadeColor(color, 0.3));
     grad.addColorStop(1, shadeColor(color, -0.3));
     targetCtx.save();
     targetCtx.globalAlpha = alpha;
     targetCtx.fillStyle = grad;
-    targetCtx.fillRect(x, y, cellSize, cellSize);
+    targetCtx.fillRect(x, y, renderSize, renderSize);
     // simple bevel
     targetCtx.fillStyle = 'rgba(255,255,255,0.12)';
-    targetCtx.fillRect(x, y, cellSize, 4);
+    targetCtx.fillRect(x, y, renderSize, 4);
     targetCtx.fillStyle = 'rgba(0,0,0,0.25)';
-    targetCtx.fillRect(x, y+cellSize-4, cellSize, 4);
+    targetCtx.fillRect(x, y+renderSize-4, renderSize, 4);
     targetCtx.strokeStyle = shadeColor(color, -0.4);
     targetCtx.lineWidth = 1;
-    targetCtx.strokeRect(x+0.5, y+0.5, cellSize-1, cellSize-1);
+    targetCtx.strokeRect(x+0.5, y+0.5, renderSize-1, renderSize-1);
     targetCtx.restore();
   }
 
@@ -211,7 +244,7 @@ export function initGame(){
           const cx = p.x + x;
           const cy = (overrideY ?? p.y) + y;
           if(cy < 0) continue; // skip above board
-          drawCell(cx, cy, COLORS[p.type], ctx, SIZE, alpha);
+          drawCell(cx, cy, COLORS[p.type], ctx, cellSize, alpha);
         }
       }
     }
@@ -521,7 +554,10 @@ export function initGame(){
 
   const start = () => { reset(); update(); };
   const pause = () => { if(running) setPaused(true); };
-  const resume = () => { if(running) setPaused(false); };
+  const resume = () => {
+    handleResize();
+    if(running) setPaused(false);
+  };
   const stop = () => {
     running = false;
     setPaused(false);
