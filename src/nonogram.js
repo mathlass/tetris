@@ -27,6 +27,14 @@ import {
   countFilledCells,
   normalizeDifficulty
 } from './nonogramData.js';
+import {
+  cloneBoard,
+  createHistory,
+  clearHistory,
+  pushHistory,
+  undoHistory,
+  redoHistory
+} from './nonogramHistory.js';
 
 const html = htm.bind(React.createElement);
 const PREFERRED_DEFAULT_DIFFICULTY = 'hard';
@@ -507,6 +515,10 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialDifficulty },
     }
     return createEmptyBoard(rows, cols);
   });
+  const historyRef = useRef(createHistory());
+  const historyBatchRef = useRef({ active: false, captured: false });
+  const [canUndo, setCanUndo] = useState(false);
+  const [canRedo, setCanRedo] = useState(false);
   const [activeTool, setActiveTool] = useState('fill');
   const [running, setRunning] = useState(true);
   const [paused, setPaused] = useState(false);
@@ -520,6 +532,19 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialDifficulty },
   const [leaderboardBest, setLeaderboardBest] = useState(() => getBestTime(difficulty));
 
   const progressKey = useMemo(() => progressKeyForPuzzle(puzzle), [puzzle]);
+
+  const syncHistoryAvailability = useCallback(() => {
+    setCanUndo(historyRef.current.past.length > 0);
+    setCanRedo(historyRef.current.future.length > 0);
+  }, []);
+
+  const resetHistoryState = useCallback(() => {
+    clearHistory(historyRef.current);
+    historyBatchRef.current.active = false;
+    historyBatchRef.current.captured = false;
+    setCanUndo(false);
+    setCanRedo(false);
+  }, []);
 
   const rowClues = useMemo(() => puzzle.grid.map(computeLineClues), [puzzle]);
   const colClues = useMemo(() => {
@@ -555,6 +580,7 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialDifficulty },
         localStorage.removeItem(progressKey);
       }
     }
+    resetHistoryState();
     setBoard(nextBoard);
     setRunning(true);
     setPaused(false);
@@ -564,7 +590,7 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialDifficulty },
     setOverlayInfo(null);
     setActiveTool('fill');
     startedAtRef.current = Date.now();
-  }, [puzzle, rows, cols, progressKey]);
+  }, [puzzle, rows, cols, progressKey, resetHistoryState]);
 
   useEffect(() => {
     const stored = readStoredActivePuzzle(difficulty);
@@ -721,6 +747,9 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialDifficulty },
     if(!running || paused || completed){
       return;
     }
+    if(!historyBatchRef.current.active){
+      historyBatchRef.current.captured = false;
+    }
     setBoard(prev => {
       const current = prev[row]?.[col];
       let next = current;
@@ -746,11 +775,16 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialDifficulty },
       if(next === current){
         return prev;
       }
-      const clone = prev.map(line => line.slice());
+      if(!historyBatchRef.current.captured){
+        pushHistory(historyRef.current, prev);
+        historyBatchRef.current.captured = true;
+        syncHistoryAvailability();
+      }
+      const clone = cloneBoard(prev);
       clone[row][col] = next;
       return clone;
     });
-  }, [running, paused, completed]);
+  }, [running, paused, completed, syncHistoryAvailability]);
 
   const dragStateRef = useRef({ active: false, tool: null });
 
@@ -760,6 +794,7 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialDifficulty },
     }
     dragStateRef.current.active = true;
     dragStateRef.current.tool = tool;
+    historyBatchRef.current.active = true;
   }, [running, paused, completed]);
 
   const dragOver = useCallback((row, col, tool) => {
@@ -774,7 +809,49 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialDifficulty },
   const endDrag = useCallback(() => {
     dragStateRef.current.active = false;
     dragStateRef.current.tool = null;
+    historyBatchRef.current.active = false;
+    historyBatchRef.current.captured = false;
   }, []);
+
+  const undo = useCallback(() => {
+    if(completed){
+      return;
+    }
+    const history = historyRef.current;
+    if(history.past.length === 0){
+      return;
+    }
+    setBoard(prev => {
+      const previous = undoHistory(history, prev);
+      if(!previous){
+        return prev;
+      }
+      historyBatchRef.current.active = false;
+      historyBatchRef.current.captured = false;
+      syncHistoryAvailability();
+      return previous;
+    });
+  }, [completed, syncHistoryAvailability]);
+
+  const redo = useCallback(() => {
+    if(completed){
+      return;
+    }
+    const history = historyRef.current;
+    if(history.future.length === 0){
+      return;
+    }
+    setBoard(prev => {
+      const nextBoard = redoHistory(history, prev);
+      if(!nextBoard){
+        return prev;
+      }
+      historyBatchRef.current.active = false;
+      historyBatchRef.current.captured = false;
+      syncHistoryAvailability();
+      return nextBoard;
+    });
+  }, [completed, syncHistoryAvailability]);
 
   useEffect(() => {
     const handlePointerUp = () => {
@@ -787,6 +864,26 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialDifficulty },
       window.removeEventListener('pointercancel', handlePointerUp);
     };
   }, [endDrag]);
+
+  useEffect(() => {
+    const handleKeyDown = event => {
+      if(!(event.ctrlKey || event.metaKey)){
+        return;
+      }
+      const key = String(event.key || '').toLowerCase();
+      if(key === 'z'){
+        event.preventDefault();
+        undo();
+      }else if(key === 'y'){
+        event.preventDefault();
+        redo();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [undo, redo]);
 
   const restart = useCallback(() => {
     if(progressKey && typeof window !== 'undefined'){
@@ -986,22 +1083,48 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialDifficulty },
           </div>
         </div>
         <div className="nonogram-tools" style=${{ marginTop: '18px' }}>
-          ${toolButtons.map(tool => html`
-            <button
-              key=${tool.id}
-              type="button"
-              className=${`nonogram-tool${activeTool === tool.id ? ' selected' : ''}`}
-              onClick=${() => handleToolSelect(tool.id)}
-              aria-pressed=${activeTool === tool.id ? 'true' : 'false'}
-              aria-label=${tool.label}
-              title=${tool.label}
-            >
-              <span
-                className=${`nonogram-tool-icon nonogram-tool-icon--${tool.id}`}
-                aria-hidden="true"
-              ></span>
-            </button>
-          `)}
+          <div style=${{ display: 'flex', justifyContent: 'center', gap: '16px', flexWrap: 'wrap' }}>
+            <div className="nonogram-history-tools" style=${{ display: 'flex', gap: '8px' }}>
+              <button
+                type="button"
+                className="nonogram-tool"
+                onClick=${undo}
+                disabled=${!canUndo || completed}
+                aria-label="Schritt zurück (Ctrl+Z)"
+                title="Rückgängig (Ctrl+Z)"
+              >
+                <span aria-hidden="true">↶</span>
+              </button>
+              <button
+                type="button"
+                className="nonogram-tool"
+                onClick=${redo}
+                disabled=${!canRedo || completed}
+                aria-label="Schritt vorwärts (Ctrl+Y)"
+                title="Wiederholen (Ctrl+Y)"
+              >
+                <span aria-hidden="true">↷</span>
+              </button>
+            </div>
+            <div className="nonogram-tool-buttons" style=${{ display: 'flex', gap: '12px' }}>
+              ${toolButtons.map(tool => html`
+                <button
+                  key=${tool.id}
+                  type="button"
+                  className=${`nonogram-tool${activeTool === tool.id ? ' selected' : ''}`}
+                  onClick=${() => handleToolSelect(tool.id)}
+                  aria-pressed=${activeTool === tool.id ? 'true' : 'false'}
+                  aria-label=${tool.label}
+                  title=${tool.label}
+                >
+                  <span
+                    className=${`nonogram-tool-icon nonogram-tool-icon--${tool.id}`}
+                    aria-hidden="true"
+                  ></span>
+                </button>
+              `)}
+            </div>
+          </div>
         </div>
       </div>
       <div className="panel panel--info" style=${{ marginTop: '16px' }}>
