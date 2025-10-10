@@ -39,7 +39,7 @@ const MAX_CELL_SIZE = 52;
 const BOARD_PADDING_CELLS = 6;
 const BOARD_PADDING_CELLS_COMPACT = 10;
 const COMPACT_BREAKPOINT = 640;
-const BOARD_WIDTH_RATIO = 0.72;
+const BOARD_WIDTH_RATIO = 0.98;
 const BOARD_HEIGHT_RATIO = 0.82;
 const PROGRESS_KEY_PREFIX = 'nonogram_board_v1';
 const VALID_CELL_STATES = new Set(['empty', 'filled', 'marked']);
@@ -122,21 +122,51 @@ function estimateColumnHintUnits(colClues){
   return maxUnits;
 }
 
-function calculateResponsiveCellSize(rows, cols, rowClues, colClues){
+function parsePixelValue(value){
+  const parsed = Number.parseFloat(value || '0');
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function extractContentBox(element){
+  if(!element || typeof window === 'undefined' || typeof element.getBoundingClientRect !== 'function'){
+    return { width: null, height: null };
+  }
+  const rect = element.getBoundingClientRect();
+  const style = window.getComputedStyle(element);
+  const paddingX = parsePixelValue(style.paddingLeft) + parsePixelValue(style.paddingRight);
+  const paddingY = parsePixelValue(style.paddingTop) + parsePixelValue(style.paddingBottom);
+  const width = rect && Number.isFinite(rect.width) ? Math.max(0, rect.width - paddingX) : null;
+  const height = rect && Number.isFinite(rect.height) ? Math.max(0, rect.height - paddingY) : null;
+  return {
+    width: width && width > 0 ? width : null,
+    height: height && height > 0 ? height : null
+  };
+}
+
+function calculateResponsiveCellSize(rows, cols, rowClues, colClues, metrics = {}){
   if(typeof window === 'undefined'){
     return `${MIN_CELL_SIZE}px`;
   }
-  const viewportWidth = Math.max(
-    window.innerWidth || 0,
-    (window.document && window.document.documentElement && window.document.documentElement.clientWidth) || 0,
-    (window.screen && window.screen.width) || 0
-  );
-  const viewportHeight = Math.max(
-    window.innerHeight || 0,
-    (window.document && window.document.documentElement && window.document.documentElement.clientHeight) || 0,
-    (window.screen && window.screen.height) || 0
-  );
-  const compact = isCompactViewport(viewportWidth);
+  const viewportWidth = Number.isFinite(metrics.viewportWidth)
+    ? metrics.viewportWidth
+    : Math.max(
+        window.innerWidth || 0,
+        (window.document && window.document.documentElement && window.document.documentElement.clientWidth) || 0,
+        (window.screen && window.screen.width) || 0
+      );
+  const viewportHeight = Number.isFinite(metrics.viewportHeight)
+    ? metrics.viewportHeight
+    : Math.max(
+        window.innerHeight || 0,
+        (window.document && window.document.documentElement && window.document.documentElement.clientHeight) || 0,
+        (window.screen && window.screen.height) || 0
+      );
+  const availableWidth = Number.isFinite(metrics.availableWidth) ? metrics.availableWidth : null;
+  const availableHeight = Number.isFinite(metrics.availableHeight) ? metrics.availableHeight : null;
+  const compactWidth = Number.isFinite(metrics.compactWidth)
+    ? metrics.compactWidth
+    : viewportWidth;
+  const compact = isCompactViewport(compactWidth);
   const widthPadding = compact ? BOARD_PADDING_CELLS_COMPACT : BOARD_PADDING_CELLS;
   const heightPadding = compact ? BOARD_PADDING_CELLS_COMPACT : BOARD_PADDING_CELLS;
   const rowHintUnits = estimateRowHintUnits(rowClues);
@@ -146,11 +176,17 @@ function calculateResponsiveCellSize(rows, cols, rowClues, colClues){
   if(widthDenominator <= 0 || heightDenominator <= 0){
     return `${MIN_CELL_SIZE}px`;
   }
-  const widthBased = viewportWidth > 0
-    ? (viewportWidth * BOARD_WIDTH_RATIO) / widthDenominator
+  const widthBasis = Number.isFinite(availableWidth) && availableWidth > 0
+    ? availableWidth
+    : (viewportWidth > 0 ? viewportWidth * BOARD_WIDTH_RATIO : null);
+  const heightBasis = Number.isFinite(availableHeight) && availableHeight > 0
+    ? availableHeight
+    : (viewportHeight > 0 ? viewportHeight * BOARD_HEIGHT_RATIO : null);
+  const widthBased = Number.isFinite(widthBasis) && widthBasis > 0
+    ? widthBasis / widthDenominator
     : Number.POSITIVE_INFINITY;
-  const heightBased = viewportHeight > 0
-    ? (viewportHeight * BOARD_HEIGHT_RATIO) / heightDenominator
+  const heightBased = Number.isFinite(heightBasis) && heightBasis > 0
+    ? heightBasis / heightDenominator
     : Number.POSITIVE_INFINITY;
   const candidates = [widthBased, heightBased].filter(value => Number.isFinite(value) && value > 0);
   if(candidates.length === 0){
@@ -609,6 +645,7 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialDifficulty },
   }, [running, paused, completed]);
 
   const dragStateRef = useRef({ active: false, tool: null });
+  const gridRef = useRef(null);
 
   const beginDrag = useCallback(tool => {
     if(!running || paused || completed){
@@ -736,21 +773,67 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialDifficulty },
     if(typeof window === 'undefined'){
       return undefined;
     }
-    const updateLayout = () => {
-      setCellSize(calculateResponsiveCellSize(rows, cols, rowClues, colClues));
-      const width = Math.max(
+
+    let frame = null;
+
+    const measureAndUpdate = () => {
+      const viewportWidth = Math.max(
         window.innerWidth || 0,
         (window.document && window.document.documentElement && window.document.documentElement.clientWidth) || 0,
         (window.screen && window.screen.width) || 0
       );
-      setCompactLayout(isCompactViewport(width));
+      const viewportHeight = Math.max(
+        window.innerHeight || 0,
+        (window.document && window.document.documentElement && window.document.documentElement.clientHeight) || 0,
+        (window.screen && window.screen.height) || 0
+      );
+      const element = gridRef.current;
+      const { width: availableWidth, height: availableHeight } = extractContentBox(element);
+      const compactWidth = Number.isFinite(availableWidth) && availableWidth > 0 ? availableWidth : viewportWidth;
+      const nextSize = calculateResponsiveCellSize(rows, cols, rowClues, colClues, {
+        viewportWidth,
+        viewportHeight,
+        availableWidth,
+        availableHeight,
+        compactWidth
+      });
+      setCellSize(prev => (prev === nextSize ? prev : nextSize));
+      const nextCompact = isCompactViewport(compactWidth);
+      setCompactLayout(prev => (prev === nextCompact ? prev : nextCompact));
     };
-    updateLayout();
-    window.addEventListener('resize', updateLayout);
-    window.addEventListener('orientationchange', updateLayout);
+
+    const scheduleMeasure = () => {
+      if(frame !== null){
+        window.cancelAnimationFrame(frame);
+      }
+      frame = window.requestAnimationFrame(() => {
+        frame = null;
+        measureAndUpdate();
+      });
+    };
+
+    scheduleMeasure();
+    window.addEventListener('resize', scheduleMeasure);
+    window.addEventListener('orientationchange', scheduleMeasure);
+
+    let observer;
+    const element = gridRef.current;
+    if(typeof ResizeObserver !== 'undefined' && element){
+      observer = new ResizeObserver(() => {
+        scheduleMeasure();
+      });
+      observer.observe(element);
+    }
+
     return () => {
-      window.removeEventListener('resize', updateLayout);
-      window.removeEventListener('orientationchange', updateLayout);
+      window.removeEventListener('resize', scheduleMeasure);
+      window.removeEventListener('orientationchange', scheduleMeasure);
+      if(observer){
+        observer.disconnect();
+      }
+      if(frame !== null){
+        window.cancelAnimationFrame(frame);
+      }
     };
   }, [rows, cols, rowClues, colClues]);
 
@@ -787,7 +870,7 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialDifficulty },
           <span className="timer">Best: ${bestLabel}</span>
         </div>
         <div className="nonogram-board">
-          <div className="nonogram-grid" style=${boardStyle}>
+          <div className="nonogram-grid" ref=${gridRef} style=${boardStyle}>
             <div className="nonogram-grid__corner" aria-hidden="true"></div>
             <${GridHints} orientation="cols" clues=${colClues} completed=${derived.colComplete} />
             <${GridHints} orientation="rows" clues=${rowClues} completed=${derived.rowComplete} />
