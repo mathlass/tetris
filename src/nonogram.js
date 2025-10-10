@@ -122,7 +122,7 @@ function estimateColumnHintUnits(colClues){
   return maxUnits;
 }
 
-function calculateResponsiveCellSize(rows, cols, rowClues, colClues){
+function calculateResponsiveCellSize(rows, cols, rowClues, colClues, availableWidth = null, availableHeight = null){
   if(typeof window === 'undefined'){
     return `${MIN_CELL_SIZE}px`;
   }
@@ -146,11 +146,21 @@ function calculateResponsiveCellSize(rows, cols, rowClues, colClues){
   if(widthDenominator <= 0 || heightDenominator <= 0){
     return `${MIN_CELL_SIZE}px`;
   }
-  const widthBased = viewportWidth > 0
-    ? (viewportWidth * BOARD_WIDTH_RATIO) / widthDenominator
+  const effectiveWidth = Number.isFinite(availableWidth) && availableWidth > 0
+    ? availableWidth
+    : viewportWidth > 0
+      ? viewportWidth * BOARD_WIDTH_RATIO
+      : null;
+  const effectiveHeight = Number.isFinite(availableHeight) && availableHeight > 0
+    ? availableHeight
+    : viewportHeight > 0
+      ? viewportHeight * BOARD_HEIGHT_RATIO
+      : null;
+  const widthBased = Number.isFinite(effectiveWidth) && effectiveWidth > 0
+    ? effectiveWidth / widthDenominator
     : Number.POSITIVE_INFINITY;
-  const heightBased = viewportHeight > 0
-    ? (viewportHeight * BOARD_HEIGHT_RATIO) / heightDenominator
+  const heightBased = Number.isFinite(effectiveHeight) && effectiveHeight > 0
+    ? effectiveHeight / heightDenominator
     : Number.POSITIVE_INFINITY;
   const candidates = [widthBased, heightBased].filter(value => Number.isFinite(value) && value > 0);
   if(candidates.length === 0){
@@ -719,6 +729,7 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialDifficulty },
     };
   }, []);
 
+  const boardContainerRef = useRef(null);
   const [cellSize, setCellSize] = useState(() => calculateResponsiveCellSize(rows, cols, rowClues, colClues));
   const [compactLayout, setCompactLayout] = useState(() => {
     if(typeof window === 'undefined'){
@@ -736,19 +747,42 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialDifficulty },
     if(typeof window === 'undefined'){
       return undefined;
     }
+    const extractAvailableSpace = element => {
+      if(!element){
+        return { width: null, height: null };
+      }
+      const rect = element.getBoundingClientRect();
+      const style = window.getComputedStyle(element);
+      const paddingX = (Number.parseFloat(style.paddingLeft) || 0) + (Number.parseFloat(style.paddingRight) || 0);
+      const paddingY = (Number.parseFloat(style.paddingTop) || 0) + (Number.parseFloat(style.paddingBottom) || 0);
+      return {
+        width: Math.max(0, rect.width - paddingX),
+        height: Math.max(0, rect.height - paddingY)
+      };
+    };
     const updateLayout = () => {
-      setCellSize(calculateResponsiveCellSize(rows, cols, rowClues, colClues));
-      const width = Math.max(
+      const { width, height } = extractAvailableSpace(boardContainerRef.current);
+      setCellSize(calculateResponsiveCellSize(rows, cols, rowClues, colClues, width, height));
+      const widthViewport = Math.max(
         window.innerWidth || 0,
         (window.document && window.document.documentElement && window.document.documentElement.clientWidth) || 0,
         (window.screen && window.screen.width) || 0
       );
-      setCompactLayout(isCompactViewport(width));
+      setCompactLayout(isCompactViewport(widthViewport));
     };
     updateLayout();
+    const element = boardContainerRef.current;
+    let resizeObserver = null;
+    if(element && typeof ResizeObserver === 'function'){
+      resizeObserver = new ResizeObserver(() => updateLayout());
+      resizeObserver.observe(element);
+    }
     window.addEventListener('resize', updateLayout);
     window.addEventListener('orientationchange', updateLayout);
     return () => {
+      if(resizeObserver){
+        resizeObserver.disconnect();
+      }
       window.removeEventListener('resize', updateLayout);
       window.removeEventListener('orientationchange', updateLayout);
     };
@@ -786,7 +820,7 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialDifficulty },
           <span className="timer">Zeit: ${timerLabel}</span>
           <span className="timer">Best: ${bestLabel}</span>
         </div>
-        <div className="nonogram-board">
+        <div className="nonogram-board" ref={boardContainerRef}>
           <div className="nonogram-grid" style=${boardStyle}>
             <div className="nonogram-grid__corner" aria-hidden="true"></div>
             <${GridHints} orientation="cols" clues=${colClues} completed=${derived.colComplete} />
