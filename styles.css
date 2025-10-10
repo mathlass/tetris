@@ -593,7 +593,7 @@ select.input option{background:var(--input-bg);color:var(--fg)}
   .panel,button{transition:none!important}
 }
 /* Pause Overlay */
-.board-wrap{position:relative;touch-action:none;width:100%;max-width:300px;margin:0 auto}
+.board-wrap{position:relative;touch-action:none;width:100%;max-width:360px;margin:0 auto}
 #game{width:100%;height:auto}
 #pauseOverlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:48px;letter-spacing:2px;color:var(--fg);background:rgba(0,0,0,.35);opacity:0;pointer-events:none;transition:opacity .2s ease;border-radius:12px}
 #pauseOverlay.show{opacity:1}
