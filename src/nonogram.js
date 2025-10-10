@@ -809,8 +809,8 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialDifficulty },
   const bestLabel = personalBest ? formatNonogramTime(personalBest) : '--';
 
   const toolButtons = [
-    { id: 'mark', icon: '✕', label: 'Leerfeld markieren' },
-    { id: 'fill', icon: '🟦', label: 'Feld füllen oder leeren' }
+    { id: 'mark', label: 'Leerfeld markieren' },
+    { id: 'fill', label: 'Feld füllen oder leeren' }
   ];
 
   return html`
@@ -859,7 +859,10 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialDifficulty },
               aria-label=${tool.label}
               title=${tool.label}
             >
-              <span className="icon" aria-hidden="true">${tool.icon}</span>
+              <span
+                className=${`nonogram-tool-icon nonogram-tool-icon--${tool.id}`}
+                aria-hidden="true"
+              ></span>
             </button>
           `)}
         </div>
@@ -869,7 +872,7 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialDifficulty },
           <h3>So funktioniert's</h3>
         </div>
         <p>Die Zahlen am Rand zeigen, wie viele aufeinanderfolgende Felder in der jeweiligen Reihe oder Spalte gefüllt werden müssen.</p>
-        <p>Tippe oder klicke auf ein Werkzeug (✕ oder ausgefülltes Feld) und anschließend auf das Spielfeld, um Felder zu markieren oder zu füllen. Ein erneuter Klick mit demselben Werkzeug setzt das Feld zurück.</p>
+        <p>Tippe oder klicke auf ein Werkzeug (Markierung oder Füllfeld) und anschließend auf das Spielfeld, um Felder zu markieren oder zu füllen. Ein erneuter Klick mit demselben Werkzeug setzt das Feld zurück.</p>
         <p>Mit Rechtsklick markierst du ein leeres Feld, die mittlere Maustaste löscht ein Feld. Falsche Einträge werden sofort rot hervorgehoben – genau wie im Sudoku.</p>
       </div>
       <${CompletionOverlay}
