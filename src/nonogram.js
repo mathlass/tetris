@@ -670,6 +670,21 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialDifficulty },
     };
   }, [board, puzzle, rows, cols, requiredCells]);
 
+  const progressPercent = useMemo(() => {
+    const raw = Number.isFinite(derived.progress) ? derived.progress * 100 : 0;
+    if(!Number.isFinite(raw)){
+      return 0;
+    }
+    return Math.max(0, Math.min(100, Math.round(raw)));
+  }, [derived.progress]);
+
+  const progressLabel = useMemo(() => {
+    if(requiredCells <= 0){
+      return 'Fortschritt: --';
+    }
+    return `Fortschritt: ${progressPercent}%`;
+  }, [progressPercent, requiredCells]);
+
   useEffect(() => {
     if(!running || paused || completed){
       return;
@@ -952,6 +967,16 @@ const NonogramApp = React.forwardRef(function NonogramApp({ initialDifficulty },
         <div className="controls" style=${{ justifyContent: 'center', margin: '0 0 12px', gap: '16px' }}>
           <span className="timer">Zeit: ${timerLabel}</span>
           <span className="timer">Best: ${bestLabel}</span>
+          <span
+            className="timer"
+            aria-live="polite"
+            aria-atomic="true"
+            aria-label=${requiredCells > 0
+              ? `Fortschritt: ${progressPercent}% der Pflichtfelder gelöst.`
+              : 'Fortschritt: keine Felder erforderlich'}
+          >
+            ${progressLabel}
+          </span>
         </div>
         <div className="nonogram-board" ref=${boardContainerRef}>
           <div className="nonogram-grid" style=${boardStyle}>
