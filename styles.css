@@ -1145,12 +1145,75 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
 .nonogram-tool{
   display:flex;
   align-items:center;
-  gap:6px;
-  padding:10px 18px;
+  justify-content:center;
+  width:54px;
+  height:54px;
+  padding:10px;
   font-weight:600;
-  border-radius:12px;
+  border-radius:16px;
 }
-.nonogram-tool .icon{font-size:1.1em;}
+.nonogram-tool-icon{
+  width:32px;
+  height:32px;
+  border-radius:10px;
+  position:relative;
+  display:block;
+  transition:transform .2s ease,box-shadow .2s ease,background .2s ease,border-color .2s ease;
+}
+.nonogram-tool-icon--mark{
+  border:2px solid var(--nonogram-cell-mark-fallback);
+  border:2px solid color-mix(in srgb,var(--nonogram-cell-mark),transparent 25%);
+  background:var(--nonogram-cell-mark-bg-fallback);
+  background:color-mix(in srgb,var(--nonogram-cell-mark),transparent 85%);
+}
+.nonogram-tool-icon--mark::before,
+.nonogram-tool-icon--mark::after{
+  content:"";
+  position:absolute;
+  top:50%;
+  left:50%;
+  width:70%;
+  height:2px;
+  background:var(--nonogram-cell-mark-fallback);
+  background:color-mix(in srgb,var(--nonogram-cell-mark),transparent 20%);
+  border-radius:999px;
+  transform-origin:center;
+}
+.nonogram-tool-icon--mark::before{transform:translate(-50%,-50%) rotate(45deg);}
+.nonogram-tool-icon--mark::after{transform:translate(-50%,-50%) rotate(-45deg);}
+.nonogram-tool-icon--fill{
+  border:2px solid var(--nonogram-cell-filled-border-fallback);
+  border:2px solid color-mix(in srgb,var(--nonogram-cell-filled),transparent 30%);
+  background:var(--nonogram-cell-filled-fallback);
+  background:linear-gradient(135deg,
+    color-mix(in srgb,var(--nonogram-cell-filled),transparent 5%) 0%,
+    color-mix(in srgb,var(--nonogram-cell-filled),transparent 28%) 58%,
+    color-mix(in srgb,var(--nonogram-cell-filled),transparent 65%) 100%
+  );
+  box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--nonogram-cell-filled-border-fallback),transparent 45%);
+}
+.nonogram-tool-icon--fill::before{
+  content:"";
+  position:absolute;
+  top:18%;
+  left:18%;
+  width:36%;
+  height:36%;
+  border-radius:50%;
+  background:color-mix(in srgb,#ffffff,transparent 25%);
+  box-shadow:0 0 0 1px color-mix(in srgb,var(--nonogram-cell-filled-border-fallback),transparent 65%) inset;
+}
+.nonogram-tool-icon--fill::after{
+  content:"";
+  position:absolute;
+  right:18%;
+  bottom:18%;
+  width:36%;
+  height:36%;
+  border-radius:6px;
+  background:color-mix(in srgb,var(--nonogram-cell-filled-border-fallback),transparent 8%);
+  box-shadow:0 3px 8px color-mix(in srgb,var(--nonogram-cell-filled-border-fallback),transparent 70%);
+}
 .nonogram-tool:not(.button-primary){
   border:1px solid var(--button-border);
   background:var(--button-bg);
@@ -1170,6 +1233,11 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
   box-shadow:0 0 0 2px color-mix(in srgb,var(--accent),transparent 55%) inset;
   background:color-mix(in srgb,var(--accent),transparent 82%);
   color:var(--nonogram-clue-accent);
+}
+.nonogram-tool.selected .nonogram-tool-icon,
+.nonogram-tool[aria-pressed="true"] .nonogram-tool-icon{
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--accent),transparent 60%);
+  transform:scale(1.05);
 }
 .nonogram-tool.selected.button-primary,
 .nonogram-tool[aria-pressed="true"].button-primary{
